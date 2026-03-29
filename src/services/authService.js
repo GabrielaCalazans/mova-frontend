@@ -20,7 +20,7 @@ export async function loginUser({ email, senha }) {
 
     return {
       mode: "mock",
-      message: "Login validado localmente. Configure VITE_API_BASE_URL para usar API real.",
+      message: "Login validado localmente. Configure API_BASE_URL para usar API real.",
       user: { email },
       token: "mock-token",
     };
@@ -48,7 +48,7 @@ export async function registerUser(values) {
 
     return {
       mode: "mock",
-      message: "Cadastro validado localmente. Configure VITE_API_BASE_URL para usar API real.",
+      message: "Cadastro validado localmente. Configure API_BASE_URL para usar API real.",
       user: { email: values.email, name: values.name },
     };
   }
@@ -77,5 +77,32 @@ export async function registerUser(values) {
     };
   } catch (error) {
     throw normalizeError(error, "Nao foi possivel concluir o cadastro.");
+  }
+}
+
+export async function requestPasswordReset({ email }) {
+  if (!isApiConfigured()) {
+    await delay(450);
+
+    return {
+      mode: "mock",
+      message: "Se o e-mail existir, enviaremos um link de recuperacao.",
+      email,
+    };
+  }
+
+  try {
+    const result = await apiRequest("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+
+    return {
+      mode: "api",
+      message: "Solicitacao de recuperacao enviada com sucesso.",
+      ...result,
+    };
+  } catch (error) {
+    throw normalizeError(error, "Nao foi possivel solicitar recuperacao de senha.");
   }
 }

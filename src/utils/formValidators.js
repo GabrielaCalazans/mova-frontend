@@ -24,6 +24,18 @@ export function validateLoginForm(values) {
   return nextErrors;
 }
 
+export function validateForgotPasswordForm(values) {
+  const nextErrors = {};
+
+  if (!values.email.trim()) {
+    nextErrors.email = "Informe seu e-mail.";
+  } else if (!isValidEmail(values.email)) {
+    nextErrors.email = "Digite um e-mail valido.";
+  }
+
+  return nextErrors;
+}
+
 export function validateRegisterForm(values) {
   const nextErrors = {};
 

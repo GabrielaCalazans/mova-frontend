@@ -12,6 +12,7 @@ MOVA é uma plataforma que facilita o aluguel de carros, conectando usuários a 
 - **Vite** - Build tool e dev server
 - **React Router** - Navegação entre páginas
 - **CSS** - Estilização customizada
+- **Vitest + Testing Library** - Testes de fluxo e unitários
 
 ## 📁 Estrutura do Projeto
 
@@ -45,7 +46,7 @@ npm install
 .env
 ```
 
-Defina `VITE_API_BASE_URL` apontando para o backend.
+Defina `API_BASE_URL` apontando para o backend.
 
 3. Execute o servidor de desenvolvimento:
 ```bash
@@ -61,6 +62,21 @@ http://localhost:5173
 
 - `/login` - Autenticação de usuários
 - `/cadastro` - Registro de novos usuários
+- `/recuperar-senha` - Solicitação de recuperação de senha
+
+## 🧪 Testes
+
+Execute os testes uma vez:
+
+```bash
+npm run test:run
+```
+
+Execute em modo watch:
+
+```bash
+npm run test
+```
 
 ## ♿ Acessibilidade
 

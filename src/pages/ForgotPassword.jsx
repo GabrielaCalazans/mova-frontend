@@ -1,14 +1,13 @@
 ﻿import { useEffect } from "react";
-import { Link } from "react-router-dom";
-import AuthLayout from "../layout/AuthLayout";
 import movaLogo from "../assets/mova_logo.png";
 import FormField from "../components/FormField";
 import { useFormState } from "../hooks/useFormState";
 import { useFormSubmit } from "../hooks/useFormSubmit";
-import { loginUser } from "../services/authService";
-import { validateLoginForm } from "../utils/formValidators";
+import AuthLayout from "../layout/AuthLayout";
+import { requestPasswordReset } from "../services/authService";
+import { validateForgotPasswordForm } from "../utils/formValidators";
 
-function Login() {
+function ForgotPassword() {
   const {
     values,
     errors,
@@ -18,21 +17,20 @@ function Login() {
     setFormErrors,
   } = useFormState({
     email: "",
-    senha: "",
   });
 
   useEffect(() => {
-    document.title = "MOVA - Login";
+    document.title = "MOVA - Recuperar Senha";
   }, []);
 
   const { handleSubmit, isSubmitting } = useFormSubmit({
     values,
-    validate: validateLoginForm,
+    validate: validateForgotPasswordForm,
     setFormErrors,
     setFeedback,
     getInvalidFeedback: () => ({
       type: "error",
-      message: "Verifique o e-mail e use uma senha com pelo menos 8 caracteres.",
+      message: "Informe um e-mail valido para continuar.",
     }),
     getValidFeedback: (_validValues, submitResult) => ({
       type: submitResult.mode === "mock" ? "warning" : "success",
@@ -42,14 +40,17 @@ function Login() {
       type: "error",
       message: error.message,
     }),
-    onSubmit: loginUser,
+    onSubmit: requestPasswordReset,
   });
 
   return (
     <AuthLayout
-      title="Login"
+      title="Recuperar Senha"
       logoSrc={movaLogo}
       logoAlt="Mova Logo"
+      footerText="Lembrou sua senha?"
+      footerLinkTo="/login"
+      footerLinkLabel="Entrar"
     >
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         {feedback && (
@@ -65,42 +66,18 @@ function Login() {
           placeholder="seuemail@exemplo.com"
           ariaLabel="E-mail"
           value={values.email}
-          onChange={(e) => setFieldValue("email", e.target.value)}
+          onChange={(event) => setFieldValue("email", event.target.value)}
           required
           error={errors.email}
           autoComplete="email"
         />
 
-        <FormField
-          id="senha"
-          name="senha"
-          type="password"
-          placeholder="Senha"
-          ariaLabel="Senha"
-          value={values.senha}
-          onChange={(e) => setFieldValue("senha", e.target.value)}
-          required
-          error={errors.senha}
-          helperText={!errors.senha ? "A senha precisa ter mais de 7 caracteres." : undefined}
-          helperType="warning"
-          autoComplete="current-password"
-        />
-
-        <div className="auth-actions">
-          <button type="submit" className="auth-button" disabled={isSubmitting}>
-            {isSubmitting ? "Entrando..." : "Entrar"}
-          </button>
-          <Link to="/cadastro" className="auth-button-secondary">
-            Cadastre-se
-          </Link>
-        </div>
-
-        <p className="auth-forgot">
-          <Link to="/recuperar-senha">Esqueci minha senha</Link>
-        </p>
+        <button type="submit" className="auth-button" disabled={isSubmitting}>
+          {isSubmitting ? "Enviando..." : "Enviar Link de Recuperacao"}
+        </button>
       </form>
     </AuthLayout>
   );
 }
 
-export default Login;
+export default ForgotPassword;

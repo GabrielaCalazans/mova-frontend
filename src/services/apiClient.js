@@ -1,8 +1,8 @@
-﻿const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+﻿const API_BASE_URL = import.meta.env.API_BASE_URL;
 
 function buildUrl(path) {
   if (!API_BASE_URL) {
-    throw new Error("VITE_API_BASE_URL nao configurada.");
+    throw new Error("API_BASE_URL nao configurada.");
   }
 
   const normalizedBase = API_BASE_URL.replace(/\/$/, "");
