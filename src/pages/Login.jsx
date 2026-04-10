@@ -1,14 +1,17 @@
 ﻿import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../layout/AuthLayout";
 import movaLogo from "../assets/mova_logo.png";
 import FormField from "../components/FormField";
 import { useFormState } from "../hooks/useFormState";
 import { useFormSubmit } from "../hooks/useFormSubmit";
+import { getAuthSession } from "../services/authSession";
 import { loginUser } from "../services/authService";
 import { validateLoginForm } from "../utils/formValidators";
 
 function Login() {
+  const navigate = useNavigate();
+
   const {
     values,
     errors,
@@ -23,7 +26,12 @@ function Login() {
 
   useEffect(() => {
     document.title = "MOVA - Login";
-  }, []);
+
+    const session = getAuthSession();
+    if (session?.user) {
+      navigate("/conta", { replace: true });
+    }
+  }, [navigate]);
 
   const { handleSubmit, isSubmitting } = useFormSubmit({
     values,
@@ -35,7 +43,7 @@ function Login() {
       message: "Verifique o e-mail e use uma senha com pelo menos 8 caracteres.",
     }),
     getValidFeedback: (_validValues, submitResult) => ({
-      type: submitResult.mode === "mock" ? "warning" : "success",
+      type: "success",
       message: submitResult.message,
     }),
     getSubmitErrorFeedback: (error) => ({
@@ -43,6 +51,9 @@ function Login() {
       message: error.message,
     }),
     onSubmit: loginUser,
+    onSuccess: () => {
+      navigate("/conta", { replace: true });
+    },
   });
 
   return (
@@ -81,8 +92,6 @@ function Login() {
           onChange={(e) => setFieldValue("senha", e.target.value)}
           required
           error={errors.senha}
-          helperText={!errors.senha ? "A senha precisa ter mais de 7 caracteres." : undefined}
-          helperType="warning"
           autoComplete="current-password"
         />
 

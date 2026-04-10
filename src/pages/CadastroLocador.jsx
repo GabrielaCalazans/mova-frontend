@@ -5,11 +5,11 @@ import AuthLayout from "../layout/AuthLayout";
 import FormField from "../components/FormField";
 import { useFormState } from "../hooks/useFormState";
 import { useFormSubmit } from "../hooks/useFormSubmit";
-import { registerLocatario } from "../services/authService";
-import { maskCelphone, maskCpf } from "../utils/inputMasks";
-import { getPasswordState, validateLocatarioRegisterForm } from "../utils/formValidators";
+import { registerLocador } from "../services/authService";
+import { maskCelphone, maskCnpj } from "../utils/inputMasks";
+import { validateLocadorRegisterForm } from "../utils/formValidators";
 
-function Register() {
+function CadastroLocador() {
   const {
     values,
     errors,
@@ -18,26 +18,21 @@ function Register() {
     setFieldValue,
     setFormErrors,
   } = useFormState({
-    name: "",
     email: "",
     celphone: "",
-    cpf: "",
-    cnh: "",
-    address: "",
-    cep: "",
+    empresa: "",
+    cnpj: "",
     password: "",
     confirmPassword: "",
   });
 
   useEffect(() => {
-    document.title = "MOVA - Cadastro de Locatário";
+    document.title = "MOVA - Cadastro de Locador";
   }, []);
-
-  const passwordState = getPasswordState(values.password);
 
   const { handleSubmit, isSubmitting } = useFormSubmit({
     values,
-    validate: validateLocatarioRegisterForm,
+    validate: validateLocadorRegisterForm,
     setFormErrors,
     setFeedback,
     getInvalidFeedback: () => ({
@@ -52,28 +47,17 @@ function Register() {
       type: "error",
       message: error.message,
     }),
-    onSubmit: registerLocatario,
+    onSubmit: registerLocador,
   });
-
-  const passwordHelperText =
-    passwordState === "default"
-      ? "Use pelo menos 8 caracteres."
-      : passwordState === "warning"
-        ? "Use pelo menos 8 caracteres."
-      : passwordState === "success"
-        ? "Senha forte para cadastro."
-        : undefined;
-
-  const passwordHelperType = passwordState === "success" ? "success" : "warning";
 
   return (
     <AuthLayout
-      title="Cadastro de Locatário"
+      title="Cadastro de Locador"
       logoSrc={movaLogo}
       logoAlt="Mova Logo"
-      footerText="Ja tem conta?"
-      footerLinkTo="/login"
-      footerLinkLabel="Entrar"
+      footerText="Quer cadastrar como locatário?"
+      footerLinkTo="/cadastro"
+      footerLinkLabel="Voltar ao cadastro de locatário"
     >
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         {feedback && (
@@ -81,23 +65,6 @@ function Register() {
             {feedback.message}
           </p>
         )}
-
-        <Link to="/cadastro-locador" className="auth-button auth-button-callout">
-          SEJA UM LOCADOR
-        </Link>
-
-        <FormField
-          id="name"
-          name="name"
-          type="text"
-          placeholder="Nome Completo"
-          ariaLabel="Nome Completo"
-          value={values.name}
-          onChange={(e) => setFieldValue("name", e.target.value)}
-          required
-          error={errors.name}
-          autoComplete="name"
-        />
 
         <FormField
           id="email"
@@ -127,28 +94,28 @@ function Register() {
         />
 
         <FormField
-          id="cpf"
-          name="cpf"
+          id="empresa"
+          name="empresa"
           type="text"
-          placeholder="Numero de CPF"
-          ariaLabel="Numero de CPF"
-          value={values.cpf}
-          onChange={(e) => setFieldValue("cpf", maskCpf(e.target.value))}
+          placeholder="Nome da empresa"
+          ariaLabel="Nome da empresa"
+          value={values.empresa}
+          onChange={(e) => setFieldValue("empresa", e.target.value)}
           required
-          error={errors.cpf}
-          inputMode="numeric"
+          error={errors.empresa}
+          autoComplete="organization"
         />
 
         <FormField
-          id="cnh"
-          name="cnh"
+          id="cnpj"
+          name="cnpj"
           type="text"
-          placeholder="Numero de CNH"
-          ariaLabel="Numero de CNH"
-          value={values.cnh}
-          onChange={(e) => setFieldValue("cnh", e.target.value)}
+          placeholder="CNPJ"
+          ariaLabel="CNPJ"
+          value={values.cnpj}
+          onChange={(e) => setFieldValue("cnpj", maskCnpj(e.target.value))}
           required
-          error={errors.cnh}
+          error={errors.cnpj}
           inputMode="numeric"
         />
 
@@ -162,9 +129,6 @@ function Register() {
           onChange={(e) => setFieldValue("password", e.target.value)}
           required
           error={errors.password}
-          helperText={!errors.password ? passwordHelperText : undefined}
-          helperType={passwordHelperType}
-          inputState={passwordState}
           autoComplete="new-password"
         />
 
@@ -182,11 +146,19 @@ function Register() {
         />
 
         <button type="submit" className="auth-button" disabled={isSubmitting}>
-          {isSubmitting ? "Cadastrando..." : "Cadastrar"}
+          {isSubmitting ? "Cadastrando..." : "Cadastrar Locador"}
         </button>
+
+        <p className="auth-footer">
+          <Link to="/cadastro">Quero me cadastrar como locatário</Link>
+        </p>
+
+        <p className="auth-footer">
+          Já tem conta? <Link to="/login">Entrar</Link>
+        </p>
       </form>
     </AuthLayout>
   );
 }
 
-export default Register;
+export default CadastroLocador;

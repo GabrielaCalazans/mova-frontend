@@ -9,6 +9,7 @@ export function useFormSubmit({
   getValidFeedback,
   getSubmitErrorFeedback,
   onSubmit,
+  onSuccess,
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -34,6 +35,10 @@ export function useFormSubmit({
         if (getValidFeedback) {
           setFeedback(getValidFeedback(values, submitResult));
         }
+
+        if (onSuccess) {
+          onSuccess(submitResult, values);
+        }
       } catch (error) {
         const fallbackFeedback = {
           type: "error",
@@ -58,6 +63,7 @@ export function useFormSubmit({
       getValidFeedback,
       getSubmitErrorFeedback,
       onSubmit,
+      onSuccess,
     ]
   );
 

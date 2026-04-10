@@ -22,7 +22,7 @@ describe("formValidators", () => {
     const errors = validateLoginForm({ email: "", senha: "123" });
 
     expect(errors.email).toBe("Informe seu e-mail.");
-    expect(errors.senha).toBe("A senha deve ter pelo menos 8 caracteres.");
+    expect(errors.senha).toBe("A senha precisa ter mais de 7 caracteres.");
   });
 
   it("mantem regras principais de cadastro", () => {

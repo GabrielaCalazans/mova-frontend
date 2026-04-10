@@ -1,4 +1,26 @@
-﻿const API_BASE_URL = import.meta.env.API_BASE_URL;
+﻿const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.API_BASE_URL;
+
+function parseApiErrorMessage(payload) {
+  if (!payload) {
+    return null;
+  }
+
+  if (typeof payload === "string") {
+    return payload.trim() || null;
+  }
+
+  if (typeof payload === "object") {
+    return (
+      payload.message ||
+      payload.error?.message ||
+      payload.error ||
+      payload.result?.message ||
+      null
+    );
+  }
+
+  return null;
+}
 
 function buildUrl(path) {
   if (!API_BASE_URL) {
@@ -11,23 +33,35 @@ function buildUrl(path) {
 }
 
 export async function apiRequest(path, options = {}) {
-  const response = await fetch(buildUrl(path), {
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
-    ...options,
-  });
+  const { authToken, headers: customHeaders = {}, ...requestOptions } = options;
+
+  const headers = {
+    "Content-Type": "application/json",
+    ...customHeaders,
+  };
+
+  if (authToken) {
+    headers.Authorization = `Bearer ${authToken}`;
+  }
+
+  let response;
+
+  try {
+    response = await fetch(buildUrl(path), {
+      ...requestOptions,
+      headers,
+    });
+  } catch {
+    throw new Error("Nao foi possivel conectar com a API.");
+  }
 
   const contentType = response.headers.get("content-type") || "";
   const hasJson = contentType.includes("application/json");
   const payload = hasJson ? await response.json() : await response.text();
 
   if (!response.ok) {
-    const message =
-      typeof payload === "object" && payload && payload.message
-        ? payload.message
-        : "Erro ao comunicar com a API.";
+    const parsedMessage = parseApiErrorMessage(payload);
+    const message = parsedMessage || `Erro ao comunicar com a API (HTTP ${response.status}).`;
 
     throw new Error(message);
   }

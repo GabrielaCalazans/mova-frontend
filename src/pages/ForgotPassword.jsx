@@ -33,7 +33,7 @@ function ForgotPassword() {
       message: "Informe um e-mail valido para continuar.",
     }),
     getValidFeedback: (_validValues, submitResult) => ({
-      type: submitResult.mode === "mock" ? "warning" : "success",
+      type: "success",
       message: submitResult.message,
     }),
     getSubmitErrorFeedback: (error) => ({

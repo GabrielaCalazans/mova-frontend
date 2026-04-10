@@ -12,22 +12,34 @@ import {
   fetchCurrentUserProfile,
   updateUserProfile,
 } from "../services/authService";
-import { maskCelphone, maskCep, maskCpf } from "../utils/inputMasks";
+import { maskCelphone, maskCep, maskCpf, maskCnpj } from "../utils/inputMasks";
 import { validateProfileForm } from "../utils/formValidators";
 
-const PROFILE_DEBUG_ENABLED = String(import.meta.env.VITE_AUTH_DEBUG).toLowerCase() === "true";
+const CONTA_DEBUG_ENABLED = String(import.meta.env.VITE_AUTH_DEBUG).toLowerCase() === "true";
 
-function profileDebug(label, payload) {
-  if (!PROFILE_DEBUG_ENABLED) {
+function contaDebug(label, payload) {
+  if (!CONTA_DEBUG_ENABLED) {
     return;
   }
 
-  console.groupCollapsed(`[profile-debug] ${label}`);
+  console.groupCollapsed(`[conta-debug] ${label}`);
   console.log(payload);
   console.groupEnd();
 }
 
-function Perfil() {
+function normalizeProfileType(profileType, profile) {
+  if (profile?.empresa || profile?.cnpj) {
+    return "locador";
+  }
+
+  if (profileType === "locador" || profileType === "locatario") {
+    return profileType;
+  }
+
+  return "locatario";
+}
+
+function Conta() {
   const navigate = useNavigate();
   const session = getAuthSession();
   const sessionUser = session?.user || null;
@@ -47,6 +59,9 @@ function Perfil() {
       id: user.id || "",
       name: user.name || "",
       email: user.email || "",
+      profileType: normalizeProfileType(user.profileType, user),
+      empresa: user.empresa || "",
+      cnpj: user.cnpj || "",
       celphone: user.celphone || "",
       cpf: user.cpf || "",
       cnh: user.cnh || "",
@@ -74,26 +89,30 @@ function Perfil() {
       };
     }
 
-    profileDebug("hydrateProfile.sessionUser", sessionUser);
+    contaDebug("hydrateProfile.sessionUser", sessionUser);
 
     async function hydrateProfile() {
       try {
         const freshProfile = await fetchCurrentUserProfile({
-          persistToSession: true,
+          persistToSession: false,
         });
 
-        profileDebug("hydrateProfile.freshProfile", freshProfile);
+        contaDebug("hydrateProfile.freshProfile", freshProfile);
 
         if (!isMounted || !freshProfile) {
           return;
         }
 
         setValues((prev) => {
+          const nextProfileType = normalizeProfileType(freshProfile.profileType, freshProfile);
           const nextValues = {
             ...prev,
             id: freshProfile.id || prev.id,
             name: freshProfile.name || prev.name,
             email: freshProfile.email || prev.email,
+            profileType: nextProfileType,
+            empresa: freshProfile.empresa || prev.empresa,
+            cnpj: freshProfile.cnpj || prev.cnpj,
             celphone: freshProfile.celphone || prev.celphone,
             cpf: freshProfile.cpf || prev.cpf,
             cnh: freshProfile.cnh || prev.cnh,
@@ -101,11 +120,11 @@ function Perfil() {
             cep: freshProfile.cep || prev.cep,
           };
 
-          profileDebug("hydrateProfile.nextFormValues", nextValues);
+          contaDebug("hydrateProfile.nextFormValues", nextValues);
           return nextValues;
         });
       } catch (error) {
-        profileDebug("hydrateProfile.error", error);
+        contaDebug("hydrateProfile.error", error);
         // If API fetch fails, keep current session profile in the form.
       }
     }
@@ -120,6 +139,7 @@ function Perfil() {
   function applyMask(field, value) {
     if (field === "celphone") return maskCelphone(value);
     if (field === "cpf") return maskCpf(value);
+    if (field === "cnpj") return maskCnpj(value);
     if (field === "cep") return maskCep(value);
     return value;
   }
@@ -214,19 +234,26 @@ function Perfil() {
     onSubmit: updateUserProfile,
   });
 
+  const isLocador = values.profileType === "locador";
+  const profileLabel = isLocador ? "Perfil: Locador" : "Perfil: Locatário";
+
   if (!sessionUser) {
     return <Navigate to="/login" replace />;
   }
 
   return (
     <AuthLayout
-      title="Meu Perfil"
+      title="Minha Conta"
       logoSrc={movaLogo}
       logoAlt="Mova Logo"
       footerText="Quer sair da conta?"
       footerLinkTo="/login"
       footerLinkLabel="Voltar ao login"
     >
+      <p className="auth-profile-badge" role="status" aria-live="polite">
+        {profileLabel}
+      </p>
+
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         {feedback && (
           <p className={`auth-feedback auth-feedback--${feedback.type}`} role="status" aria-live="polite">
@@ -260,72 +287,106 @@ function Perfil() {
           autoComplete="email"
         />
 
-        <FormField
-          id="celphone"
-          name="celphone"
-          type="text"
-          placeholder="Numero de Celular"
-          ariaLabel="Numero de Celular"
-          value={values.celphone}
-          onChange={(e) => handleChange("celphone", e.target.value)}
-          required
-          error={errors.celphone}
-          inputMode="numeric"
-          autoComplete="tel-national"
-        />
+        {isLocador && (
+          <>
+            <FormField
+              id="empresa"
+              name="empresa"
+              type="text"
+              placeholder="Empresa"
+              ariaLabel="Empresa"
+              value={values.empresa}
+              onChange={(e) => handleChange("empresa", e.target.value)}
+              required
+              error={errors.empresa}
+              autoComplete="organization"
+            />
 
-        <FormField
-          id="cpf"
-          name="cpf"
-          type="text"
-          placeholder="Numero de CPF"
-          ariaLabel="Numero de CPF"
-          value={values.cpf}
-          onChange={(e) => handleChange("cpf", e.target.value)}
-          required
-          error={errors.cpf}
-          inputMode="numeric"
-        />
+            <FormField
+              id="cnpj"
+              name="cnpj"
+              type="text"
+              placeholder="CNPJ"
+              ariaLabel="CNPJ"
+              value={values.cnpj}
+              onChange={(e) => handleChange("cnpj", e.target.value)}
+              required
+              error={errors.cnpj}
+              inputMode="numeric"
+            />
+          </>
+        )}
 
-        <FormField
-          id="cnh"
-          name="cnh"
-          type="text"
-          placeholder="Numero de CNH"
-          ariaLabel="Numero de CNH"
-          value={values.cnh}
-          onChange={(e) => handleChange("cnh", e.target.value)}
-          required
-          error={errors.cnh}
-          inputMode="numeric"
-        />
+        {!isLocador && (
+          <>
+            <FormField
+              id="celphone"
+              name="celphone"
+              type="text"
+              placeholder="Numero de Celular"
+              ariaLabel="Numero de Celular"
+              value={values.celphone}
+              onChange={(e) => handleChange("celphone", e.target.value)}
+              required
+              error={errors.celphone}
+              inputMode="numeric"
+              autoComplete="tel-national"
+            />
 
-        <FormField
-          id="address"
-          name="address"
-          type="text"
-          placeholder="Endereco Completo"
-          ariaLabel="Endereco Completo"
-          value={values.address}
-          onChange={(e) => handleChange("address", e.target.value)}
-          required
-          error={errors.address}
-          autoComplete="street-address"
-        />
+            <FormField
+              id="cpf"
+              name="cpf"
+              type="text"
+              placeholder="Numero de CPF"
+              ariaLabel="Numero de CPF"
+              value={values.cpf}
+              onChange={(e) => handleChange("cpf", e.target.value)}
+              required
+              error={errors.cpf}
+              inputMode="numeric"
+            />
 
-        <FormField
-          id="cep"
-          name="cep"
-          type="text"
-          placeholder="CEP"
-          ariaLabel="CEP"
-          value={values.cep}
-          onChange={(e) => handleChange("cep", e.target.value)}
-          required
-          error={errors.cep}
-          inputMode="numeric"
-          autoComplete="postal-code"
-        />
+            <FormField
+              id="cnh"
+              name="cnh"
+              type="text"
+              placeholder="Numero de CNH"
+              ariaLabel="Numero de CNH"
+              value={values.cnh}
+              onChange={(e) => handleChange("cnh", e.target.value)}
+              required
+              error={errors.cnh}
+              inputMode="numeric"
+            />
+
+            <FormField
+              id="address"
+              name="address"
+              type="text"
+              placeholder="Endereco Completo"
+              ariaLabel="Endereco Completo"
+              value={values.address}
+              onChange={(e) => handleChange("address", e.target.value)}
+              required
+              error={errors.address}
+              autoComplete="street-address"
+            />
+
+            <FormField
+              id="cep"
+              name="cep"
+              type="text"
+              placeholder="CEP"
+              ariaLabel="CEP"
+              value={values.cep}
+              onChange={(e) => handleChange("cep", e.target.value)}
+              required
+              error={errors.cep}
+              inputMode="numeric"
+              autoComplete="postal-code"
+            />
+          </>
+        )}
 
         <div className="auth-actions">
           <button type="submit" className="auth-button" disabled={isSubmitting}>
@@ -395,4 +456,4 @@ function Perfil() {
   );
 }
 
-export default Perfil;
+export default Conta;
