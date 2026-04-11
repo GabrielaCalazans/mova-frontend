@@ -15,7 +15,7 @@ import {
 import { maskCelphone, maskCep, maskCpf, maskCnpj } from "../utils/inputMasks";
 import { validateProfileForm } from "../utils/formValidators";
 
-const CONTA_DEBUG_ENABLED = String(import.meta.env.VITE_AUTH_DEBUG).toLowerCase() === "true";
+const CONTA_DEBUG_ENABLED = String(import.meta.env.AUTH_DEBUG).toLowerCase() === "true";
 
 function contaDebug(label, payload) {
   if (!CONTA_DEBUG_ENABLED) {
@@ -41,8 +41,7 @@ function normalizeProfileType(profileType, profile) {
 
 function Conta() {
   const navigate = useNavigate();
-  const session = getAuthSession();
-  const sessionUser = session?.user || null;
+  const [sessionUser] = useState(() => getAuthSession()?.user || null);
   const [passwordValues, setPasswordValues] = useState({
     senhaAtual: "",
     novaSenha: "",

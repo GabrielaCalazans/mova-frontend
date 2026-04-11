@@ -150,10 +150,6 @@ function CadastroLocador() {
         </button>
 
         <p className="auth-footer">
-          <Link to="/cadastro">Quero me cadastrar como locatário</Link>
-        </p>
-
-        <p className="auth-footer">
           Já tem conta? <Link to="/login">Entrar</Link>
         </p>
       </form>

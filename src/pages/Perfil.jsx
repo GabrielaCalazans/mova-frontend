@@ -15,7 +15,7 @@ import {
 import { maskCelphone, maskCep, maskCpf } from "../utils/inputMasks";
 import { validateProfileForm } from "../utils/formValidators";
 
-const PROFILE_DEBUG_ENABLED = String(import.meta.env.VITE_AUTH_DEBUG).toLowerCase() === "true";
+const PROFILE_DEBUG_ENABLED = String(import.meta.env.AUTH_DEBUG).toLowerCase() === "true";
 
 function profileDebug(label, payload) {
   if (!PROFILE_DEBUG_ENABLED) {
@@ -29,8 +29,7 @@ function profileDebug(label, payload) {
 
 function Perfil() {
   const navigate = useNavigate();
-  const session = getAuthSession();
-  const sessionUser = session?.user || null;
+  const [sessionUser] = useState(() => getAuthSession()?.user || null);
   const [passwordValues, setPasswordValues] = useState({
     senhaAtual: "",
     novaSenha: "",

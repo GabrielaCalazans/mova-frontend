@@ -5,7 +5,7 @@ import {
   saveAuthSession,
 } from "./authSession";
 
-const AUTH_DEBUG_ENABLED = String(import.meta.env.VITE_AUTH_DEBUG).toLowerCase() === "true";
+const AUTH_DEBUG_ENABLED = String(import.meta.env.AUTH_DEBUG).toLowerCase() === "true";
 
 function authDebug(label, payload) {
   if (!AUTH_DEBUG_ENABLED) {
@@ -28,6 +28,8 @@ function normalizeError(error, fallbackMessage) {
 function normalizeUserProfile(values) {
   return {
     id: values.id,
+    accountId: values.accountId || values.id,
+    profileId: values.profileId,
     name: values.name,
     email: values.email,
     profileType: values.profileType,
@@ -70,6 +72,44 @@ function hasProfileFields(value) {
 
 function normalizeEmail(email) {
   return typeof email === "string" ? email.trim().toLowerCase() : "";
+}
+
+function onlyDigits(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+/**
+ * @typedef {Object} LocatarioUpdatePayload
+ * @property {string} cnh
+ * @property {string} cpf
+ */
+
+/**
+ * @typedef {Object} LocadorUpdatePayload
+ * @property {string} empresa
+ * @property {string} cnpj
+ */
+
+/**
+ * @param {Object} values
+ * @returns {LocatarioUpdatePayload}
+ */
+function buildLocatarioUpdatePayload(values) {
+  return {
+    cnh: onlyDigits(values.cnh),
+    cpf: onlyDigits(values.cpf),
+  };
+}
+
+/**
+ * @param {Object} values
+ * @returns {LocadorUpdatePayload}
+ */
+function buildLocadorUpdatePayload(values) {
+  return {
+    empresa: String(values.empresa || ""),
+    cnpj: onlyDigits(values.cnpj),
+  };
 }
 
 function getCandidateEmail(candidate) {
@@ -182,8 +222,13 @@ function normalizeCurrentUserFromMe(payload) {
     roleData = locadorNode;
   }
 
+  const accountId = result.id || result.contaId || roleData.contaId || roleData.accountId;
+  const profileId = roleData.id || roleData._id;
+
   const user = {
-    id: result.id || roleData.id,
+    id: accountId || profileId,
+    accountId: accountId || profileId,
+    profileId: profileId || "",
     name: result.nome || result.name,
     email: result.email,
     celphone: result.telefone || roleData.telefone || roleData.celular || roleData.celphone || "",
@@ -218,15 +263,32 @@ function extractToken(payload) {
 function persistUserProfile(user, token) {
   const session = getAuthSession();
   const nextToken = token ?? session?.token ?? null;
+  const previousUser = session?.user || {};
+  const nextUser = {
+    ...previousUser,
+    ...user,
+  };
+
+  if (!nextUser.id) {
+    nextUser.id = nextUser.accountId || previousUser.id || "";
+  }
+
+  if (!nextUser.accountId) {
+    nextUser.accountId = nextUser.id;
+  }
+
+  if (!nextUser.profileId && previousUser.profileId) {
+    nextUser.profileId = previousUser.profileId;
+  }
 
   authDebug("persistUserProfile.input", {
-    user,
+    user: nextUser,
     hasToken: Boolean(nextToken),
   });
 
   saveAuthSession({
     token: nextToken,
-    user,
+    user: nextUser,
   });
 
   authDebug("persistUserProfile.savedSession", getAuthSession());
@@ -406,23 +468,86 @@ export async function registerLocador(values) {
 export async function updateUserProfile(values) {
   const normalizedProfile = normalizeUserProfile(values);
   const session = getAuthSession();
+  const sessionUser = session?.user || {};
+  const accountId = values.id || values.accountId || sessionUser.accountId || sessionUser.id;
+  let profileId = values.profileId || sessionUser.profileId;
+  let profileType = resolveProfileType(values.profileType || sessionUser.profileType, {
+    ...sessionUser,
+    ...values,
+  });
 
-  if (!isApiConfigured() || !values.id) {
+  if (!isApiConfigured() || !accountId) {
     throw new Error("API_BASE_URL nao configurada.");
   }
 
+  if ((profileType === "locatario" || profileType === "locador") && !profileId) {
+    try {
+      const freshProfile = await fetchCurrentUserProfile({
+        authToken: session?.token,
+        persistToSession: false,
+      });
+
+      if (freshProfile) {
+        profileType = resolveProfileType(freshProfile.profileType || profileType, {
+          ...freshProfile,
+          ...values,
+        });
+        profileId = freshProfile.profileId || profileId;
+      }
+    } catch {
+      // Ignore identity refresh failures here; explicit profileId validation below handles errors.
+    }
+  }
+
   try {
-    const result = await apiRequest(`/conta/update/${values.id}`, {
+    const result = await apiRequest(`admin/conta/update/${accountId}`, {
       method: "PUT",
       body: JSON.stringify({
         nome: values.name,
         email: values.email,
-        telefone: values.celphone.replace(/\D/g, ""),
+        telefone: onlyDigits(values.celphone),
       }),
     });
 
+    if (profileType === "locatario") {
+      if (!profileId) {
+        throw new Error("Nao foi possivel identificar o perfil vinculado da conta autenticada.");
+      }
+
+      try {
+        await apiRequest(`/locatario/${profileId}`, {
+          method: "PUT",
+          body: JSON.stringify(buildLocatarioUpdatePayload(values)),
+        });
+      } catch {
+        throw new Error("Dados da conta atualizados, mas falha ao atualizar dados de perfil.");
+      }
+    }
+
+    if (profileType === "locador") {
+      if (!profileId) {
+        throw new Error("Nao foi possivel identificar o perfil vinculado da conta autenticada.");
+      }
+
+      try {
+        await apiRequest(`/locador/${profileId}`, {
+          method: "PUT",
+          body: JSON.stringify(buildLocadorUpdatePayload(values)),
+        });
+      } catch {
+        throw new Error("Dados da conta atualizados, mas falha ao atualizar dados de perfil.");
+      }
+    }
+
     const apiUser = normalizeApiUser(result, values.email);
-    const mergedUser = { ...normalizedProfile, ...apiUser };
+    const mergedUser = {
+      ...normalizedProfile,
+      ...apiUser,
+      id: accountId,
+      accountId,
+      profileId: profileId || sessionUser.profileId || "",
+      profileType,
+    };
     persistUserProfile(mergedUser, session?.token);
 
     return {

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { apiRequest, isApiConfigured } from "./apiClient";
 import { getAuthSession, saveAuthSession } from "./authSession";
-import { fetchCurrentUserProfile, loginUser } from "./authService";
+import { fetchCurrentUserProfile, loginUser, updateUserProfile } from "./authService";
 
 vi.mock("./apiClient", () => ({
   apiRequest: vi.fn(),
@@ -101,6 +101,196 @@ describe("authService profile flow via /conta/auth/me", () => {
     expect(saveAuthSessionMock).toHaveBeenCalledWith({
       token: "token-locador",
       user: result.user,
+    });
+  });
+});
+
+describe("updateUserProfile two-step flow", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    isApiConfiguredMock.mockReturnValue(true);
+    getAuthSessionMock.mockReturnValue({
+      token: "token-123",
+      user: {
+        id: "conta-1",
+        accountId: "conta-1",
+        profileId: "perfil-1",
+        profileType: "locatario",
+      },
+    });
+  });
+
+  it("executa PUT de conta e PUT de locatario com profileId da sessao", async () => {
+    apiRequestMock
+      .mockResolvedValueOnce({
+        result: {
+          id: "conta-1",
+          nome: "Nome Atualizado",
+          email: "user@mova.com",
+          telefone: "11988887777",
+        },
+      })
+      .mockResolvedValueOnce({
+        result: {
+          ok: true,
+        },
+      });
+
+    const result = await updateUserProfile({
+      id: "conta-1",
+      name: "Nome Atualizado",
+      email: "user@mova.com",
+      celphone: "(11) 98888-7777",
+      profileType: "locatario",
+      cpf: "123.456.789-09",
+      cnh: "12345678909",
+      empresa: "",
+      cnpj: "",
+      address: "Rua A",
+      cep: "00000-000",
+    });
+
+    expect(apiRequestMock).toHaveBeenNthCalledWith(1, "admin/conta/update/conta-1", {
+      method: "PUT",
+      body: JSON.stringify({
+        nome: "Nome Atualizado",
+        email: "user@mova.com",
+        telefone: "11988887777",
+      }),
+    });
+    expect(apiRequestMock).toHaveBeenNthCalledWith(2, "/locatario/perfil-1", {
+      method: "PUT",
+      body: JSON.stringify({
+        cnh: "12345678909",
+        cpf: "12345678909",
+      }),
+    });
+    expect(result.message).toBe("Dados atualizados com sucesso.");
+    expect(saveAuthSessionMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        token: "token-123",
+        user: expect.objectContaining({
+          id: "conta-1",
+          accountId: "conta-1",
+          profileId: "perfil-1",
+          profileType: "locatario",
+        }),
+      })
+    );
+  });
+
+  it("nao executa segunda chamada quando update da conta falha", async () => {
+    apiRequestMock.mockRejectedValueOnce(new Error("Falha na conta"));
+
+    await expect(
+      updateUserProfile({
+        id: "conta-1",
+        name: "Nome Atualizado",
+        email: "user@mova.com",
+        celphone: "(11) 98888-7777",
+        profileType: "locatario",
+        cpf: "123.456.789-09",
+        cnh: "12345678909",
+      })
+    ).rejects.toThrow("Falha na conta");
+
+    expect(apiRequestMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("retorna erro especifico quando a etapa de perfil falha", async () => {
+    apiRequestMock
+      .mockResolvedValueOnce({
+        result: {
+          id: "conta-1",
+          nome: "Nome Atualizado",
+          email: "user@mova.com",
+          telefone: "11988887777",
+        },
+      })
+      .mockRejectedValueOnce(new Error("Falha na entidade locatario"));
+
+    await expect(
+      updateUserProfile({
+        id: "conta-1",
+        name: "Nome Atualizado",
+        email: "user@mova.com",
+        celphone: "(11) 98888-7777",
+        profileType: "locatario",
+        cpf: "123.456.789-09",
+        cnh: "12345678909",
+      })
+    ).rejects.toThrow("Dados da conta atualizados, mas falha ao atualizar dados de perfil.");
+
+    expect(apiRequestMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("resolve profileId via /conta/auth/me quando sessao antiga nao possui profileId", async () => {
+    getAuthSessionMock.mockReturnValue({
+      token: "token-legacy",
+      user: {
+        id: "conta-legacy",
+        accountId: "conta-legacy",
+        profileType: "locatario",
+      },
+    });
+
+    apiRequestMock
+      .mockResolvedValueOnce({
+        result: {
+          id: "conta-legacy",
+          nome: "Usuario Legacy",
+          email: "legacy@mova.com",
+          telefone: "11977776666",
+          locador: null,
+          locatario: {
+            id: "perfil-legacy",
+            cpf: "12345678909",
+            cnh: "12345678909",
+          },
+        },
+      })
+      .mockResolvedValueOnce({
+        result: {
+          id: "conta-legacy",
+          nome: "Usuario Legacy Atualizado",
+          email: "legacy@mova.com",
+          telefone: "11977776666",
+        },
+      })
+      .mockResolvedValueOnce({
+        result: {
+          ok: true,
+        },
+      });
+
+    await updateUserProfile({
+      id: "conta-legacy",
+      name: "Usuario Legacy Atualizado",
+      email: "legacy@mova.com",
+      celphone: "(11) 97777-6666",
+      profileType: "locatario",
+      cpf: "123.456.789-09",
+      cnh: "12345678909",
+    });
+
+    expect(apiRequestMock).toHaveBeenNthCalledWith(1, "/conta/auth/me", {
+      method: "GET",
+      authToken: "token-legacy",
+    });
+    expect(apiRequestMock).toHaveBeenNthCalledWith(2, "admin/conta/update/conta-legacy", {
+      method: "PUT",
+      body: JSON.stringify({
+        nome: "Usuario Legacy Atualizado",
+        email: "legacy@mova.com",
+        telefone: "11977776666",
+      }),
+    });
+    expect(apiRequestMock).toHaveBeenNthCalledWith(3, "/locatario/perfil-legacy", {
+      method: "PUT",
+      body: JSON.stringify({
+        cnh: "12345678909",
+        cpf: "12345678909",
+      }),
     });
   });
 });

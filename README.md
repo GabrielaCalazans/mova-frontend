@@ -37,21 +37,19 @@ O projeto utiliza variáveis de ambiente que podem ser configuradas através do 
 
 | Variável | Padrão | Descrição |
 |----------|--------|-----------|
-| `VITE_API_BASE_URL` | `/api` | Endpoint base da API no frontend |
 | `API_BASE_URL` | `/api` | Fallback para endpoint da API |
-| `VITE_API_BACKEND_URL` | `http://localhost:3000` | URL do servidor backend para proxy em desenvolvimento |
-| `VITE_AUTH_DEBUG` | `false` | Ativa logs de debug no console para autenticação e perfil |
+| `API_BACKEND_URL` | `http://localhost:3000` | URL do servidor backend  |
+| `AUTH_DEBUG` | `false` | Ativa logs de debug no console para autenticação e perfil |
 
 ### Configuração por Ambiente
 
 Exemplo:
 ```env
-VITE_API_BASE_URL=/api
-VITE_API_BACKEND_URL=http://localhost:3000
-VITE_AUTH_DEBUG=false
+API_BACKEND_URL=http://localhost:3000
+AUTH_DEBUG=false
 ```
 
-No desenvolvimento, o Vite usa `VITE_API_BACKEND_URL` para encaminhar as chamadas feitas para `/api` ao backend correto.
+No desenvolvimento, o Vite usa `API_BACKEND_URL` para encaminhar as chamadas feitas para `/api` ao backend correto.
 
 ## 🎨 Padrão Visual
 
@@ -72,7 +70,7 @@ npm install
 .env
 ```
 
-Defina `VITE_API_BASE_URL=/api` e `VITE_API_BACKEND_URL` apontando para o backend.
+Defina `API_BACKEND_URL` apontando para o backend.
 
 3. Execute o servidor de desenvolvimento:
 ```bash
@@ -139,4 +137,4 @@ Todas as páginas seguem padrões de acessibilidade com uso de `aria-label` nos 
 
 ## 📝 Licença
 
-Projeto acadêmico desenvolvido para a FATEC.
+Projeto acadêmico desenvolvido para a FATEC ZONA SUL.
