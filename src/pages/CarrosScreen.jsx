@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import AuthLayout from "../layout/AuthLayout";
-import TopBar from "../components/TopBar";
+import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import movaLogo from "../assets/mova_logo.png";
 
 import argoImg from "../assets/fiat-argo-drive.png";
@@ -56,8 +55,7 @@ function CarrosScreen() {
     }, []);
 
     return (
-        <AuthLayout>
-            <TopBar />
+        <AuthenticatedLayout>
 
             <LogoContainer>
                 <img src={movaLogo} alt="Mova Logo" />
@@ -96,7 +94,7 @@ function CarrosScreen() {
                     </CarCard>
                 ))}
             </CarListContainer>
-        </AuthLayout>
+        </AuthenticatedLayout>
     );
 }
 

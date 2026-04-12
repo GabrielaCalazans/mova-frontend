@@ -1,140 +1,167 @@
-# MOVA - Sistema de Aluguel de Carros
+# MOVA - Frontend
 
-Sistema web para aluguel de veículos desenvolvido como projeto acadêmico da FATEC.
+Aplicacao web de locacao de veiculos desenvolvida em React + Vite.
 
-## 🚗 Sobre o Projeto
+## Visao Geral
 
-MOVA é uma plataforma que facilita o aluguel de carros, conectando usuários a veículos disponíveis de forma prática e segura.
+O projeto possui autenticacao, perfil de usuario (`locatario` e `locador`), fluxo de locacao com etapas sequenciais e menu global compartilhado para paginas autenticadas.
 
-## 🛠️ Tecnologias Utilizadas
+Principais ajustes recentes:
+- Fluxo pos-login por perfil:
+- `locatario` vai para `/tipos-carros`.
+- `locador` permanece em `/conta`.
+- Menu global atualizado com itens: `Minha Conta`, `Historico`, `Suporte`, `Configuracoes` e `Sair`.
+- Guard de rotas autenticadas para bloquear acesso sem sessao.
+- Compatibilidade de rotas legadas via redirecionamento.
+- Exclusao de conta com popup/modal (sem `alert`/`confirm` nativo).
 
-- **React** - Biblioteca para construção da interface
-- **Vite** - Build tool e dev server
-- **React Router** - Navegação entre páginas
-- **CSS** - Estilização customizada
-- **Vitest + Testing Library** - Testes de fluxo e unitários
+## Tecnologias
 
-## 📁 Estrutura do Projeto
+- React 19
+- Vite 7
+- React Router DOM 7
+- Styled Components
+- Lucide React
+- Vitest + Testing Library
 
-```
+## Estrutura
+
+```text
 src/
-├── assets/          # Imagens e recursos estáticos
-├── layout/          # Componentes de layout reutilizáveis (AuthLayout)
-├── pages/           # Páginas da aplicação (Login, Cadastro, Conta)
-├── services/        # Integração com API, auth e sessão
-├── utils/           # Validações e máscaras de formulário
-├── routes/          # Configuração de rotas
-├── styles/          # Arquivos CSS compartilhados
-├── App.jsx          # Componente principal
-└── main.jsx         # Ponto de entrada da aplicação
+	assets/
+	components/
+	hooks/
+	layout/
+		AuthLayout.jsx
+		AuthenticatedLayout.jsx
+	pages/
+	routes/
+		AppRoutes.jsx
+	services/
+	styles/
+	test/
+	utils/
 ```
 
-## ⚙️ Configuração de Ambiente
+## Requisitos
 
-O projeto utiliza variáveis de ambiente que podem ser configuradas através do arquivo `.env`. 
+- Node.js 20+
+- npm 10+
 
-### Variáveis Disponíveis
+## Configuracao de Ambiente
 
-| Variável | Padrão | Descrição |
-|----------|--------|-----------|
-| `API_BASE_URL` | `/api` | Fallback para endpoint da API |
-| `API_BACKEND_URL` | `http://localhost:3000` | URL do servidor backend  |
-| `AUTH_DEBUG` | `false` | Ativa logs de debug no console para autenticação e perfil |
+1. Crie o arquivo `.env` com base em `.env.example`.
+2. Preencha as variaveis abaixo:
 
-### Configuração por Ambiente
+| Variavel | Exemplo | Uso |
+|---|---|---|
+| `API_BASE_URL` | `/api` | Base usada pelo client HTTP |
+| `VITE_API_BASE_URL` | `/api` | Opcional; se definida, tem prioridade sobre `API_BASE_URL` |
+| `API_BACKEND_URL` | `http://localhost:3000` | Destino do proxy do Vite para `/api` |
+| `AUTH_DEBUG` | `false` | Habilita logs de debug de autenticacao/perfil |
 
-Exemplo:
-```env
-API_BACKEND_URL=http://localhost:3000
-AUTH_DEBUG=false
-```
+Observacao:
+- O client usa `VITE_API_BASE_URL` e, se ausente, usa `API_BASE_URL`.
+- No desenvolvimento, o Vite encaminha `/api` para `API_BACKEND_URL`.
 
-No desenvolvimento, o Vite usa `API_BACKEND_URL` para encaminhar as chamadas feitas para `/api` ao backend correto.
+## Como Rodar
 
-## 🎨 Padrão Visual
+1. Instalar dependencias:
 
-O projeto utiliza uma paleta de cores baseada em azul:
-- **Primária:** #003366
-- **Secundária:** #AEC5E7
-- **Gradiente:** #D0E7FF → #AEC5E7
-
-## 🚀 Como Executar
-
-1. Instale as dependências:
 ```bash
 npm install
 ```
 
-2. Configure as variáveis de ambiente:
-```bash
-.env
-```
+2. Iniciar ambiente de desenvolvimento:
 
-Defina `API_BACKEND_URL` apontando para o backend.
-
-3. Execute o servidor de desenvolvimento:
 ```bash
 npm run dev
 ```
 
-4. Acesse no navegador:
-```
+3. Abrir no navegador:
+
+```text
 http://localhost:5173
 ```
 
-## 📄 Páginas Disponíveis
+## Scripts
 
-- `/login` - Autenticação de usuários
-- `/cadastro` - Cadastro de locatário
-- `/cadastro-locador` - Cadastro de locador
-- `/recuperar-senha` - Solicitação de recuperação de senha
-- `/conta` - Área da conta após login, carregada com os dados do perfil
+- `npm run dev`: sobe o servidor local
+- `npm run build`: gera build de producao
+- `npm run preview`: sobe build local para validacao
+- `npm run lint`: executa lint
+- `npm run test`: executa testes em watch
+- `npm run test:run`: executa testes uma vez
 
-## 🔐 Fluxo de Autenticação
+## Rotas
 
-1. O login envia `POST /conta/auth/login`.
-2. Em caso de sucesso, o frontend chama `GET /conta/auth/me` usando o token recebido no header `Authorization: Bearer <token>`.
-3. O perfil do usuário é definido apenas pelo conteúdo de `result.locador` ou `result.locatario`.
-4. A tela de conta é aberta já preenchida com os campos retornados pela API.
-5. O botão de sair limpa a sessão em `localStorage` e retorna para `/login`.
+Publicas:
+- `/login`
+- `/cadastro`
+- `/cadastro-locatario`
+- `/cadastro-locador`
+- `/recuperar-senha`
 
-## 🧾 Perfis
+Protegidas (exigem sessao):
+- `/conta`
+- `/tipos-carros`
+- `/carros`
+- `/escolha-garagem`
+- `/agendamento`
+- `/pagamento`
+- `/desbloqueio`
+- `/historico`
+- `/suporte`
+- `/configuracoes`
 
-O sistema trabalha somente com dois perfis:
+Compatibilidade (redirecionam para rotas novas):
+- `/carros-screens` -> `/carros`
+- `/escolha-data-e-hora` -> `/agendamento`
+- `/modo-de-pagamento` -> `/pagamento`
+- `/desbloqueio-de-carro` -> `/desbloqueio`
 
-- `locatario`
-- `locador`
+## Fluxo de Login e Navegacao
 
-A tela de conta, o badge de perfil e a hidratação dos campos seguem apenas esses dois tipos.
+1. Login chama `POST /api/conta/auth/login`.
+2. Perfil atual e sessao sao hidratados.
+3. Redirecionamento pos-login:
+- `locatario`: `/tipos-carros`
+- `locador`: `/conta`
+4. O menu global (TopBar) e compartilhado em paginas autenticadas via `AuthenticatedLayout`.
+5. O item `Sair` limpa sessao (`localStorage`) e volta para `/login`.
 
-## 🌐 API
+## Fluxo de Locacao (Locatario)
 
-O frontend usa como base de integração o prefixo `/api` no ambiente local, com proxy configurado no Vite para o backend publicado em Render.
+Sequencia principal:
+- `/tipos-carros` -> `/carros` -> `/escolha-garagem` -> `/agendamento` -> `/pagamento` -> `/desbloqueio`
 
-- Login: `/api/conta/auth/login`
-- Conta atual: `/api/conta/auth/me`
-- Cadastro de conta: `/api/conta/auth/register`
-- Cadastro de locatário: `/api/locatario/`
-- Cadastro de locador: `/api/locador/`
+## API
 
-## 🧪 Testes
+Principais endpoints utilizados:
+- `POST /api/conta/auth/login`
+- `GET /api/conta/auth/me`
+- `POST /api/conta/auth/register`
+- `POST /api/locatario/`
+- `POST /api/locador/`
 
-Execute os testes uma vez:
+## Testes
+
+Status atual da suite (ultima execucao local):
+- 4 arquivos de teste
+- 22 testes
+- todos passando
+
+Executar:
 
 ```bash
 npm run test:run
 ```
 
-Execute em modo watch:
+## Observacoes
 
-```bash
-npm run test
-```
+- Se ocorrer erro de conexao com API, valide `API_BASE_URL`/`VITE_API_BASE_URL` e `API_BACKEND_URL`.
+- Para depuracao de autenticacao/perfil, habilite `AUTH_DEBUG=true`.
 
-## ♿ Acessibilidade
+## Licenca
 
-Todas as páginas seguem padrões de acessibilidade com uso de `aria-label` nos formulários para compatibilidade com leitores de tela.
-
-## 📝 Licença
-
-Projeto acadêmico desenvolvido para a FATEC ZONA SUL.
+Projeto academico (FATEC).

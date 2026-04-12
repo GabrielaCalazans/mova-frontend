@@ -41,6 +41,7 @@ describe("Fluxo de autenticacao", () => {
           id: "1",
           name: "Cliente MOVA",
           email: "cliente@mova.com",
+          profileType: "locatario",
           celphone: "(11) 99999-9999",
           cpf: "123.456.789-10",
           cnh: "12345678910",
@@ -54,7 +55,7 @@ describe("Fluxo de autenticacao", () => {
     });
   });
 
-  it("faz login e redireciona para conta", async () => {
+  it("faz login e redireciona locatario para tipos de carros", async () => {
     const user = userEvent.setup();
     window.history.pushState({}, "", "/login");
 
@@ -69,8 +70,8 @@ describe("Fluxo de autenticacao", () => {
       senha: "Senha12345",
     });
 
-    expect(await screen.findByRole("heading", { name: /minha conta/i })).toBeInTheDocument();
-    expect(screen.getByDisplayValue("cliente@mova.com")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /escolha o tipo de carro/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /selecionar/i }).length).toBeGreaterThan(0);
   });
 
   it("faz logout e limpa a sessao", async () => {
@@ -83,9 +84,10 @@ describe("Fluxo de autenticacao", () => {
     await user.type(screen.getByLabelText(/senha/i), "Senha12345");
     await user.click(screen.getByRole("button", { name: /entrar/i }));
 
-    expect(await screen.findByRole("heading", { name: /minha conta/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /escolha o tipo de carro/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /^sair$/i }));
+    await user.click(screen.getByRole("button", { name: /abrir menu/i }));
+    await user.click(await screen.findByText(/^sair$/i));
 
     expect(await screen.findByRole("heading", { name: /login/i })).toBeInTheDocument();
     expect(window.localStorage.getItem("mova_auth_session")).toBeNull();
@@ -145,6 +147,14 @@ describe("Fluxo de autenticacao", () => {
 
   it("redireciona rota invalida para login", () => {
     window.history.pushState({}, "", "/rota-invalida");
+
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
+  });
+
+  it("bloqueia fluxo sem sessao e redireciona para login", () => {
+    window.history.pushState({}, "", "/tipos-carros");
 
     render(<App />);
 

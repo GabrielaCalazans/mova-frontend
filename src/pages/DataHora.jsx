@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import movaLogo from "../assets/mova_logo.png";
-import AuthLayout from "../layout/AuthLayout";
-import TopBar from "../components/TopBar";
+import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import {
     LogoContainer,
     Title,
@@ -177,7 +176,7 @@ export default function EscolhaDataHora() {
     // ════════════════════════════════════════════════════
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (data && hora) navigate('/modo-de-pagamento');
+        if (data && hora) navigate('/pagamento');
     };
 
     const days = buildDays();
@@ -187,8 +186,7 @@ export default function EscolhaDataHora() {
     //  RENDER
     // ════════════════════════════════════════════════════
     return (
-        <AuthLayout>
-            <TopBar />
+        <AuthenticatedLayout>
 
             <LogoContainer>
                 <img src={movaLogo} alt="Mova Logo" />
@@ -398,6 +396,6 @@ export default function EscolhaDataHora() {
                 </PrimaryButton>
 
             </StyledForm>
-        </AuthLayout>
+        </AuthenticatedLayout>
     );
 }

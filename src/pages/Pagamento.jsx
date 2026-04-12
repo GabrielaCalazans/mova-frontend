@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import movaLogo from '../assets/mova_logo.png';
-import AuthLayout from '../layout/AuthLayout';
-import TopBar from '../components/TopBar';
+import AuthenticatedLayout from '../layout/AuthenticatedLayout';
 import { CheckCircle } from "lucide-react";
 import {
   LogoContainer,
@@ -96,8 +95,7 @@ export default function Pagamento() {
   };
 
   return (
-    <AuthLayout>
-      <TopBar />
+    <AuthenticatedLayout>
 
       <LogoContainer>
         <img src={movaLogo} alt="Mova Logo" />
@@ -250,13 +248,13 @@ export default function Pagamento() {
               Seu pagamento foi processado com sucesso.
               Agora você pode desbloquear o veículo.
             </SuccessSubtitle>
-            <PrimaryButton onClick={() => navigate("/desbloqueio-de-carro")}>
+            <PrimaryButton onClick={() => navigate("/desbloqueio")}>
               Desbloquear Veículo
             </PrimaryButton>
           </SuccessModal>
         </ModalOverlay>
       )}
 
-    </AuthLayout>
+    </AuthenticatedLayout>
   );
 }

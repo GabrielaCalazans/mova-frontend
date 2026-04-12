@@ -9,6 +9,12 @@ import { getAuthSession } from "../services/authSession";
 import { loginUser } from "../services/authService";
 import { validateLoginForm } from "../utils/formValidators";
 
+function resolvePostLoginRoute(user) {
+  const profileType = user?.profileType;
+  const isLocador = profileType === "locador" || user?.empresa || user?.cnpj;
+  return isLocador ? "/conta" : "/tipos-carros";
+}
+
 function Login() {
   const navigate = useNavigate();
 
@@ -29,7 +35,7 @@ function Login() {
 
     const session = getAuthSession();
     if (session?.user) {
-      navigate("/conta", { replace: true });
+      navigate(resolvePostLoginRoute(session.user), { replace: true });
     }
   }, [navigate]);
 
@@ -51,8 +57,8 @@ function Login() {
       message: error.message,
     }),
     onSubmit: loginUser,
-    onSuccess: () => {
-      navigate("/conta", { replace: true });
+    onSuccess: (submitResult) => {
+      navigate(resolvePostLoginRoute(submitResult?.user), { replace: true });
     },
   });
 

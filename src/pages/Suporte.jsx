@@ -1,6 +1,5 @@
 import React from 'react';
-import AuthLayout from '../layout/AuthLayout';
-import TopBar from '../components/TopBar';
+import AuthenticatedLayout from '../layout/AuthenticatedLayout';
 import {
   Title,
   ContactContainer,
@@ -11,8 +10,7 @@ import {
 
 export default function Suporte() {
   return (
-    <AuthLayout>
-      <TopBar />
+    <AuthenticatedLayout>
 
       <Title>Suporte</Title>
 
@@ -25,6 +23,6 @@ export default function Suporte() {
 
       <PageFooter>MOVA</PageFooter>
 
-    </AuthLayout>
+    </AuthenticatedLayout>
   );
 }

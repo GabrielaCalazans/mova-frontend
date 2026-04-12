@@ -5,6 +5,7 @@ import AuthLayout from "../layout/AuthLayout";
 import FormField from "../components/FormField";
 import { useFormState } from "../hooks/useFormState";
 import { useFormSubmit } from "../hooks/useFormSubmit";
+import { ModalOverlay, SuccessModal, SuccessTitle, SuccessSubtitle } from "../styles/authStyle";
 import { clearAuthSession, getAuthSession } from "../services/authSession";
 import {
   changePassword,
@@ -50,6 +51,7 @@ function Conta() {
   const [passwordFeedback, setPasswordFeedback] = useState(null);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const initialValues = useMemo(() => {
     const user = sessionUser || {};
@@ -192,21 +194,23 @@ function Conta() {
     }
   }
 
-  async function handleDeleteAccount() {
-    const confirmed = window.confirm("Tem certeza que deseja deletar sua conta?");
-    if (!confirmed) {
-      return;
-    }
+  function handleDeleteAccount() {
+    setIsDeleteModalOpen(true);
+  }
+
+  async function confirmDeleteAccount() {
 
     try {
       setIsDeletingAccount(true);
       await deleteAccount();
+      setIsDeleteModalOpen(false);
       navigate("/login", { replace: true });
     } catch (error) {
       setFeedback({
         type: "error",
         message: error instanceof Error ? error.message : "Nao foi possivel deletar a conta.",
       });
+      setIsDeleteModalOpen(false);
     } finally {
       setIsDeletingAccount(false);
     }
@@ -451,6 +455,42 @@ function Conta() {
           </button>
         </div>
       </form>
+
+      {isDeleteModalOpen && (
+        <ModalOverlay
+          role="presentation"
+          onClick={(event) => {
+            if (event.target === event.currentTarget && !isDeletingAccount) {
+              setIsDeleteModalOpen(false);
+            }
+          }}
+        >
+          <SuccessModal role="dialog" aria-modal="true" aria-label="Confirmar exclusao da conta">
+            <SuccessTitle>Excluir conta</SuccessTitle>
+            <SuccessSubtitle>
+              Tem certeza que deseja excluir sua conta? Essa acao nao pode ser desfeita.
+            </SuccessSubtitle>
+            <div className="auth-actions" style={{ width: "100%" }}>
+              <button
+                type="button"
+                className="auth-button-secondary"
+                onClick={() => setIsDeleteModalOpen(false)}
+                disabled={isDeletingAccount}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="auth-button"
+                onClick={confirmDeleteAccount}
+                disabled={isDeletingAccount}
+              >
+                {isDeletingAccount ? "Deletando..." : "Excluir conta"}
+              </button>
+            </div>
+          </SuccessModal>
+        </ModalOverlay>
+      )}
     </AuthLayout>
   );
 }

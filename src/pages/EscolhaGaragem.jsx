@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import AuthLayout from "../layout/AuthLayout";
-import TopBar from "../components/TopBar";
+import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import movaLogo from "../assets/mova_logo.png";
 import garagemImg from "../assets/garagem.png";
 
@@ -27,8 +26,7 @@ function EscolhaGaragem() {
     ];
 
     return (
-        <AuthLayout>
-            <TopBar />
+        <AuthenticatedLayout>
 
             <LogoContainer>
                 <img src={movaLogo} alt="Mova Logo" />
@@ -44,7 +42,7 @@ function EscolhaGaragem() {
                 {garagens.map((garagem) => (
                     <OptionCard
                         key={garagem.id}
-                        onClick={() => navigate("/escolha-data-e-hora")}
+                        onClick={() => navigate("/agendamento")}
                     >
                         <img src={garagemImg} alt="Garagem" />
                         <GarageInfo>
@@ -55,7 +53,7 @@ function EscolhaGaragem() {
                     </OptionCard>
                 ))}
             </div>
-        </AuthLayout>
+        </AuthenticatedLayout>
     );
 }
 

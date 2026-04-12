@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import AuthLayout from '../layout/AuthLayout';
-import TopBar from '../components/TopBar';
+import AuthenticatedLayout from '../layout/AuthenticatedLayout';
 import {
   Title,
   Section,
@@ -22,8 +21,7 @@ export default function Configuracoes() {
   const [segurancaV2E, setSegurancaV2E]   = useState(true);
 
   return (
-    <AuthLayout>
-      <TopBar />
+    <AuthenticatedLayout>
 
       <Title>Configurações</Title>
 
@@ -102,6 +100,6 @@ export default function Configuracoes() {
 
       <PageFooter>MOVA</PageFooter>
 
-    </AuthLayout>
+    </AuthenticatedLayout>
   );
 }

@@ -1,6 +1,5 @@
 import React from 'react';
-import AuthLayout from '../layout/AuthLayout';
-import TopBar from '../components/TopBar';
+import AuthenticatedLayout from '../layout/AuthenticatedLayout';
 import onix from '../assets/chevrolet-onix-flex.png';
 import argo1 from '../assets/fiat-argo-drive.png';
 import argo2 from '../assets/fiat-argo-drive2.png';
@@ -25,8 +24,7 @@ const viagens = [
 
 export default function Historico() {
   return (
-    <AuthLayout>
-      <TopBar />
+    <AuthenticatedLayout>
 
       <LogoContainer>
         <img src={movaLogo} alt="Mova Logo" />
@@ -50,6 +48,6 @@ export default function Historico() {
 
       <PageFooter>MOVA</PageFooter>
 
-    </AuthLayout>
+    </AuthenticatedLayout>
   );
 }

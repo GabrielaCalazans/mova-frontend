@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import movaLogo from "../assets/mova_logo.png";
-import AuthLayout from "../layout/AuthLayout";
-import TopBar from "../components/TopBar";
+import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 
 import {
     LogoContainer,
@@ -33,8 +32,7 @@ function TiposDeCarros() {
     ];
 
     return (
-        <AuthLayout>
-            <TopBar />
+        <AuthenticatedLayout>
 
             <LogoContainer>
                 <img src={movaLogo} alt="Mova Logo" />
@@ -48,7 +46,7 @@ function TiposDeCarros() {
                         <h3>{carro.nome}</h3>
                         <CarImage src={carro.img} alt={carro.nome} />
                         <PrimaryButton
-                            onClick={() => navigate("/carros-screens", { state: { tipo: carro.id } })}
+                            onClick={() => navigate("/carros", { state: { tipo: carro.id } })}
                             style={{ width: "80%" }}
                         >
                             Selecionar
@@ -56,7 +54,7 @@ function TiposDeCarros() {
                     </OptionCard>
                 ))}
             </OptionsGrid>
-        </AuthLayout>
+        </AuthenticatedLayout>
     );
 }
 
