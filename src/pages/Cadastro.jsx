@@ -6,7 +6,7 @@ import FormField from "../components/FormField";
 import { useFormState } from "../hooks/useFormState";
 import { useFormSubmit } from "../hooks/useFormSubmit";
 import { registerLocatario } from "../services/authService";
-import { maskCelphone, maskCpf } from "../utils/inputMasks";
+import { maskCelphone, maskCpf, maskCep } from "../utils/inputMasks";
 import { getPasswordState, validateLocatarioRegisterForm } from "../utils/formValidators";
 
 function Register() {
@@ -150,6 +150,33 @@ function Register() {
           required
           error={errors.cnh}
           inputMode="numeric"
+        />
+
+        <FormField
+          id="address"
+          name="address"
+          type="text"
+          placeholder="Endereco Completo"
+          ariaLabel="Endereco Completo"
+          value={values.address}
+          onChange={(e) => setFieldValue("address", e.target.value)}
+          required
+          error={errors.address}
+          autoComplete="street-address"
+        />
+
+        <FormField
+          id="cep"
+          name="cep"
+          type="text"
+          placeholder="CEP"
+          ariaLabel="CEP"
+          value={values.cep}
+          onChange={(e) => setFieldValue("cep", maskCep(e.target.value))}
+          required
+          error={errors.cep}
+          inputMode="numeric"
+          autoComplete="postal-code"
         />
 
         <FormField

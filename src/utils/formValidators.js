@@ -105,6 +105,14 @@ export function validateLocatarioRegisterForm(values) {
     nextErrors.cnh = "CNH deve conter 11 digitos.";
   }
 
+  if (!values.address?.trim()) {
+    nextErrors.address = "Informe seu endereco completo.";
+  }
+
+  if (!/^[0-9]{8}$/.test(onlyDigits(values.cep || ""))) {
+    nextErrors.cep = "CEP deve conter 8 digitos.";
+  }
+
   if (!values.password.trim()) {
     nextErrors.password = "Informe sua senha.";
   } else if (values.password.length < 8) {
@@ -143,6 +151,14 @@ export function validateLocadorRegisterForm(values) {
 
   if (!/^[0-9]{14}$/.test(onlyDigits(values.cnpj))) {
     nextErrors.cnpj = "CNPJ deve conter 14 digitos.";
+  }
+
+  if (!values.address?.trim()) {
+    nextErrors.address = "Informe seu endereco completo.";
+  }
+
+  if (!/^[0-9]{8}$/.test(onlyDigits(values.cep || ""))) {
+    nextErrors.cep = "CEP deve conter 8 digitos.";
   }
 
   if (!values.password.trim()) {

@@ -6,7 +6,7 @@ import FormField from "../components/FormField";
 import { useFormState } from "../hooks/useFormState";
 import { useFormSubmit } from "../hooks/useFormSubmit";
 import { registerLocador } from "../services/authService";
-import { maskCelphone, maskCnpj } from "../utils/inputMasks";
+import { maskCelphone, maskCnpj, maskCep } from "../utils/inputMasks";
 import { validateLocadorRegisterForm } from "../utils/formValidators";
 
 function CadastroLocador() {
@@ -23,6 +23,8 @@ function CadastroLocador() {
     celphone: "",
     empresa: "",
     cnpj: "",
+    address: "",
+    cep: "",
     password: "",
     confirmPassword: "",
   });
@@ -131,6 +133,33 @@ function CadastroLocador() {
           required
           error={errors.cnpj}
           inputMode="numeric"
+        />
+
+        <FormField
+          id="address"
+          name="address"
+          type="text"
+          placeholder="Endereco Completo"
+          ariaLabel="Endereco Completo"
+          value={values.address}
+          onChange={(e) => setFieldValue("address", e.target.value)}
+          required
+          error={errors.address}
+          autoComplete="street-address"
+        />
+
+        <FormField
+          id="cep"
+          name="cep"
+          type="text"
+          placeholder="CEP"
+          ariaLabel="CEP"
+          value={values.cep}
+          onChange={(e) => setFieldValue("cep", maskCep(e.target.value))}
+          required
+          error={errors.cep}
+          inputMode="numeric"
+          autoComplete="postal-code"
         />
 
         <FormField

@@ -117,6 +117,7 @@ function buildLocatarioUpdatePayload(values) {
  */
 function buildLocadorUpdatePayload(values) {
   return {
+    id: values.id || values.accountId || values.profileId || "",
     empresa: String(values.empresa || ""),
     cnpj: onlyDigits(values.cnpj),
   };
@@ -254,8 +255,8 @@ function normalizeCurrentUserFromMe(payload) {
     cnpj: roleData.cnpj || "",
     cpf: roleData.cpf || "",
     cnh: roleData.cnh || "",
-    address: roleData.endereco || roleData.address || "",
-    cep: roleData.cep || "",
+    address: result.endereco || result.address || roleData.endereco || roleData.address || "",
+    cep: result.cep || roleData.cep || "",
   };
 
   return {
@@ -406,9 +407,7 @@ export async function registerLocatario(values) {
     const contaResult = await apiRequest("/conta/auth/register", {
       method: "POST",
       body: JSON.stringify({
-        nome: values.name,
-        email: values.email,
-        telefone: values.celphone.replace(/\D/g, ""),
+        ...buildContaPayload(values),
         senha: values.password,
       }),
     });
@@ -449,9 +448,7 @@ export async function registerLocador(values) {
     const contaResult = await apiRequest("/conta/auth/register", {
       method: "POST",
       body: JSON.stringify({
-        nome: values.name,
-        email: values.email,
-        telefone: values.celphone.replace(/\D/g, ""),
+        ...buildContaPayload(values),
         senha: values.password,
       }),
     });

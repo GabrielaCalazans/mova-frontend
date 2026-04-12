@@ -38,6 +38,8 @@ describe("authService profile flow via /conta/auth/me", () => {
         nome: "Shin Ryujin",
         email: "shin.ryujin@kr.com",
         telefone: null,
+        endereco: "Rua do Teste, 123",
+        cep: "01310999",
         locador: null,
         locatario: {
           id: "422285e6-3451-4f26-b3b8-274e612f4d47",
@@ -59,6 +61,8 @@ describe("authService profile flow via /conta/auth/me", () => {
     expect(user.profileType).toBe("locatario");
     expect(user.cpf).toBe("12345678909");
     expect(user.cnh).toBe("12345678909");
+    expect(user.address).toBe("Rua do Teste, 123");
+    expect(user.cep).toBe("01310999");
     expect(saveAuthSessionMock).toHaveBeenCalledWith({
       token: "token-locatario",
       user,
@@ -141,6 +145,8 @@ describe("authService profile flow via /conta/auth/me", () => {
         nome: "Maria Silva",
         email: "maria@empresa.com",
         telefone: "11999998888",
+        endereco: "",
+        cep: "",
         senha: "Senha12345",
       }),
     });
@@ -277,6 +283,66 @@ describe("updateUserProfile two-step flow", () => {
     ).rejects.toThrow("Dados da conta atualizados, mas falha ao atualizar dados de perfil.");
 
     expect(apiRequestMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("executa PUT de conta e PUT de locador com id do usuario no payload", async () => {
+    getAuthSessionMock.mockReturnValue({
+      token: "token-456",
+      user: {
+        id: "conta-locador-1",
+        accountId: "conta-locador-1",
+        profileId: "perfil-locador-1",
+        profileType: "locador",
+      },
+    });
+
+    apiRequestMock
+      .mockResolvedValueOnce({
+        result: {
+          id: "conta-locador-1",
+          nome: "Empresa Atualizada",
+          email: "empresa@mova.com",
+          telefone: "11988887777",
+        },
+      })
+      .mockResolvedValueOnce({
+        result: {
+          ok: true,
+        },
+      });
+
+    await updateUserProfile({
+      id: "conta-locador-1",
+      name: "Empresa Atualizada",
+      email: "empresa@mova.com",
+      celphone: "(11) 98888-7777",
+      profileType: "locador",
+      empresa: "Empresa Atualizada LTDA",
+      cnpj: "12.345.678/0001-99",
+      address: "Rua B",
+      cep: "01001-000",
+    });
+
+    expect(apiRequestMock).toHaveBeenNthCalledWith(1, "/conta/auth/update-profile", {
+      method: "PUT",
+      authToken: "token-456",
+      body: JSON.stringify({
+        nome: "Empresa Atualizada",
+        email: "empresa@mova.com",
+        telefone: "11988887777",
+        endereco: "Rua B",
+        cep: "01001000",
+      }),
+    });
+    expect(apiRequestMock).toHaveBeenNthCalledWith(2, "/locador/perfil-locador-1", {
+      method: "PUT",
+      authToken: "token-456",
+      body: JSON.stringify({
+        id: "conta-locador-1",
+        empresa: "Empresa Atualizada LTDA",
+        cnpj: "12345678000199",
+      }),
+    });
   });
 
   it("resolve profileId via /conta/auth/me quando sessao antiga nao possui profileId", async () => {
