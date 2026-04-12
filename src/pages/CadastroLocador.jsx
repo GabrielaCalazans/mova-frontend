@@ -18,6 +18,7 @@ function CadastroLocador() {
     setFieldValue,
     setFormErrors,
   } = useFormState({
+    name: "",
     email: "",
     celphone: "",
     empresa: "",
@@ -65,6 +66,19 @@ function CadastroLocador() {
             {feedback.message}
           </p>
         )}
+
+        <FormField
+          id="name"
+          name="name"
+          type="text"
+          placeholder="Nome do Proprietário"
+          ariaLabel="Nome do Proprietário"
+          value={values.name}
+          onChange={(e) => setFieldValue("name", e.target.value)}
+          required
+          error={errors.name}
+          autoComplete="name"
+        />
 
         <FormField
           id="email"

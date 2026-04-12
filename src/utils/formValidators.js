@@ -123,6 +123,10 @@ export function validateLocatarioRegisterForm(values) {
 export function validateLocadorRegisterForm(values) {
   const nextErrors = {};
 
+  if (!values.name?.trim()) {
+    nextErrors.name = "Informe o nome do proprietario.";
+  }
+
   if (!values.email.trim()) {
     nextErrors.email = "Informe seu e-mail.";
   } else if (!isValidEmail(values.email)) {
@@ -171,12 +175,24 @@ export function validateProfileForm(values) {
   }
 
   if (isLocador) {
+    if (!/^[0-9]{10,11}$/.test(onlyDigits(values.celphone || ""))) {
+      nextErrors.celphone = "Informe celular com DDD (10 ou 11 digitos).";
+    }
+
     if (!values.empresa?.trim()) {
       nextErrors.empresa = "Informe a empresa.";
     }
 
     if (!/^[0-9]{14}$/.test(onlyDigits(values.cnpj || ""))) {
       nextErrors.cnpj = "CNPJ deve conter 14 digitos.";
+    }
+
+    if (!values.address?.trim()) {
+      nextErrors.address = "Informe seu endereco completo.";
+    }
+
+    if (!/^[0-9]{8}$/.test(onlyDigits(values.cep || ""))) {
+      nextErrors.cep = "CEP deve conter 8 digitos.";
     }
 
     return nextErrors;

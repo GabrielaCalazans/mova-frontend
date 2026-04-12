@@ -78,6 +78,16 @@ function onlyDigits(value) {
   return String(value || "").replace(/\D/g, "");
 }
 
+function buildContaPayload(values) {
+  return {
+    nome: values.name,
+    email: values.email,
+    telefone: onlyDigits(values.celphone),
+    endereco: values.address || "",
+    cep: onlyDigits(values.cep),
+  };
+}
+
 /**
  * @typedef {Object} LocatarioUpdatePayload
  * @property {string} cnh
@@ -207,19 +217,26 @@ function normalizeCurrentUserFromMe(payload) {
   const result = isObject(root.result) ? root.result : {};
   const locadorNode = isProfileNode(result.locador) ? result.locador : null;
   const locatarioNode = isProfileNode(result.locatario) ? result.locatario : null;
+  const explicitProfileType = root.profileType || result.profileType || root.tipoPerfil || result.tipoPerfil || "";
 
-  let profileType = "locatario";
+  let profileType = resolveProfileType(explicitProfileType, result);
   let roleData = {};
 
-  if (locadorNode && !locatarioNode) {
+  if (profileType === "locador" && locadorNode) {
     profileType = "locador";
     roleData = locadorNode;
-  } else if (locatarioNode && !locadorNode) {
+  } else if (profileType === "locatario" && locatarioNode) {
     profileType = "locatario";
     roleData = locatarioNode;
   } else if (locadorNode && locatarioNode) {
     profileType = "locador";
     roleData = locadorNode;
+  } else if (locadorNode) {
+    profileType = "locador";
+    roleData = locadorNode;
+  } else if (locatarioNode) {
+    profileType = "locatario";
+    roleData = locatarioNode;
   }
 
   const accountId = result.id || result.contaId || roleData.contaId || roleData.accountId;
@@ -432,7 +449,7 @@ export async function registerLocador(values) {
     const contaResult = await apiRequest("/conta/auth/register", {
       method: "POST",
       body: JSON.stringify({
-        nome: values.empresa,
+        nome: values.name,
         email: values.email,
         telefone: values.celphone.replace(/\D/g, ""),
         senha: values.password,
@@ -446,10 +463,11 @@ export async function registerLocador(values) {
       throw new Error("Nao foi possivel identificar a conta do locador.");
     }
 
-    const result = await apiRequest("/locador/", {
+    const result = await apiRequest("/locador", {
       method: "POST",
       body: JSON.stringify({
         id: contaId,
+        empresa: values.empresa,
         cnpj: values.cnpj.replace(/\D/g, ""),
       }),
     });
@@ -468,6 +486,7 @@ export async function registerLocador(values) {
 export async function updateUserProfile(values) {
   const normalizedProfile = normalizeUserProfile(values);
   const session = getAuthSession();
+  const token = session?.token;
   const sessionUser = session?.user || {};
   const accountId = values.id || values.accountId || sessionUser.accountId || sessionUser.id;
   let profileId = values.profileId || sessionUser.profileId;
@@ -476,14 +495,18 @@ export async function updateUserProfile(values) {
     ...values,
   });
 
-  if (!isApiConfigured() || !accountId) {
+  if (!isApiConfigured()) {
     throw new Error("API_BASE_URL nao configurada.");
+  }
+
+  if (!token) {
+    throw new Error("Sessao expirada. Faca login novamente.");
   }
 
   if ((profileType === "locatario" || profileType === "locador") && !profileId) {
     try {
       const freshProfile = await fetchCurrentUserProfile({
-        authToken: session?.token,
+        authToken: token,
         persistToSession: false,
       });
 
@@ -500,12 +523,11 @@ export async function updateUserProfile(values) {
   }
 
   try {
-    const result = await apiRequest(`admin/conta/update/${accountId}`, {
+    const result = await apiRequest("/conta/auth/update-profile", {
       method: "PUT",
+      authToken: token,
       body: JSON.stringify({
-        nome: values.name,
-        email: values.email,
-        telefone: onlyDigits(values.celphone),
+        ...buildContaPayload(values),
       }),
     });
 
@@ -517,6 +539,7 @@ export async function updateUserProfile(values) {
       try {
         await apiRequest(`/locatario/${profileId}`, {
           method: "PUT",
+          authToken: token,
           body: JSON.stringify(buildLocatarioUpdatePayload(values)),
         });
       } catch {
@@ -532,6 +555,7 @@ export async function updateUserProfile(values) {
       try {
         await apiRequest(`/locador/${profileId}`, {
           method: "PUT",
+          authToken: token,
           body: JSON.stringify(buildLocadorUpdatePayload(values)),
         });
       } catch {
@@ -543,12 +567,12 @@ export async function updateUserProfile(values) {
     const mergedUser = {
       ...normalizedProfile,
       ...apiUser,
-      id: accountId,
-      accountId,
+      id: accountId || sessionUser.id || apiUser.id || normalizedProfile.id || "",
+      accountId: accountId || sessionUser.accountId || sessionUser.id || apiUser.id || normalizedProfile.id || "",
       profileId: profileId || sessionUser.profileId || "",
       profileType,
     };
-    persistUserProfile(mergedUser, session?.token);
+    persistUserProfile(mergedUser, token);
 
     return {
       mode: "api",

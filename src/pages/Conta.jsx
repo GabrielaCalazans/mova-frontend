@@ -93,7 +93,7 @@ function Conta() {
     async function hydrateProfile() {
       try {
         const freshProfile = await fetchCurrentUserProfile({
-          persistToSession: false,
+          persistToSession: true,
         });
 
         contaDebug("hydrateProfile.freshProfile", freshProfile);
@@ -105,18 +105,17 @@ function Conta() {
         setValues((prev) => {
           const nextProfileType = normalizeProfileType(freshProfile.profileType, freshProfile);
           const nextValues = {
-            ...prev,
-            id: freshProfile.id || prev.id,
-            name: freshProfile.name || prev.name,
-            email: freshProfile.email || prev.email,
+            id: freshProfile.accountId || freshProfile.id || prev.id,
+            name: freshProfile.name || "",
+            email: freshProfile.email || "",
             profileType: nextProfileType,
-            empresa: freshProfile.empresa || prev.empresa,
-            cnpj: freshProfile.cnpj || prev.cnpj,
-            celphone: freshProfile.celphone || prev.celphone,
-            cpf: freshProfile.cpf || prev.cpf,
-            cnh: freshProfile.cnh || prev.cnh,
-            address: freshProfile.address || prev.address,
-            cep: freshProfile.cep || prev.cep,
+            empresa: nextProfileType === "locador" ? freshProfile.empresa || "" : "",
+            cnpj: nextProfileType === "locador" ? freshProfile.cnpj || "" : "",
+            celphone: freshProfile.celphone || "",
+            cpf: nextProfileType === "locatario" ? freshProfile.cpf || "" : "",
+            cnh: nextProfileType === "locatario" ? freshProfile.cnh || "" : "",
+            address: freshProfile.address || "",
+            cep: freshProfile.cep || "",
           };
 
           contaDebug("hydrateProfile.nextFormValues", nextValues);
@@ -234,6 +233,7 @@ function Conta() {
   });
 
   const isLocador = values.profileType === "locador";
+  const nameLabel = isLocador ? "Nome do Proprietário" : "Nome Completo";
   const profileLabel = isLocador ? "Perfil: Locador" : "Perfil: Locatário";
 
   if (!sessionUser) {
@@ -264,8 +264,8 @@ function Conta() {
           id="name"
           name="name"
           type="text"
-          placeholder="Nome Completo"
-          ariaLabel="Nome Completo"
+          placeholder={nameLabel}
+          ariaLabel={nameLabel}
           value={values.name}
           onChange={(e) => handleChange("name", e.target.value)}
           required
@@ -284,6 +284,47 @@ function Conta() {
           required
           error={errors.email}
           autoComplete="email"
+        />
+
+        <FormField
+          id="celphone"
+          name="celphone"
+          type="text"
+          placeholder="Numero de Celular"
+          ariaLabel="Numero de Celular"
+          value={values.celphone}
+          onChange={(e) => handleChange("celphone", e.target.value)}
+          required
+          error={errors.celphone}
+          inputMode="numeric"
+          autoComplete="tel-national"
+        />
+
+        <FormField
+          id="address"
+          name="address"
+          type="text"
+          placeholder="Endereco Completo"
+          ariaLabel="Endereco Completo"
+          value={values.address}
+          onChange={(e) => handleChange("address", e.target.value)}
+          required
+          error={errors.address}
+          autoComplete="street-address"
+        />
+
+        <FormField
+          id="cep"
+          name="cep"
+          type="text"
+          placeholder="CEP"
+          ariaLabel="CEP"
+          value={values.cep}
+          onChange={(e) => handleChange("cep", e.target.value)}
+          required
+          error={errors.cep}
+          inputMode="numeric"
+          autoComplete="postal-code"
         />
 
         {isLocador && (
@@ -319,20 +360,6 @@ function Conta() {
         {!isLocador && (
           <>
             <FormField
-              id="celphone"
-              name="celphone"
-              type="text"
-              placeholder="Numero de Celular"
-              ariaLabel="Numero de Celular"
-              value={values.celphone}
-              onChange={(e) => handleChange("celphone", e.target.value)}
-              required
-              error={errors.celphone}
-              inputMode="numeric"
-              autoComplete="tel-national"
-            />
-
-            <FormField
               id="cpf"
               name="cpf"
               type="text"
@@ -356,33 +383,6 @@ function Conta() {
               required
               error={errors.cnh}
               inputMode="numeric"
-            />
-
-            <FormField
-              id="address"
-              name="address"
-              type="text"
-              placeholder="Endereco Completo"
-              ariaLabel="Endereco Completo"
-              value={values.address}
-              onChange={(e) => handleChange("address", e.target.value)}
-              required
-              error={errors.address}
-              autoComplete="street-address"
-            />
-
-            <FormField
-              id="cep"
-              name="cep"
-              type="text"
-              placeholder="CEP"
-              ariaLabel="CEP"
-              value={values.cep}
-              onChange={(e) => handleChange("cep", e.target.value)}
-              required
-              error={errors.cep}
-              inputMode="numeric"
-              autoComplete="postal-code"
             />
           </>
         )}
