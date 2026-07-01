@@ -4,7 +4,6 @@ import CadastroLocador from "../pages/CadastroLocador";
 import ForgotPassword from "../pages/ForgotPassword";
 import Login from "../pages/Login";
 import Conta from "../pages/Conta";
-import TiposDeCarros from "../pages/TiposDeCarros";
 import CarrosScreen from "../pages/CarrosScreen";
 import EscolhaGaragemRetirada from "../pages/EscolhaGaragemRetirada";
 import EscolhaGaragemDevolucao from "../pages/EscolhaGaragemDevolucao";
@@ -42,7 +41,7 @@ function AppRoutes() {
         <Route path="/recuperar-senha" element={<ForgotPassword />} />
         <Route path="/conta" element={<ProtectedRoute><Conta /></ProtectedRoute>} />
 
-        <Route path="/tipos-carros" element={<ProtectedRoute><TiposDeCarros /></ProtectedRoute>} />
+        <Route path="/tipos-carros" element={<Navigate to="/carros" replace />} />
         <Route path="/carros" element={<ProtectedRoute><CarrosScreen /></ProtectedRoute>} />
         <Route path="/escolha-garagem-retirada" element={<ProtectedRoute><EscolhaGaragemRetirada /></ProtectedRoute>} />
         <Route path="/escolha-garagem-devolucao" element={<ProtectedRoute><EscolhaGaragemDevolucao /></ProtectedRoute>} />

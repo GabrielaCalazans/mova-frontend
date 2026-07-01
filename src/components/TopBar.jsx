@@ -37,7 +37,7 @@ function TopBar() {
                     tabIndex={0}
                     size={28}
                     strokeWidth={1.5}
-                    color="#003366"
+                    color="var(--color-primary)"
                     onClick={() => setMenuVisible(true)}
                     onKeyDown={(event) => handleKeyAction(event, () => setMenuVisible(true))}
                     style={{ cursor: "pointer" }}
@@ -48,7 +48,7 @@ function TopBar() {
                     tabIndex={0}
                     size={28}
                     strokeWidth={1.5}
-                    color="#003366"
+                    color="var(--color-primary)"
                     onClick={() => navigate(resolveHomeRoute())}
                     onKeyDown={(event) => handleKeyAction(event, () => navigate(resolveHomeRoute()))}
                     style={{ cursor: "pointer" }}

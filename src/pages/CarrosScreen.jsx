@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom";
 import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import movaLogo from "../assets/mova_logo.png";
 import { listVeiculos } from "../services/veiculoService";
+import economicoImg from "../assets/car-types/manuais.png";
+import executivoImg from "../assets/car-types/automaticos.png";
+import adaptadoImg from "../assets/car-types/adaptados.png";
+import eletricoImg from "../assets/car-types/autonomos.png";
 import { updateJourneyStep } from "../utils/journeyStorage";
 
 import {
@@ -59,6 +63,7 @@ function CarrosScreen() {
     const [cambioFiltro, setCambioFiltro] = useState("");
     const [eletricoFiltro, setEletricoFiltro] = useState(null); // null | true | false
     const [adaptadoFiltro, setAdaptadoFiltro] = useState(null);
+    const [tipoFiltro, setTipoFiltro] = useState(null); // null | "economico" | "executivo" | "adaptado" | "eletrico"
 
     // Estados de dados
     const [veiculos, setVeiculos] = useState([]);
@@ -93,24 +98,38 @@ function CarrosScreen() {
 
     // Filtragem local por texto (marca, modelo, placa)
     const veiculosFiltrados = veiculos.filter((v) => {
-        if (!textoBusca.trim()) return true;
-        const termo = textoBusca.toLowerCase();
-        return (
-            v.marca?.toLowerCase().includes(termo) ||
-            v.modelo?.toLowerCase().includes(termo) ||
-            v.placa?.toLowerCase().includes(termo) ||
-            String(v.ano).includes(termo)
-        );
+        // Filtro por texto
+        if (textoBusca.trim()) {
+            const termo = textoBusca.toLowerCase();
+            const matchTexto =
+                v.marca?.toLowerCase().includes(termo) ||
+                v.modelo?.toLowerCase().includes(termo) ||
+                v.placa?.toLowerCase().includes(termo) ||
+                String(v.ano).includes(termo);
+            if (!matchTexto) return false;
+        }
+        // Filtro por tipo
+        if (tipoFiltro === "economico") {
+            if (v.eletrico || v.adaptado) return false;
+        } else if (tipoFiltro === "executivo") {
+            if (v.cambio?.toLowerCase() !== "automatico" || v.eletrico || v.adaptado) return false;
+        } else if (tipoFiltro === "adaptado") {
+            if (!v.adaptado) return false;
+        } else if (tipoFiltro === "eletrico") {
+            if (!v.eletrico) return false;
+        }
+        return true;
     });
 
     const temFiltros =
-        textoBusca || cambioFiltro || eletricoFiltro !== null || adaptadoFiltro !== null;
+        textoBusca || cambioFiltro || eletricoFiltro !== null || adaptadoFiltro !== null || tipoFiltro !== null;
 
     function limparFiltros() {
         setTextoBusca("");
         setCambioFiltro("");
         setEletricoFiltro(null);
         setAdaptadoFiltro(null);
+        setTipoFiltro(null);
     }
 
     function toggleEletrico() {
@@ -122,8 +141,12 @@ function CarrosScreen() {
     }
 
     function selecionarVeiculo(veiculo) {
+        // Compatível com o novo modelo: campos descritivos vêm de modeloVeiculo
+        // mas já estão normalizados no nível raiz por normalizeVeiculo()
         updateJourneyStep("veiculo", {
             id: veiculo.id,
+            idModeloVeiculo: veiculo.idModeloVeiculo ?? "",
+            idLocador: veiculo.idLocador ?? "",
             nome: veiculo.nome ?? `${veiculo.marca ?? ""} ${veiculo.modelo ?? ""}`.trim(),
             marca: veiculo.marca ?? "",
             modelo: veiculo.modelo ?? "",
@@ -132,12 +155,15 @@ function CarrosScreen() {
             capacidade: veiculo.capacidade ?? "",
             caracteristicas: veiculo.caracteristicas ?? [],
             acessibilidade: veiculo.acessibilidade ?? veiculo.adaptado ?? "",
+            adaptado: veiculo.adaptado ?? false,
+            eletrico: veiculo.eletrico ?? false,
             cambio: veiculo.cambio ?? veiculo.transmissao ?? "",
             autonomia: veiculo.autonomia ?? "",
             combustivel: veiculo.combustivel ?? veiculo.energia ?? "",
             ano: veiculo.ano ?? "",
             placa: veiculo.placa ?? "",
             status: veiculo.status ?? "",
+            garagemId: veiculo.garagemId ?? "",
         });
 
         navigate("/escolha-garagem-retirada");
@@ -150,6 +176,34 @@ function CarrosScreen() {
             </LogoContainer>
 
             <Title>Escolha seu Carro</Title>
+
+            {/* Tipos de carro */}
+            <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginBottom: "1rem", justifyContent: "center" }}>
+                {[
+                    { id: "economico", label: "Econômico", img: economicoImg },
+                    { id: "executivo", label: "Executivo", img: executivoImg },
+                    { id: "adaptado", label: "Adaptado", img: adaptadoImg },
+                    { id: "eletrico", label: "Elétrico", img: eletricoImg },
+                ].map((tipo) => (
+                    <button
+                        key={tipo.id}
+                        type="button"
+                        onClick={() => setTipoFiltro((prev) => prev === tipo.id ? null : tipo.id)}
+                        style={{
+                            display: "flex", flexDirection: "column", alignItems: "center",
+                            gap: "0.3rem", padding: "0.6rem 1rem",
+                            border: tipoFiltro === tipo.id ? "2px solid #003366" : "1.5px solid #ccc",
+                            borderRadius: "12px", background: tipoFiltro === tipo.id ? "#e8f0fe" : "#fff",
+                            cursor: "pointer", fontSize: "0.8rem", fontWeight: 600,
+                            color: tipoFiltro === tipo.id ? "#003366" : "#555",
+                            transition: "all 0.15s", minWidth: "80px",
+                        }}
+                    >
+                        <img src={tipo.img} alt={tipo.label} style={{ width: "48px", height: "32px", objectFit: "contain" }} />
+                        {tipo.label}
+                    </button>
+                ))}
+            </div>
 
             {/* ── Área de busca ── */}
             <SearchWrapper>
@@ -172,14 +226,6 @@ function CarrosScreen() {
                         <option value="Manual">Manual</option>
                         <option value="Automatico">Automático</option>
                     </FilterSelect>
-
-                    <FilterToggle active={eletricoFiltro === true} onClick={toggleEletrico}>
-                        ⚡ Elétrico
-                    </FilterToggle>
-
-                    <FilterToggle active={adaptadoFiltro === true} onClick={toggleAdaptado}>
-                        ♿ Adaptado
-                    </FilterToggle>
 
                     {temFiltros && (
                         <ClearButton onClick={limparFiltros}>Limpar filtros</ClearButton>

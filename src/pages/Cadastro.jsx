@@ -1,5 +1,5 @@
 ﻿import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import movaLogo from "../assets/mova_logo.png";
 import AuthLayout from "../layout/AuthLayout";
 import FormField from "../components/FormField";
@@ -10,6 +10,7 @@ import { maskCelphone, maskCpf, maskCep } from "../utils/inputMasks";
 import { getPasswordState, validateLocatarioRegisterForm } from "../utils/formValidators";
 
 function Register() {
+  const navigate = useNavigate();
   const {
     values,
     errors,
@@ -82,9 +83,9 @@ function Register() {
           </p>
         )}
 
-        <Link to="/cadastro-locador" className="auth-button auth-button-callout">
+        <button type="button" className="auth-button auth-button--green" onClick={() => navigate("/cadastro-locador")}>
           SEJA UM LOCADOR
-        </Link>
+        </button>
 
         <FormField
           id="name"

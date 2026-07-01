@@ -95,12 +95,20 @@ function onlyDigits(value) {
 }
 
 function buildContaPayload(values) {
+  // O backend exige o campo "cargo" (LOCATARIO | LOCADOR | ADMIN).
+  // Inferimos pelo contexto: se vier em values.cargo, usamos;
+  // caso contrario, values.cnpj ou values.empresa indicam LOCADOR; default LOCATARIO.
+  const cargo =
+    values.cargo ||
+    (values.cnpj || values.empresa ? "LOCADOR" : "LOCATARIO");
+
   return {
     nome: values.name,
     email: values.email,
     telefone: onlyDigits(values.celphone),
     endereco: values.address || "",
     cep: onlyDigits(values.cep),
+    cargo,
   };
 }
 

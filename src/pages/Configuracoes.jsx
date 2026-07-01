@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '../layout/AuthenticatedLayout';
+import { useTheme } from '../context/ThemeContext';
 import {
   Title,
   Section,
@@ -13,7 +14,7 @@ import {
 } from '../styles/authStyle';
 
 export default function Configuracoes() {
-  const [temaEscuro, setTemaEscuro]       = useState(false);
+  const { temaEscuro, toggleTemaEscuro } = useTheme();
   const [fonte, setFonte]                 = useState(12);
   const [idioma, setIdioma]               = useState('Português');
   const [notificacoes, setNotificacoes]   = useState(true);
@@ -33,7 +34,7 @@ export default function Configuracoes() {
           <Label>Tema Escuro</Label>
           <Toggle
             checked={temaEscuro}
-            onChange={() => setTemaEscuro(!temaEscuro)}
+            onChange={toggleTemaEscuro}
           />
         </Row>
 

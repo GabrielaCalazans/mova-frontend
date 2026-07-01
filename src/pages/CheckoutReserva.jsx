@@ -249,6 +249,8 @@ function buildAdditionalDetails(vehicle) {
     "capacidade",
     "caracteristicas",
     "acessibilidade",
+    "adaptado",
+    "eletrico",
     "cambio",
     "transmissao",
     "autonomia",
@@ -259,6 +261,9 @@ function buildAdditionalDetails(vehicle) {
     "dailyRate",
     "idLocador",
     "locadorId",
+    "idModeloVeiculo",
+    "modeloVeiculo",  // objeto aninhado — campos já promovidos pela normalização
+    "garagemId",
     "createdAt",
     "criadoEm",
     "status",
@@ -389,12 +394,20 @@ export default function CheckoutReserva() {
   const diariaValue = pricing?.dailyRate ?? 0;
   const feeValue = pricing?.fees ?? 0;
   const totalValue = pricing?.total ?? 0;
+  // Novo modelo: campos descritivos vêm de modeloVeiculo mas já normalizados
+  // por normalizeVeiculo() no serviço. Fallback para veiculoSalvo (journey storage).
   const vehicleCategory = vehicle?.categoria ?? veiculoSalvo?.categoria ?? "Não informado";
-  const vehicleTransmission = vehicle?.transmissao ?? vehicle?.cambio ?? veiculoSalvo?.cambio ?? "Não informado";
+  const vehicleTransmission = vehicle?.cambio ?? vehicle?.transmissao ?? veiculoSalvo?.cambio ?? "Não informado";
   const vehicleCapacity = vehicle?.capacidade ?? veiculoSalvo?.capacidade ?? "Não informado";
-  const vehicleAccessibility = vehicle?.acessibilidade ?? veiculoSalvo?.acessibilidade ?? "Não informado";
+  const vehicleEletrico = vehicle?.eletrico ?? veiculoSalvo?.eletrico;
+  const vehicleAdaptado = vehicle?.adaptado ?? veiculoSalvo?.adaptado;
+  const vehicleAccessibility = vehicleAdaptado !== undefined
+    ? (vehicleAdaptado ? "Sim" : "Não")
+    : (vehicle?.acessibilidade ?? veiculoSalvo?.acessibilidade ?? "Não informado");
   const vehicleAutonomy = vehicle?.autonomia ?? veiculoSalvo?.autonomia ?? "Não informado";
-  const vehicleFuel = vehicle?.combustivel ?? vehicle?.energia ?? veiculoSalvo?.combustivel ?? "Não informado";
+  const vehicleFuel = vehicleEletrico === true
+    ? "Elétrico"
+    : (vehicle?.combustivel ?? vehicle?.energia ?? veiculoSalvo?.combustivel ?? "Não informado");
   const pickupAddress = retirada.garageAddress || retirada.garageName || "Não informado";
   const dropoffAddress = devolucao.garageAddress || devolucao.garageName || "Não informado";
 
@@ -423,7 +436,8 @@ export default function CheckoutReserva() {
               <VehicleTitle>{vehicleName}</VehicleTitle>
               <VehicleMeta>{vehicleCategory}</VehicleMeta>
               <VehicleMeta>Transmissão: {normalizeDisplayValue(vehicleTransmission)}</VehicleMeta>
-              <VehicleMeta>Capacidade: {normalizeDisplayValue(vehicleCapacity)}</VehicleMeta>
+              <VehicleMeta>Capacidade: {normalizeDisplayValue(vehicleCapacity)} pessoas</VehicleMeta>
+              <VehicleMeta>Elétrico: {vehicleEletrico !== undefined ? (vehicleEletrico ? "Sim" : "Não") : "Não informado"}</VehicleMeta>
               <VehicleMeta>Acessibilidade: {normalizeDisplayValue(vehicleAccessibility)}</VehicleMeta>
               <VehicleMeta>Autonomia/combustível: {formatEnergyText(vehicleAutonomy, vehicleFuel)}</VehicleMeta>
             </div>

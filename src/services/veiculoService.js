@@ -2,6 +2,46 @@ import { apiRequest } from "./apiClient";
 import { getAuthSession } from "./authSession";
 
 /**
+ * Normaliza um veículo do novo modelo da API, onde os dados descritivos
+ * ficam em modeloVeiculo (objeto aninhado), mantendo compatibilidade com
+ * o restante do front-end que acessa marca, modelo, ano, etc. no nível raiz.
+ *
+ * Novo formato: { id, idLocador, idModeloVeiculo, modeloVeiculo: { marca, modelo, ano, cambio,
+ *   capacidade, eletrico, adaptado, ... }, garagemId, placa, status, criadoEm }
+ *
+ * @param {Object} veiculo - Objeto bruto retornado pela API
+ * @returns {Object} Objeto normalizado com todos os campos no nível raiz
+ */
+export function normalizeVeiculo(veiculo) {
+  if (!veiculo) return veiculo;
+
+  const mv = veiculo.modeloVeiculo ?? {};
+
+  return {
+    // Campos do veículo individual
+    id: veiculo.id,
+    idLocador: veiculo.idLocador,
+    idModeloVeiculo: veiculo.idModeloVeiculo,
+    garagemId: veiculo.garagemId,
+    placa: veiculo.placa,
+    status: veiculo.status,
+    criadoEm: veiculo.criadoEm,
+
+    // Campos do modeloVeiculo promovidos para o nível raiz
+    marca: mv.marca ?? veiculo.marca,
+    modelo: mv.modelo ?? veiculo.modelo,
+    ano: mv.ano ?? veiculo.ano,
+    cambio: mv.cambio ?? veiculo.cambio,
+    capacidade: mv.capacidade ?? veiculo.capacidade,
+    eletrico: mv.eletrico ?? veiculo.eletrico,
+    adaptado: mv.adaptado ?? veiculo.adaptado,
+
+    // Mantém o objeto aninhado para acesso direto quando necessário
+    modeloVeiculo: mv,
+  };
+}
+
+/**
  * Busca veículos públicos com filtros opcionais (sem autenticação obrigatória).
  * Endpoint: GET /veiculo/search
  *
@@ -9,7 +49,7 @@ import { getAuthSession } from "./authSession";
  * @param {string} [filters.marca]
  * @param {string} [filters.modelo]
  * @param {number} [filters.ano]
- * @param {string} [filters.cambio]       - "Manual" | "Automático"
+ * @param {string} [filters.cambio]       - "Manual" | "Automatico"
  * @param {number} [filters.capacidade]
  * @param {boolean} [filters.eletrico]
  * @param {boolean} [filters.adaptado]
@@ -28,7 +68,8 @@ export async function searchVeiculos(filters = {}) {
 
   const query = params.toString() ? `?${params.toString()}` : "";
   const data = await apiRequest(`/veiculo/search${query}`);
-  return data.result ?? [];
+  const result = data.result ?? [];
+  return result.map(normalizeVeiculo);
 }
 
 /**
@@ -51,7 +92,8 @@ export async function listVeiculos(filters = {}) {
 
   const query = params.toString() ? `?${params.toString()}` : "";
   const data = await apiRequest(`/veiculo${query}`, { authToken });
-  return data.result ?? [];
+  const result = data.result ?? [];
+  return result.map(normalizeVeiculo);
 }
 
 /**
@@ -67,5 +109,6 @@ export async function getVeiculoById(id) {
   const authToken = session?.token;
   const data = await apiRequest(`/veiculo/${id}`, { authToken });
 
-  return data.result ?? data;
+  const raw = data.result ?? data;
+  return normalizeVeiculo(raw);
 }

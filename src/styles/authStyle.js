@@ -3,24 +3,30 @@ import styled, { css, keyframes } from 'styled-components';
 const BaseInputStyles = css`
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #003366;
+  border: 1px solid var(--color-primary);
   border-radius: 0.7rem;
   font-size: 1rem;
   font-family: inherit;
-  background-color: #fff;
+  background-color: var(--color-surface);
+  color: var(--color-text);
   box-sizing: border-box;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
+  &::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
+  }
+
   &:focus {
     outline: none;
-    border-color: #aec5e7;
+    border-color: var(--color-primary-soft);
     box-shadow: 0 0 0 3px rgba(174, 197, 231, 0.3);
   }
 
   &:disabled {
     cursor: not-allowed;
     opacity: 0.7;
-    background-color: #f7fafc;
+    background-color: var(--color-disabled-bg);
   }
 `;
 
@@ -29,13 +35,13 @@ export const AuthPage = styled.div`
   display: grid;
   place-items: center;
   padding: 1.5rem;
-  background-color: #f4f4f4;
+  background-color: var(--color-page-bg);
 `;
 
 export const AuthCard = styled.div`
   width: 100%;
   max-width: 500px;
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 2.5rem 2rem;
@@ -47,6 +53,10 @@ export const AuthLogo = styled.img`
   height: 7em;
   margin-bottom: 1rem;
   object-fit: contain;
+  background: var(--color-logo-backdrop);
+  border-radius: var(--radius-md);
+  padding: 0.35rem 0.6rem;
+  box-sizing: content-box;
 `;
 
 export const LogoContainer = styled.div`
@@ -59,12 +69,16 @@ export const LogoContainer = styled.div`
   img {
     height: 6em; /* Altura que você definiu no inline */
     object-fit: contain;
+    background: var(--color-logo-backdrop);
+    border-radius: var(--radius-md);
+    padding: 0.3rem 0.5rem;
+    box-sizing: content-box;
   }
 `;
 
 export const Title = styled.h1`
   margin-bottom: 1.5rem;
-  color: #003366;
+  color: var(--color-primary);
 `;
 
 export const StyledForm = styled.form`
@@ -96,7 +110,7 @@ export const ToggleButton = styled.button`
   right: 0.8rem;
   background: none;
   border: none;
-  color: #003366;
+  color: var(--color-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -109,9 +123,9 @@ export const PrimaryButton = styled.button`
   margin-top: 0.5rem;
   padding: 0.8rem;
   border-radius: 0.7rem;
-  border: 1px solid #003366;
-  background: linear-gradient(135deg, #003366, #aec5e7);
-  color: #ffffff;
+  border: 1px solid var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-soft));
+  color: var(--color-surface);
   cursor: pointer;
   font-weight: 600;
   font-size: 1.1rem;
@@ -131,9 +145,9 @@ export const SecondaryButton = styled.button`
   margin-top: 0.5rem;
   padding: 0.8rem;
   border-radius: 0.7rem;
-  border: 1px solid #aec5e7;
-  background: #f7fbff;
-  color: #003366;
+  border: 1px solid var(--color-primary-soft);
+  background: var(--color-hover-bg-soft);
+  color: var(--color-primary);
   cursor: pointer;
   font-weight: 700;
   font-size: 1.05rem;
@@ -141,8 +155,8 @@ export const SecondaryButton = styled.button`
   transition: background 0.2s, border-color 0.2s, opacity 0.2s;
 
   &:hover {
-    background: #eef5ff;
-    border-color: #7da2d6;
+    background: var(--color-hover-bg-strong);
+    border-color: var(--color-accent-soft);
   }
 
   &:disabled {
@@ -155,10 +169,10 @@ export const SecondaryButton = styled.button`
 export const FooterText = styled.p`
   margin-top: 1.5rem;
   font-size: 0.95rem;
-  color: #444;
+  color: var(--color-text-secondary);
 
   a {
-    color: #003366;
+    color: var(--color-primary);
     font-weight: 700;
     text-decoration: none;
 
@@ -172,8 +186,8 @@ export const SelectionButton = styled.button`
   padding: 10px;
   border-radius: 8px;
   border: none;
-  background-color: #003366;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-surface);
   font-weight: bold;
   cursor: pointer;
   margin-top: 10px;
@@ -193,7 +207,7 @@ export const OptionCard = styled.div`
   flex-direction: ${props => props.variant === 'type' ? 'column' : 'row'};
   align-items: center;
   justify-content: ${props => props.variant === 'type' ? 'center' : 'flex-start'};
-  background-color: ${props => props.variant === 'type' ? '#E0F7FA' : '#003366'};
+  background-color: ${props => props.variant === 'type' ? 'var(--color-card-bg-alt)' : 'var(--color-primary)'};
   padding: 15px 20px;
   border-radius: 12px;
   width: 100%;
@@ -202,14 +216,14 @@ export const OptionCard = styled.div`
   box-sizing: border-box;
   transition: transform 0.2s;
   margin: calc(10px + 0.25rem) 0;
-  border: 2px solid ${props => props.$selected ? '#aec5e7' : 'transparent'};
+  border: 2px solid ${props => props.$selected ? 'var(--color-primary-soft)' : 'transparent'};
   box-shadow: ${props => props.$selected ? '0 0 0 3px rgba(174, 197, 231, 0.2)' : 'none'};
 
   &:hover { transform: scale(1.02); }
 
   h3 {
     margin: 0;
-    color: ${props => props.variant === 'type' ? '#003366' : '#ffffff'};
+    color: ${props => props.variant === 'type' ? 'var(--color-primary)' : 'var(--color-surface)'};
     font-size: 1.2rem;
   }
 
@@ -226,7 +240,7 @@ export const GarageInfo = styled.div`
   flex-direction: column;
   text-align: left;
  
-  p { margin: 2px 0 0 0; font-size: 0.85rem; color: #dcdcdc; }
+  p { margin: 2px 0 0 0; font-size: 0.85rem; color: var(--color-muted-light); }
 `;
 
 export const JourneySection = styled.section`
@@ -247,13 +261,13 @@ export const JourneySectionHeader = styled.div`
 
 export const JourneySectionTitle = styled.h2`
   margin: 0;
-  color: #003366;
+  color: var(--color-primary);
   font-size: 1.05rem;
 `;
 
 export const JourneySectionHint = styled.p`
   margin: -0.15rem 0 0;
-  color: #555;
+  color: var(--color-text-secondary);
   font-size: 0.92rem;
   line-height: 1.4;
 `;
@@ -267,7 +281,7 @@ export const GarageActionsRow = styled.div`
 export const TextButton = styled.button`
   border: none;
   background: transparent;
-  color: #003366;
+  color: var(--color-primary);
   font-family: inherit;
   font-size: 0.9rem;
   font-weight: 700;
@@ -277,7 +291,7 @@ export const TextButton = styled.button`
   text-underline-offset: 3px;
 
   &:hover {
-    color: #2b5ba8;
+    color: var(--color-accent);
   }
 `;
 
@@ -291,7 +305,7 @@ export const JourneyFieldGroup = styled.div`
 export const JourneyFieldLabel = styled.label`
   font-size: 0.8rem;
   font-weight: 700;
-  color: #003366;
+  color: var(--color-primary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 `;
@@ -311,8 +325,8 @@ export const JourneySummaryCard = styled.div`
   max-width: 400px;
   padding: 1rem 1.1rem;
   border-radius: 12px;
-  border: 1px solid #aec5e7;
-  background: linear-gradient(135deg, #003366, #2b5ba8);
+  border: 1px solid var(--color-primary-soft);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
   box-sizing: border-box;
 `;
 
@@ -328,7 +342,7 @@ export const JourneySummaryLabel = styled.span`
 
 export const JourneySummaryValue = styled.p`
   margin: 0;
-  color: #ffffff;
+  color: var(--color-surface);
   font-size: 0.98rem;
   line-height: 1.45;
   font-weight: 600;
@@ -340,7 +354,7 @@ export const HeaderIcons = styled.div`
   align-items: center;
   width: 100%;
   margin-bottom: 20px;
-  .back-arrow { font-size: 1.8rem; color: #003366; cursor: pointer; }
+  .back-arrow { font-size: 1.8rem; color: var(--color-primary); cursor: pointer; }
   img { width: 30px; cursor: pointer; }
 `;
 
@@ -348,11 +362,18 @@ export const StyledInput = styled.input`
   width: 100%;
   max-width: 400px;
   height: 45px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border-soft);
   border-radius: 8px;
   padding: 0 15px;
   margin-bottom: 20px;
   box-sizing: border-box;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+
+  &::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
+  }
 `;
 
 export const ModalOverlay = styled.div`
@@ -361,12 +382,12 @@ export const ModalOverlay = styled.div`
 `;
 
 export const ModalContent = styled.div`
-  background: white; width: 80%; max-width: 350px; border-radius: 12px; padding: 20px; text-align: center;
+  background: var(--color-surface); width: 80%; max-width: 350px; border-radius: 12px; padding: 20px; text-align: center;
 `;
 
 export const MenuItem = styled.div`
-  padding: 15px; border-bottom: 1px solid #eee; color: #003366; font-weight: 500; cursor: pointer;
-  &:hover { background: #f0f8ff; }
+  padding: 15px; border-bottom: 1px solid var(--color-divider); color: var(--color-primary); font-weight: 500; cursor: pointer;
+  &:hover { background: var(--color-hover-bg); }
 `;
 
 export const CarImage = styled.img`
@@ -384,7 +405,7 @@ export const CarListContainer = styled.div`
 `;
  
 export const CarCard = styled.div`
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 12px;
   padding: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -398,7 +419,7 @@ export const CarCard = styled.div`
   }
  
   h3 {
-    color: #003366;
+    color: var(--color-primary);
     margin: 0 0 8px;
   }
  
@@ -413,27 +434,27 @@ export const CarCard = styled.div`
 export const CarInfoText = styled.p`
   margin: 0;
   font-size: 0.85rem;
-  color: #555;
+  color: var(--color-text-secondary);
 `;
  
 export const PriceTag = styled.p`
   font-size: 1rem;
   font-weight: 700;
-  color: #003366;
+  color: var(--color-primary);
   margin: 8px 0 0;
 `;
 
 export const Subtitle = styled.p`
   font-size: 1rem;
   text-align: center;
-  color: #555;
+  color: var(--color-text-secondary);
   margin-bottom: 2rem;
   line-height: 1.4;
 `;
 
 export const LightInput = styled(Input)`
-  background-color: #f0f8ff; /* Azul bem clarinho para diferenciar */
-  border-bottom: 2px solid #003366; /* Estilo que remete ao mobile original */
+  background-color: var(--color-hover-bg); /* Azul bem clarinho para diferenciar */
+  border-bottom: 2px solid var(--color-primary); /* Estilo que remete ao mobile original */
 `;
 
 // ── EscolhaDataHora ──────────────────────────────────────────
@@ -451,7 +472,7 @@ export const IconBtn = styled.span`
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
-  color: #003366;
+  color: var(--color-primary);
   display: flex;
   align-items: center;
 `;
@@ -463,8 +484,8 @@ export const Popup = styled.div`
   transform: translate(-50%, -50%);
   width: 90%;
   max-width: 380px;
-  background: #fff;
-  border: 1px solid #aec5e7;
+  background: var(--color-surface);
+  border: 1px solid var(--color-primary-soft);
   border-radius: 12px;
   box-shadow: 0 8px 28px rgba(0,51,102,.25);
   z-index: 9999;
@@ -497,19 +518,19 @@ export const CalHeader = styled.div`
 
 export const CalTitle = styled.span`
   font-weight: 800;
-  color: #003366;
+  color: var(--color-primary);
   font-size: .9rem;
 `;
 
 export const NavBtn = styled.button`
   background: none;
   border: none;
-  color: #003366;
+  color: var(--color-primary);
   font-size: 1.2rem;
   cursor: pointer;
   padding: 2px 8px;
   border-radius: 6px;
-  &:hover { background: #f0f8ff; }
+  &:hover { background: var(--color-hover-bg); }
 `;
 
 export const DayNames = styled.div`
@@ -517,7 +538,7 @@ export const DayNames = styled.div`
   grid-template-columns: repeat(7,1fr);
   text-align: center;
   margin-bottom: 4px;
-  span { font-size:.68rem; font-weight:700; color:#aec5e7; }
+  span { font-size:.68rem; font-weight:700; color:var(--color-primary-soft); }
 `;
 
 export const DayGrid = styled.div`
@@ -532,30 +553,30 @@ export const DayCell = styled.button`
   align-items: center;
   justify-content: center;
   border: none;
-  background: ${p => p.selected ? '#003366' : 'none'};
-  color: ${p => p.selected ? '#fff' : p.disabled ? '#ccc' : p.today ? '#2b5ba8' : '#003366'};
+  background: ${p => p.selected ? 'var(--color-primary)' : 'none'};
+  color: ${p => p.selected ? 'var(--color-surface)' : p.disabled ? 'var(--color-border-soft)' : p.today ? 'var(--color-accent)' : 'var(--color-primary)'};
   border-radius: 50%;
   font-size: .82rem;
   font-weight: 600;
   cursor: ${p => p.disabled || p.empty ? 'default' : 'pointer'};
-  outline: ${p => p.today && !p.selected ? '2px solid #aec5e7' : 'none'};
+  outline: ${p => p.today && !p.selected ? '2px solid var(--color-primary-soft)' : 'none'};
   font-family: inherit;
   transition: background .15s, color .15s;
-  &:hover:not([disabled]) { background: ${p => p.selected ? '#003366' : '#f0f8ff'}; }
+  &:hover:not([disabled]) { background: ${p => p.selected ? 'var(--color-primary)' : 'var(--color-hover-bg)'}; }
 `;
 
 export const ClockDisplay = styled.div`
   text-align: center;
   font-size: 2.6rem;
   font-weight: 900;
-  color: #003366;
+  color: var(--color-primary);
   margin-bottom: 14px;
   user-select: none;
   letter-spacing: .04em;
 `;
 
 export const ClockPart = styled.span`
-  color: ${p => p.active ? '#2b5ba8' : '#003366'};
+  color: ${p => p.active ? 'var(--color-accent)' : 'var(--color-primary)'};
   text-decoration: ${p => p.active ? 'underline' : 'none'};
   text-underline-offset: 4px;
   cursor: pointer;
@@ -571,9 +592,9 @@ export const ModeBtn = styled.button`
   flex: 1;
   padding: 8px;
   border-radius: 8px;
-  border: 2px solid ${p => p.active ? '#003366' : '#d0dff0'};
-  background: ${p => p.active ? '#f0f8ff' : 'none'};
-  color: ${p => p.active ? '#003366' : '#aec5e7'};
+  border: 2px solid ${p => p.active ? 'var(--color-primary)' : 'var(--color-unselected-border)'};
+  background: ${p => p.active ? 'var(--color-hover-bg)' : 'none'};
+  color: ${p => p.active ? 'var(--color-primary)' : 'var(--color-primary-soft)'};
   font-family: inherit;
   font-weight: 700;
   font-size: .85rem;
@@ -607,9 +628,9 @@ export const AmPmBtns = styled.div`
 export const AmPmBtn = styled.button`
   padding: 6px 24px;
   border-radius: 8px;
-  border: 2px solid ${p => p.active ? '#003366' : '#d0dff0'};
-  background: ${p => p.active ? '#003366' : 'none'};
-  color: ${p => p.active ? '#fff' : '#aec5e7'};
+  border: 2px solid ${p => p.active ? 'var(--color-primary)' : 'var(--color-unselected-border)'};
+  background: ${p => p.active ? 'var(--color-primary)' : 'none'};
+  color: ${p => p.active ? 'var(--color-surface)' : 'var(--color-primary-soft)'};
   font-family: inherit;
   font-weight: 700;
   font-size: .85rem;
@@ -628,7 +649,7 @@ export const TabsRow = styled.div`
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
-  background: #f4f4f4;
+  background: var(--color-page-bg);
   border-radius: 10px;
   padding: 4px;
 `;
@@ -643,18 +664,18 @@ export const Tab = styled.button`
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s;
-  background: ${p => p.active ? '#fff' : 'transparent'};
-  color: ${p => p.active ? '#003366' : '#888'};
+  background: ${p => p.active ? 'var(--color-surface)' : 'transparent'};
+  color: ${p => p.active ? 'var(--color-primary)' : 'var(--color-muted)'};
   box-shadow: ${p => p.active ? '0 1px 4px rgba(0,51,102,0.12)' : 'none'};
 `;
 
 export const CardPreview = styled.div`
-  background: linear-gradient(135deg, #003366 60%, #2b5ba8);
+  background: linear-gradient(135deg, var(--color-primary) 60%, var(--color-accent));
   border-radius: 16px;
   padding: 1.4rem 1.5rem;
   margin-bottom: 1.5rem;
   text-align: left;
-  color: white;
+  color: var(--color-surface);
   position: relative;
   overflow: hidden;
 
@@ -728,14 +749,14 @@ export const FieldGroup = styled.div`
 export const FieldLabel = styled.label`
   font-size: 0.75rem;
   font-weight: 700;
-  color: #003366;
+  color: var(--color-primary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 `;
 
 export const PixBox = styled.div`
-  background: #f0f8ff;
-  border: 2px dashed #aec5e7;
+  background: var(--color-hover-bg);
+  border: 2px dashed var(--color-primary-soft);
   border-radius: 12px;
   padding: 2rem 1.5rem;
   display: flex;
@@ -747,7 +768,7 @@ export const PixBox = styled.div`
 export const QrPlaceholder = styled.div`
   width: 140px;
   height: 140px;
-  background: white;
+  background: var(--color-surface);
   border-radius: 10px;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -758,17 +779,17 @@ export const QrPlaceholder = styled.div`
 `;
 
 export const QrCell = styled.div`
-  background: ${p => p.filled ? '#003366' : 'transparent'};
+  background: ${p => p.filled ? 'var(--color-primary)' : 'transparent'};
   border-radius: 1px;
 `;
 
 export const PixKey = styled.div`
-  background: white;
-  border: 1px solid #aec5e7;
+  background: var(--color-surface);
+  border: 1px solid var(--color-primary-soft);
   border-radius: 8px;
   padding: 0.6rem 1rem;
   font-size: 0.85rem;
-  color: #003366;
+  color: var(--color-primary);
   font-weight: 600;
   width: 100%;
   display: flex;
@@ -777,7 +798,7 @@ export const PixKey = styled.div`
   cursor: pointer;
   box-sizing: border-box;
   transition: background 0.15s;
-  &:hover { background: #f0f8ff; }
+  &:hover { background: var(--color-hover-bg); }
 `;
 
 export const PixKeyText = styled.span`
@@ -790,7 +811,7 @@ export const PixKeyText = styled.span`
 
 export const CopyBtn = styled.span`
   font-size: 0.72rem;
-  color: #aec5e7;
+  color: var(--color-primary-soft);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -804,14 +825,14 @@ export const StatusBadge = styled.span`
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #003366;
-  background: #e8f0fd;
+  color: var(--color-primary);
+  background: var(--color-selected-bg);
   padding: 3px 10px;
   border-radius: 20px;
 `;
 
 export const BoletoBox = styled.div`
-  background: #f0f8ff;
+  background: var(--color-hover-bg);
   border-radius: 12px;
   padding: 1.5rem;
   display: flex;
@@ -823,7 +844,7 @@ export const BoletoLine = styled.div`
   height: 3px;
   background: repeating-linear-gradient(
     90deg,
-    #003366 0px, #003366 8px,
+    var(--color-primary) 0px, var(--color-primary) 8px,
     transparent 8px, transparent 14px
   );
   border-radius: 2px;
@@ -833,7 +854,7 @@ export const BoletoInfo = styled.div`
   display: flex;
   justify-content: space-between;
   font-size: 0.82rem;
-  color: #555;
+  color: var(--color-text-secondary);
 `;
 
 export const SecureNote = styled.div`
@@ -842,7 +863,7 @@ export const SecureNote = styled.div`
   justify-content: center;
   gap: 0.4rem;
   font-size: 0.75rem;
-  color: #888;
+  color: var(--color-muted);
   margin-top: 0.75rem;
 `;
 
@@ -852,7 +873,7 @@ const scaleIn = keyframes`
 `;
 
 export const SuccessModal = styled.div`
-  background: white;
+  background: var(--color-surface);
   width: 85%;
   max-width: 340px;
   border-radius: 20px;
@@ -869,7 +890,7 @@ export const IconCircle = styled.div`
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: #e8f5e9;
+  background: var(--color-success-soft);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -877,13 +898,13 @@ export const IconCircle = styled.div`
 `;
 
 export const SuccessTitle = styled.h2`
-  color: #003366;
+  color: var(--color-primary);
   margin: 0;
   font-size: 1.4rem;
 `;
 
 export const SuccessSubtitle = styled.p`
-  color: #666;
+  color: var(--color-text-secondary);
   margin: 0;
   font-size: 0.92rem;
   line-height: 1.5;
@@ -891,7 +912,7 @@ export const SuccessSubtitle = styled.p`
 
 export const UnlockContainer = styled.div`
   width: 90%;
-  background: #e0ffff;
+  background: var(--color-card-bg);
   padding: 1.2rem;
   border-radius: 10px;
   display: flex;
@@ -903,7 +924,7 @@ export const UnlockContainer = styled.div`
 export const UnlockText = styled.p`
   font-size: 1.1rem;
   font-weight: bold;
-  color: #333;
+  color: var(--color-text-strong);
   margin: 0.2rem 0;
   text-align: center;
 `;
@@ -911,13 +932,13 @@ export const UnlockText = styled.p`
 export const UnlockCode = styled.p`
   font-size: 1.3rem;
   font-weight: bold;
-  color: #003366;
+  color: var(--color-primary);
   margin-top: 0.8rem;
   letter-spacing: 0.15em;
 `;
 
 export const Section = styled.div`
-  background: #e0ffff;
+  background: var(--color-card-bg);
   padding: 1rem;
   border-radius: 10px;
   width: 90%;
@@ -928,7 +949,7 @@ export const SectionTitle = styled.h3`
   font-size: 1.1rem;
   font-weight: bold;
   margin: 0 0 0.8rem;
-  color: #003366;
+  color: var(--color-primary);
 `;
 
 export const Row = styled.div`
@@ -940,14 +961,14 @@ export const Row = styled.div`
 
 export const Label = styled.span`
   font-size: 1rem;
-  color: #555;
+  color: var(--color-text-secondary);
 `;
 
 export const Toggle = styled.input.attrs({ type: 'checkbox' })`
   width: 40px;
   height: 22px;
   appearance: none;
-  background: ${p => p.checked ? '#003366' : '#ccc'};
+  background: ${p => p.checked ? 'var(--color-primary)' : 'var(--color-border-soft)'};
   border-radius: 20px;
   position: relative;
   cursor: pointer;
@@ -958,7 +979,7 @@ export const Toggle = styled.input.attrs({ type: 'checkbox' })`
     position: absolute;
     width: 18px;
     height: 18px;
-    background: white;
+    background: var(--color-surface);
     border-radius: 50%;
     top: 2px;
     left: ${p => p.checked ? '20px' : '2px'};
@@ -970,13 +991,13 @@ export const SmallInput = styled.input`
   width: 60px;
   height: 36px;
   border: none;
-  border-bottom: 1px solid #003366;
+  border-bottom: 1px solid var(--color-primary);
   text-align: center;
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 5px;
   font-size: 0.95rem;
   font-family: inherit;
-  color: #003366;
+  color: var(--color-primary);
 `;
 
 export const PageFooter = styled.div`
@@ -984,7 +1005,7 @@ export const PageFooter = styled.div`
   margin-top: 1.5rem;
   font-size: 1.1rem;
   font-weight: bold;
-  color: #003366;
+  color: var(--color-primary);
 `;
 
 export const TripList = styled.div`
@@ -997,7 +1018,7 @@ export const TripList = styled.div`
 
 export const TripCard = styled.div`
   width: 90%;
-  background: #e0ffff;
+  background: var(--color-card-bg);
   padding: 1rem;
   border-radius: 10px;
   display: flex;
@@ -1023,11 +1044,11 @@ export const TripInfo = styled.div`
 export const TripText = styled.p`
   margin: 0;
   font-size: 0.95rem;
-  color: #555;
+  color: var(--color-text-secondary);
 `;
 
 export const ProfileContainer = styled.div`
-  background: #e0ffff;
+  background: var(--color-card-bg);
   padding: 1.5rem;
   border-radius: 10px;
   display: flex;
@@ -1047,19 +1068,19 @@ export const ProfileImage = styled.img`
 export const ProfileName = styled.h2`
   font-size: 1.25rem;
   font-weight: bold;
-  color: #003366;
+  color: var(--color-primary);
   margin: 0 0 0.6rem;
 `;
 
 export const ProfileText = styled.p`
   font-size: 1rem;
-  color: #555;
+  color: var(--color-text-secondary);
   text-align: center;
   margin: 0 0 0.3rem;
 `;
 
 export const ContactContainer = styled.div`
-  background: #e0ffff;
+  background: var(--color-card-bg);
   padding: 1.2rem;
   border-radius: 10px;
   display: flex;
@@ -1072,13 +1093,13 @@ export const ContactContainer = styled.div`
 export const ContactTitle = styled.h3`
   font-size: 1.1rem;
   font-weight: bold;
-  color: #003366;
+  color: var(--color-primary);
   margin: 0 0 0.5rem;
 `;
 
 export const ContactText = styled.p`
   font-size: 1rem;
-  color: #555;
+  color: var(--color-text-secondary);
   margin: 0;
 `;
 
@@ -1099,16 +1120,22 @@ export const SearchInput = styled.input`
   width: 100%;
   box-sizing: border-box;
   padding: 0.7rem 2.5rem 0.7rem 0.9rem;
-  border: 1.5px solid #003366;
+  border: 1.5px solid var(--color-primary);
   border-radius: 10px;
   font-size: 0.95rem;
   font-family: inherit;
-  background: #fff;
+  background: var(--color-surface);
+  color: var(--color-text);
   transition: border-color 0.2s, box-shadow 0.2s;
+
+  &::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
+  }
  
   &:focus {
     outline: none;
-    border-color: #aec5e7;
+    border-color: var(--color-primary-soft);
     box-shadow: 0 0 0 3px rgba(174, 197, 231, 0.3);
   }
 `;
@@ -1120,7 +1147,7 @@ export const SearchIcon = styled.span`
   transform: translateY(-50%);
   font-size: 1.1rem;
   pointer-events: none;
-  color: #003366;
+  color: var(--color-primary);
 `;
  
 export const FiltersRow = styled.div`
@@ -1133,42 +1160,42 @@ export const FilterSelect = styled.select`
   flex: 1;
   min-width: 120px;
   padding: 0.55rem 0.7rem;
-  border: 1.5px solid #003366;
+  border: 1.5px solid var(--color-primary);
   border-radius: 8px;
   font-size: 0.85rem;
   font-family: inherit;
-  background: #fff;
-  color: #003366;
+  background: var(--color-surface);
+  color: var(--color-primary);
   cursor: pointer;
  
   &:focus {
     outline: none;
-    border-color: #aec5e7;
+    border-color: var(--color-primary-soft);
     box-shadow: 0 0 0 3px rgba(174, 197, 231, 0.3);
   }
 `;
  
 export const FilterToggle = styled.button`
   padding: 0.55rem 0.9rem;
-  border: 1.5px solid ${(p) => (p.active ? "#003366" : "#ccc")};
+  border: 1.5px solid ${(p) => (p.active ? "var(--color-primary)" : "var(--color-border-soft)")};
   border-radius: 8px;
   font-size: 0.8rem;
   font-family: inherit;
-  background: ${(p) => (p.active ? "#003366" : "#fff")};
-  color: ${(p) => (p.active ? "#fff" : "#555")};
+  background: ${(p) => (p.active ? "var(--color-primary)" : "var(--color-surface)")};
+  color: ${(p) => (p.active ? "var(--color-surface)" : "var(--color-text-secondary)")};
   cursor: pointer;
   transition: all 0.18s;
   white-space: nowrap;
  
   &:hover {
-    border-color: #003366;
+    border-color: var(--color-primary);
   }
 `;
  
 export const ClearButton = styled.button`
   background: none;
   border: none;
-  color: #003366;
+  color: var(--color-primary);
   font-size: 0.8rem;
   cursor: pointer;
   text-decoration: underline;
@@ -1176,19 +1203,19 @@ export const ClearButton = styled.button`
   align-self: flex-start;
  
   &:hover {
-    color: #001f4d;
+    color: var(--color-accent-strong);
   }
 `;
  
 export const StatusMessage = styled.p`
   text-align: center;
-  color: #777;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
   margin: 2rem 0;
 `;
  
 export const ResultCount = styled.p`
   font-size: 0.82rem;
-  color: #555;
+  color: var(--color-text-secondary);
   margin: 0 0 0.5rem;
 `;
