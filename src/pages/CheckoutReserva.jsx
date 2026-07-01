@@ -451,26 +451,13 @@ export default function CheckoutReserva() {
   const diariaValue = pricing?.dailyRate ?? 0;
   const feeValue = pricing?.fees ?? 0;
   const totalValue = pricing?.total ?? 0;
-<<<<<<< HEAD
   // Novo modelo: campos descritivos vêm de modeloVeiculo mas já normalizados
   // por normalizeVeiculo() no serviço. Fallback para veiculoSalvo (journey storage).
-  const vehicleCategory = vehicle?.categoria ?? veiculoSalvo?.categoria ?? "Não informado";
-  const vehicleTransmission = vehicle?.cambio ?? vehicle?.transmissao ?? veiculoSalvo?.cambio ?? "Não informado";
-  const vehicleCapacity = vehicle?.capacidade ?? veiculoSalvo?.capacidade ?? "Não informado";
-  const vehicleEletrico = vehicle?.eletrico ?? veiculoSalvo?.eletrico;
-  const vehicleAdaptado = vehicle?.adaptado ?? veiculoSalvo?.adaptado;
-  const vehicleAccessibility = vehicleAdaptado !== undefined
-    ? (vehicleAdaptado ? "Sim" : "Não")
-    : (vehicle?.acessibilidade ?? veiculoSalvo?.acessibilidade ?? "Não informado");
-  const vehicleAutonomy = vehicle?.autonomia ?? veiculoSalvo?.autonomia ?? "Não informado";
-  const vehicleFuel = vehicleEletrico === true
-    ? "Elétrico"
-    : (vehicle?.combustivel ?? vehicle?.energia ?? veiculoSalvo?.combustivel ?? "Não informado");
-  const pickupAddress = retirada.garageAddress || retirada.garageName || "Não informado";
-  const dropoffAddress = devolucao.garageAddress || devolucao.garageName || "Não informado";
-=======
-  const vehicleCategory =
-    vehicle?.categoria ?? veiculoSalvo?.categoria ?? "Não informado";
+  const vehicleCategory = resolveVehicleField(
+    vehicle,
+    veiculoSalvo,
+    "categoria",
+  );
   const vehicleTransmission = resolveVehicleField(
     vehicle,
     veiculoSalvo,
@@ -481,22 +468,27 @@ export default function CheckoutReserva() {
     veiculoSalvo,
     "capacidade",
   );
-  const vehicleAccessibility = resolveVehicleField(
-    vehicle,
-    veiculoSalvo,
-    "acessibilidade",
-  );
+  const vehicleEletrico = vehicle?.eletrico ?? veiculoSalvo?.eletrico;
+  const vehicleAdaptado = vehicle?.adaptado ?? veiculoSalvo?.adaptado;
+  const vehicleAccessibility =
+    vehicleAdaptado !== undefined
+      ? vehicleAdaptado
+        ? "Sim"
+        : "Não"
+      : resolveVehicleField(vehicle, veiculoSalvo, "acessibilidade");
   const vehicleAutonomy = resolveVehicleField(
     vehicle,
     veiculoSalvo,
     "autonomia",
   );
-  const vehicleFuel = resolveVehicleField(vehicle, veiculoSalvo, "combustivel");
+  const vehicleFuel =
+    vehicleEletrico === true
+      ? "Elétrico"
+      : resolveVehicleField(vehicle, veiculoSalvo, "combustivel");
   const pickupAddress =
     retirada.garageAddress || retirada.garageName || "Não informado";
   const dropoffAddress =
     devolucao.garageAddress || devolucao.garageName || "Não informado";
->>>>>>> 93dabe6d3e57242fbe6d5183b0e988156961d080
 
   return (
     <AuthenticatedLayout>
@@ -524,18 +516,19 @@ export default function CheckoutReserva() {
             <div>
               <VehicleTitle>{vehicleName}</VehicleTitle>
               <VehicleMeta>{vehicleCategory}</VehicleMeta>
-<<<<<<< HEAD
-              <VehicleMeta>Transmissão: {normalizeDisplayValue(vehicleTransmission)}</VehicleMeta>
-              <VehicleMeta>Capacidade: {normalizeDisplayValue(vehicleCapacity)} pessoas</VehicleMeta>
-              <VehicleMeta>Elétrico: {vehicleEletrico !== undefined ? (vehicleEletrico ? "Sim" : "Não") : "Não informado"}</VehicleMeta>
-              <VehicleMeta>Acessibilidade: {normalizeDisplayValue(vehicleAccessibility)}</VehicleMeta>
-              <VehicleMeta>Autonomia/combustível: {formatEnergyText(vehicleAutonomy, vehicleFuel)}</VehicleMeta>
-=======
               <VehicleMeta>
                 Transmissão: {normalizeDisplayValue(vehicleTransmission)}
               </VehicleMeta>
               <VehicleMeta>
-                Capacidade: {normalizeDisplayValue(vehicleCapacity)}
+                Capacidade: {normalizeDisplayValue(vehicleCapacity)} pessoas
+              </VehicleMeta>
+              <VehicleMeta>
+                Elétrico:{" "}
+                {vehicleEletrico !== undefined
+                  ? vehicleEletrico
+                    ? "Sim"
+                    : "Não"
+                  : "Não informado"}
               </VehicleMeta>
               <VehicleMeta>
                 Acessibilidade: {normalizeDisplayValue(vehicleAccessibility)}
@@ -544,7 +537,6 @@ export default function CheckoutReserva() {
                 Autonomia/combustível:{" "}
                 {formatEnergyText(vehicleAutonomy, vehicleFuel)}
               </VehicleMeta>
->>>>>>> 93dabe6d3e57242fbe6d5183b0e988156961d080
             </div>
           </VehicleTop>
 
