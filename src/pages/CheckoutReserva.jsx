@@ -4,7 +4,11 @@ import styled from "styled-components";
 import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import movaLogo from "../assets/mova_logo.png";
 import { getJourneyStep } from "../utils/journeyStorage";
-import { calculateReservationDays, formatMoneyBRL, parseJourneyDateTime } from "../utils/reservationMath";
+import {
+  calculateReservationDays,
+  formatMoneyBRL,
+  parseJourneyDateTime,
+} from "../utils/reservationMath";
 import { getVeiculoById } from "../services/veiculoService";
 import { getReservationPricing } from "../services/reservationPricing";
 import {
@@ -194,9 +198,27 @@ function resolveVehicleImage(vehicle) {
   );
 }
 
+function resolveModeloVeiculo(vehicle) {
+  return vehicle?.modeloVeiculo ?? {};
+}
+
+function resolveVehicleField(vehicle, fallbackVehicle, field) {
+  const modeloVeiculo = resolveModeloVeiculo(vehicle);
+  return (
+    vehicle?.[field] ??
+    modeloVeiculo?.[field] ??
+    fallbackVehicle?.[field] ??
+    "Não informado"
+  );
+}
+
 function resolveVehicleName(vehicle) {
   return (
     vehicle?.nome ||
+    [vehicle?.modeloVeiculo?.marca, vehicle?.modeloVeiculo?.modelo]
+      .filter(Boolean)
+      .join(" ")
+      .trim() ||
     [vehicle?.marca, vehicle?.modelo].filter(Boolean).join(" ").trim() ||
     vehicle?.modelo ||
     "Veículo selecionado"
@@ -228,7 +250,9 @@ function normalizeDisplayValue(value) {
 }
 
 function formatEnergyText(autonomy, fuel) {
-  const parts = [autonomy, fuel].map((part) => normalizeDisplayValue(part)).filter((part) => part !== "Não informado");
+  const parts = [autonomy, fuel]
+    .map((part) => normalizeDisplayValue(part))
+    .filter((part) => part !== "Não informado");
 
   return parts.length > 0 ? parts.join(" • ") : "Não informado";
 }
@@ -236,6 +260,8 @@ function formatEnergyText(autonomy, fuel) {
 function buildAdditionalDetails(vehicle) {
   const ignoredKeys = new Set([
     "id",
+    "idLocador",
+    "idModeloVeiculo",
     "nome",
     "marca",
     "modelo",
@@ -259,7 +285,6 @@ function buildAdditionalDetails(vehicle) {
     "valorDiaria",
     "precoDiaria",
     "dailyRate",
-    "idLocador",
     "locadorId",
     "idModeloVeiculo",
     "modeloVeiculo",  // objeto aninhado — campos já promovidos pela normalização
@@ -267,10 +292,18 @@ function buildAdditionalDetails(vehicle) {
     "createdAt",
     "criadoEm",
     "status",
+    "garagemId",
+    "modeloVeiculo",
   ]);
 
   return Object.entries(vehicle || {})
-    .filter(([key, value]) => !ignoredKeys.has(key) && value !== undefined && value !== null && value !== "")
+    .filter(
+      ([key, value]) =>
+        !ignoredKeys.has(key) &&
+        value !== undefined &&
+        value !== null &&
+        value !== "",
+    )
     .map(([key, value]) => ({
       label: key
         .replace(/([a-z])([A-Z])/g, "$1 $2")
@@ -284,7 +317,9 @@ function JourneySummary({ label, value }) {
   return (
     <JourneySummaryCard>
       <JourneySummaryLabel>{label}</JourneySummaryLabel>
-      <JourneySummaryValue style={{ whiteSpace: "pre-line" }}>{value}</JourneySummaryValue>
+      <JourneySummaryValue style={{ whiteSpace: "pre-line" }}>
+        {value}
+      </JourneySummaryValue>
     </JourneySummaryCard>
   );
 }
@@ -304,8 +339,14 @@ export default function CheckoutReserva() {
   const [vehicle, setVehicle] = useState(null);
   const [pricing, setPricing] = useState(null);
 
-  const pickupDateTime = useMemo(() => parseJourneyDateTime(retirada), [retirada]);
-  const dropoffDateTime = useMemo(() => parseJourneyDateTime(devolucao), [devolucao]);
+  const pickupDateTime = useMemo(
+    () => parseJourneyDateTime(retirada),
+    [retirada],
+  );
+  const dropoffDateTime = useMemo(
+    () => parseJourneyDateTime(devolucao),
+    [devolucao],
+  );
 
   useEffect(() => {
     document.title = "MOVA - Checkout da Reserva";
@@ -323,7 +364,10 @@ export default function CheckoutReserva() {
           throw new Error("Selecione um veículo para continuar.");
         }
 
-        const totalDiarias = calculateReservationDays(pickupDateTime, dropoffDateTime);
+        const totalDiarias = calculateReservationDays(
+          pickupDateTime,
+          dropoffDateTime,
+        );
         const [vehicleDetails, pricingDetails] = await Promise.all([
           getVeiculoById(veiculoSalvo.id),
           getReservationPricing({
@@ -343,7 +387,10 @@ export default function CheckoutReserva() {
           return;
         }
 
-        setError(caughtError?.message || "Não foi possível carregar o checkout da reserva.");
+        setError(
+          caughtError?.message ||
+            "Não foi possível carregar o checkout da reserva.",
+        );
       } finally {
         if (active) {
           setLoading(false);
@@ -358,7 +405,10 @@ export default function CheckoutReserva() {
     };
   }, [dropoffDateTime, pickupDateTime, veiculoSalvo]);
 
-  const additionalDetails = useMemo(() => buildAdditionalDetails(vehicle), [vehicle]);
+  const additionalDetails = useMemo(
+    () => buildAdditionalDetails(vehicle),
+    [vehicle],
+  );
 
   if (loading) {
     return (
@@ -381,8 +431,15 @@ export default function CheckoutReserva() {
         <Title>Checkout da Reserva</Title>
         <StatusMessage style={{ color: "#c0392b" }}>{error}</StatusMessage>
         <SummaryActionRow>
-          <SecondaryButton type="button" onClick={() => navigate("/escolha-garagem-devolucao")}>Voltar para devolução</SecondaryButton>
-          <PrimaryButton type="button" onClick={() => navigate("/carros")}>Escolher outro veículo</PrimaryButton>
+          <SecondaryButton
+            type="button"
+            onClick={() => navigate("/escolha-garagem-devolucao")}
+          >
+            Voltar para devolução
+          </SecondaryButton>
+          <PrimaryButton type="button" onClick={() => navigate("/carros")}>
+            Escolher outro veículo
+          </PrimaryButton>
         </SummaryActionRow>
       </AuthenticatedLayout>
     );
@@ -394,6 +451,7 @@ export default function CheckoutReserva() {
   const diariaValue = pricing?.dailyRate ?? 0;
   const feeValue = pricing?.fees ?? 0;
   const totalValue = pricing?.total ?? 0;
+<<<<<<< HEAD
   // Novo modelo: campos descritivos vêm de modeloVeiculo mas já normalizados
   // por normalizeVeiculo() no serviço. Fallback para veiculoSalvo (journey storage).
   const vehicleCategory = vehicle?.categoria ?? veiculoSalvo?.categoria ?? "Não informado";
@@ -410,6 +468,35 @@ export default function CheckoutReserva() {
     : (vehicle?.combustivel ?? vehicle?.energia ?? veiculoSalvo?.combustivel ?? "Não informado");
   const pickupAddress = retirada.garageAddress || retirada.garageName || "Não informado";
   const dropoffAddress = devolucao.garageAddress || devolucao.garageName || "Não informado";
+=======
+  const vehicleCategory =
+    vehicle?.categoria ?? veiculoSalvo?.categoria ?? "Não informado";
+  const vehicleTransmission = resolveVehicleField(
+    vehicle,
+    veiculoSalvo,
+    "cambio",
+  );
+  const vehicleCapacity = resolveVehicleField(
+    vehicle,
+    veiculoSalvo,
+    "capacidade",
+  );
+  const vehicleAccessibility = resolveVehicleField(
+    vehicle,
+    veiculoSalvo,
+    "acessibilidade",
+  );
+  const vehicleAutonomy = resolveVehicleField(
+    vehicle,
+    veiculoSalvo,
+    "autonomia",
+  );
+  const vehicleFuel = resolveVehicleField(vehicle, veiculoSalvo, "combustivel");
+  const pickupAddress =
+    retirada.garageAddress || retirada.garageName || "Não informado";
+  const dropoffAddress =
+    devolucao.garageAddress || devolucao.garageName || "Não informado";
+>>>>>>> 93dabe6d3e57242fbe6d5183b0e988156961d080
 
   return (
     <AuthenticatedLayout>
@@ -418,7 +505,9 @@ export default function CheckoutReserva() {
       </LogoContainer>
 
       <Title>Checkout da Reserva</Title>
-      <Subtitle>Confira todos os detalhes antes de seguir para o pagamento.</Subtitle>
+      <Subtitle>
+        Confira todos os detalhes antes de seguir para o pagamento.
+      </Subtitle>
 
       <PageStack>
         <SectionCard>
@@ -435,11 +524,27 @@ export default function CheckoutReserva() {
             <div>
               <VehicleTitle>{vehicleName}</VehicleTitle>
               <VehicleMeta>{vehicleCategory}</VehicleMeta>
+<<<<<<< HEAD
               <VehicleMeta>Transmissão: {normalizeDisplayValue(vehicleTransmission)}</VehicleMeta>
               <VehicleMeta>Capacidade: {normalizeDisplayValue(vehicleCapacity)} pessoas</VehicleMeta>
               <VehicleMeta>Elétrico: {vehicleEletrico !== undefined ? (vehicleEletrico ? "Sim" : "Não") : "Não informado"}</VehicleMeta>
               <VehicleMeta>Acessibilidade: {normalizeDisplayValue(vehicleAccessibility)}</VehicleMeta>
               <VehicleMeta>Autonomia/combustível: {formatEnergyText(vehicleAutonomy, vehicleFuel)}</VehicleMeta>
+=======
+              <VehicleMeta>
+                Transmissão: {normalizeDisplayValue(vehicleTransmission)}
+              </VehicleMeta>
+              <VehicleMeta>
+                Capacidade: {normalizeDisplayValue(vehicleCapacity)}
+              </VehicleMeta>
+              <VehicleMeta>
+                Acessibilidade: {normalizeDisplayValue(vehicleAccessibility)}
+              </VehicleMeta>
+              <VehicleMeta>
+                Autonomia/combustível:{" "}
+                {formatEnergyText(vehicleAutonomy, vehicleFuel)}
+              </VehicleMeta>
+>>>>>>> 93dabe6d3e57242fbe6d5183b0e988156961d080
             </div>
           </VehicleTop>
 
@@ -448,19 +553,48 @@ export default function CheckoutReserva() {
           <KeyValueGrid>
             <KeyValueItem>
               <KeyValueLabel>Características</KeyValueLabel>
-              <KeyValueValue>{normalizeDisplayValue(vehicle?.caracteristicas ?? veiculoSalvo?.caracteristicas)}</KeyValueValue>
+              <KeyValueValue>
+                {normalizeDisplayValue(
+                  vehicle?.caracteristicas ?? veiculoSalvo?.caracteristicas,
+                )}
+              </KeyValueValue>
             </KeyValueItem>
 
             <KeyValueItem>
               <KeyValueLabel>Placa</KeyValueLabel>
-              <KeyValueValue>{normalizeDisplayValue(vehicle?.placa ?? veiculoSalvo?.placa)}</KeyValueValue>
+              <KeyValueValue>
+                {normalizeDisplayValue(vehicle?.placa ?? veiculoSalvo?.placa)}
+              </KeyValueValue>
+            </KeyValueItem>
+
+            <KeyValueItem>
+              <KeyValueLabel>Modelo do veículo</KeyValueLabel>
+              <KeyValueValue>
+                {normalizeDisplayValue(
+                  vehicle?.modeloVeiculo
+                    ? `${vehicle.modeloVeiculo.marca ?? ""} ${vehicle.modeloVeiculo.modelo ?? ""}`.trim()
+                    : veiculoSalvo?.nome ||
+                        `${veiculoSalvo?.marca ?? ""} ${veiculoSalvo?.modelo ?? ""}`.trim(),
+                )}
+              </KeyValueValue>
+            </KeyValueItem>
+
+            <KeyValueItem>
+              <KeyValueLabel>Status</KeyValueLabel>
+              <KeyValueValue>
+                {normalizeDisplayValue(vehicle?.status ?? veiculoSalvo?.status)}
+              </KeyValueValue>
             </KeyValueItem>
           </KeyValueGrid>
 
           {additionalDetails.length > 0 && (
             <>
               <Divider />
-              <SectionTitle style={{ fontSize: "0.95rem", marginBottom: "0.75rem" }}>Detalhes adicionais</SectionTitle>
+              <SectionTitle
+                style={{ fontSize: "0.95rem", marginBottom: "0.75rem" }}
+              >
+                Detalhes adicionais
+              </SectionTitle>
               <KeyValueGrid>
                 {additionalDetails.map((detail) => (
                   <KeyValueItem key={detail.label}>
@@ -487,17 +621,36 @@ export default function CheckoutReserva() {
         <JourneySummaryCard>
           <JourneySummaryLabel>Resumo financeiro</JourneySummaryLabel>
           <PriceList>
-            <PriceRow><PriceLabel>Diárias</PriceLabel><PriceValue>{totalDiarias}</PriceValue></PriceRow>
-            <PriceRow><PriceLabel>Valor da diária</PriceLabel><PriceValue>{formatMoneyBRL(diariaValue)}</PriceValue></PriceRow>
-            <PriceRow><PriceLabel>Taxas</PriceLabel><PriceValue>{formatMoneyBRL(feeValue)}</PriceValue></PriceRow>
+            <PriceRow>
+              <PriceLabel>Diárias</PriceLabel>
+              <PriceValue>{totalDiarias}</PriceValue>
+            </PriceRow>
+            <PriceRow>
+              <PriceLabel>Valor da diária</PriceLabel>
+              <PriceValue>{formatMoneyBRL(diariaValue)}</PriceValue>
+            </PriceRow>
+            <PriceRow>
+              <PriceLabel>Taxas</PriceLabel>
+              <PriceValue>{formatMoneyBRL(feeValue)}</PriceValue>
+            </PriceRow>
             <Divider />
-            <PriceRow><PriceLabel>Total</PriceLabel><PriceValue>{formatMoneyBRL(totalValue)}</PriceValue></PriceRow>
+            <PriceRow>
+              <PriceLabel>Total</PriceLabel>
+              <PriceValue>{formatMoneyBRL(totalValue)}</PriceValue>
+            </PriceRow>
           </PriceList>
         </JourneySummaryCard>
 
         <SummaryActionRow>
-          <SecondaryButton type="button" onClick={() => navigate("/escolha-garagem-devolucao")}>Editar devolução</SecondaryButton>
-          <PrimaryButton type="button" onClick={() => navigate("/pagamento")}>Confirmar e seguir para pagamento</PrimaryButton>
+          <SecondaryButton
+            type="button"
+            onClick={() => navigate("/escolha-garagem-devolucao")}
+          >
+            Editar devolução
+          </SecondaryButton>
+          <PrimaryButton type="button" onClick={() => navigate("/pagamento")}>
+            Confirmar e seguir para pagamento
+          </PrimaryButton>
         </SummaryActionRow>
       </PageStack>
     </AuthenticatedLayout>

@@ -6,7 +6,8 @@ import {
   saveAuthSession,
 } from "./authSession";
 
-const AUTH_DEBUG_ENABLED = String(import.meta.env.AUTH_DEBUG).toLowerCase() === "true";
+const AUTH_DEBUG_ENABLED =
+  String(import.meta.env.AUTH_DEBUG).toLowerCase() === "true";
 
 function authDebug(label, payload) {
   if (!AUTH_DEBUG_ENABLED) {
@@ -56,19 +57,19 @@ function hasProfileFields(value) {
 
   return Boolean(
     value.id ||
-      value._id ||
-      value.nome ||
-      value.name ||
-      value.nomeCompleto ||
-      value.nome_completo ||
-      value.email ||
-      value.empresa ||
-      value.cnpj ||
-      value.telefone ||
-      value.celular ||
-      value.celphone ||
-      value.endereco ||
-      value.address
+    value._id ||
+    value.nome ||
+    value.name ||
+    value.nomeCompleto ||
+    value.nome_completo ||
+    value.email ||
+    value.empresa ||
+    value.cnpj ||
+    value.telefone ||
+    value.celular ||
+    value.celphone ||
+    value.endereco ||
+    value.address,
   );
 }
 
@@ -161,7 +162,10 @@ function pickProfileSource(candidates, fallbackEmail) {
   for (const candidate of candidates) {
     if (Array.isArray(candidate)) {
       const matchingByEmail = targetEmail
-        ? candidate.find((item) => hasProfileFields(item) && getCandidateEmail(item) === targetEmail)
+        ? candidate.find(
+            (item) =>
+              hasProfileFields(item) && getCandidateEmail(item) === targetEmail,
+          )
         : null;
 
       if (matchingByEmail) {
@@ -188,21 +192,27 @@ function normalizeApiUser(payload, fallbackEmail) {
   const result = isObject(root.result) ? root.result : null;
   const data = isObject(root.data) ? root.data : null;
   const nestedData = isObject(result?.data) ? result.data : null;
-  const cargo = resolveCargo(root.cargo || result?.cargo || data?.cargo, result || data || root);
-  const source = pickProfileSource([
-    root.user,
-    root.conta,
-    result?.user,
-    result?.conta,
-    data?.user,
-    data?.conta,
-    nestedData?.user,
-    nestedData?.conta,
-    root.result,
-    root.data,
-    result?.data,
-    result,
-  ], fallbackEmail);
+  const cargo = resolveCargo(
+    root.cargo || result?.cargo || data?.cargo,
+    result || data || root,
+  );
+  const source = pickProfileSource(
+    [
+      root.user,
+      root.conta,
+      result?.user,
+      result?.conta,
+      data?.user,
+      data?.conta,
+      nestedData?.user,
+      nestedData?.conta,
+      root.result,
+      root.data,
+      result?.data,
+      result,
+    ],
+    fallbackEmail,
+  );
 
   if (!source) {
     return { email: fallbackEmail };
@@ -210,7 +220,12 @@ function normalizeApiUser(payload, fallbackEmail) {
 
   return {
     id: source.id || source._id,
-    name: source.nome || source.name || source.nomeCompleto || source.nome_completo || source.fullName,
+    name:
+      source.nome ||
+      source.name ||
+      source.nomeCompleto ||
+      source.nome_completo ||
+      source.fullName,
     email: source.email || fallbackEmail,
     cargo: resolveCargo(source.cargo || source.profileType || cargo, source),
     empresa: source.empresa,
@@ -269,7 +284,12 @@ function normalizeCurrentUserFromMe(payload) {
     roleData = locatarioNode;
   }
 
-  const accountId = conta.id || result.id || result.contaId || roleData.contaId || roleData.accountId;
+  const accountId =
+    conta.id ||
+    result.id ||
+    result.contaId ||
+    roleData.contaId ||
+    roleData.accountId;
   const profileId = roleData.id || roleData._id;
 
   const user = {
@@ -280,12 +300,26 @@ function normalizeCurrentUserFromMe(payload) {
     email: conta.email || result.email,
     cargo,
     profileType: cargo.toLowerCase(),
-    celphone: conta.telefone || conta.celular || conta.celphone || roleData.telefone || roleData.celular || roleData.celphone || "",
+    celphone:
+      conta.telefone ||
+      conta.celular ||
+      conta.celphone ||
+      roleData.telefone ||
+      roleData.celular ||
+      roleData.celphone ||
+      "",
     empresa: roleData.empresa || "",
     cnpj: roleData.cnpj || "",
     cpf: roleData.cpf || "",
     cnh: roleData.cnh || "",
-    address: conta.endereco || conta.address || result.endereco || result.address || roleData.endereco || roleData.address || "",
+    address:
+      conta.endereco ||
+      conta.address ||
+      result.endereco ||
+      result.address ||
+      roleData.endereco ||
+      roleData.address ||
+      "",
     cep: conta.cep || result.cep || roleData.cep || "",
   };
 
@@ -295,7 +329,11 @@ function normalizeCurrentUserFromMe(payload) {
       cargo: resolveCargo(cargo, user),
       profileType: resolveProfileType(cargo, user),
     },
-    profileSource: locadorNode ? "locador" : locatarioNode ? "locatario" : "none",
+    profileSource: locadorNode
+      ? "locador"
+      : locatarioNode
+        ? "locatario"
+        : "none",
   };
 }
 
@@ -304,7 +342,10 @@ function extractToken(payload) {
     return null;
   }
 
-  const result = payload.result && typeof payload.result === "object" ? payload.result : null;
+  const result =
+    payload.result && typeof payload.result === "object"
+      ? payload.result
+      : null;
 
   return payload.token || result?.token || null;
 }
@@ -313,10 +354,16 @@ function persistUserProfile(user, token) {
   const session = getAuthSession();
   const nextToken = token ?? session?.token ?? null;
   const previousUser = session?.user || {};
-  const nextCargo = resolveCargo(user?.cargo || user?.profileType || previousUser.cargo || previousUser.profileType, {
-    ...previousUser,
-    ...user,
-  });
+  const nextCargo = resolveCargo(
+    user?.cargo ||
+      user?.profileType ||
+      previousUser.cargo ||
+      previousUser.profileType,
+    {
+      ...previousUser,
+      ...user,
+    },
+  );
   const nextUser = {
     ...previousUser,
     ...user,
@@ -380,7 +427,13 @@ export async function loginUser({ email, senha }) {
     const user = {
       ...apiUser,
       ...currentUser,
-      cargo: resolveCargo(currentUser?.cargo || apiUser?.cargo || currentUser?.profileType || apiUser?.profileType, currentUser || apiUser),
+      cargo: resolveCargo(
+        currentUser?.cargo ||
+          apiUser?.cargo ||
+          currentUser?.profileType ||
+          apiUser?.profileType,
+        currentUser || apiUser,
+      ),
     };
 
     user.profileType = resolveProfileType(user.cargo || user.profileType, user);
@@ -403,7 +456,10 @@ export async function loginUser({ email, senha }) {
       ...result,
     };
   } catch (error) {
-    const normalized = normalizeError(error, "Nao foi possivel realizar login.");
+    const normalized = normalizeError(
+      error,
+      "Nao foi possivel realizar login.",
+    );
 
     if (/credenciais|unauthorized|401/i.test(normalized.message)) {
       throw new Error("Usuario ou senha inválidos.");
@@ -451,6 +507,7 @@ export async function registerLocatario(values) {
       body: JSON.stringify({
         ...buildContaPayload(values),
         senha: values.password,
+        cargo: "LOCATARIO",
       }),
     });
 
@@ -477,7 +534,10 @@ export async function registerLocatario(values) {
       locatario: locatarioResult,
     };
   } catch (error) {
-    throw normalizeError(error, "Nao foi possivel concluir o cadastro de locatario.");
+    throw normalizeError(
+      error,
+      "Nao foi possivel concluir o cadastro de locatario.",
+    );
   }
 }
 
@@ -518,7 +578,10 @@ export async function registerLocador(values) {
       ...result,
     };
   } catch (error) {
-    throw normalizeError(error, "Nao foi possivel concluir o cadastro de locador.");
+    throw normalizeError(
+      error,
+      "Nao foi possivel concluir o cadastro de locador.",
+    );
   }
 }
 
@@ -527,12 +590,19 @@ export async function updateUserProfile(values) {
   const session = getAuthSession();
   const token = session?.token;
   const sessionUser = session?.user || {};
-  const accountId = values.id || values.accountId || sessionUser.accountId || sessionUser.id;
+  const accountId =
+    values.id || values.accountId || sessionUser.accountId || sessionUser.id;
   let profileId = values.profileId || sessionUser.profileId;
-  let cargo = resolveCargo(values.cargo || values.profileType || sessionUser.cargo || sessionUser.profileType, {
-    ...sessionUser,
-    ...values,
-  });
+  let cargo = resolveCargo(
+    values.cargo ||
+      values.profileType ||
+      sessionUser.cargo ||
+      sessionUser.profileType,
+    {
+      ...sessionUser,
+      ...values,
+    },
+  );
 
   if (!isApiConfigured()) {
     throw new Error("API_BASE_URL nao configurada.");
@@ -550,10 +620,13 @@ export async function updateUserProfile(values) {
       });
 
       if (freshProfile) {
-        cargo = resolveCargo(freshProfile.cargo || freshProfile.profileType || cargo, {
-          ...freshProfile,
-          ...values,
-        });
+        cargo = resolveCargo(
+          freshProfile.cargo || freshProfile.profileType || cargo,
+          {
+            ...freshProfile,
+            ...values,
+          },
+        );
         profileId = freshProfile.profileId || profileId;
       }
     } catch {
@@ -572,7 +645,9 @@ export async function updateUserProfile(values) {
 
     if (cargo === "LOCATARIO") {
       if (!profileId) {
-        throw new Error("Nao foi possivel identificar o perfil vinculado da conta autenticada.");
+        throw new Error(
+          "Nao foi possivel identificar o perfil vinculado da conta autenticada.",
+        );
       }
 
       try {
@@ -582,13 +657,17 @@ export async function updateUserProfile(values) {
           body: JSON.stringify(buildLocatarioUpdatePayload(values)),
         });
       } catch {
-        throw new Error("Dados da conta atualizados, mas falha ao atualizar dados de perfil.");
+        throw new Error(
+          "Dados da conta atualizados, mas falha ao atualizar dados de perfil.",
+        );
       }
     }
 
     if (cargo === "LOCADOR") {
       if (!profileId) {
-        throw new Error("Nao foi possivel identificar o perfil vinculado da conta autenticada.");
+        throw new Error(
+          "Nao foi possivel identificar o perfil vinculado da conta autenticada.",
+        );
       }
 
       try {
@@ -598,7 +677,9 @@ export async function updateUserProfile(values) {
           body: JSON.stringify(buildLocadorUpdatePayload(values)),
         });
       } catch {
-        throw new Error("Dados da conta atualizados, mas falha ao atualizar dados de perfil.");
+        throw new Error(
+          "Dados da conta atualizados, mas falha ao atualizar dados de perfil.",
+        );
       }
     }
 
@@ -606,8 +687,15 @@ export async function updateUserProfile(values) {
     const mergedUser = {
       ...normalizedProfile,
       ...apiUser,
-      id: accountId || sessionUser.id || apiUser.id || normalizedProfile.id || "",
-      accountId: accountId || sessionUser.accountId || sessionUser.id || apiUser.id || normalizedProfile.id || "",
+      id:
+        accountId || sessionUser.id || apiUser.id || normalizedProfile.id || "",
+      accountId:
+        accountId ||
+        sessionUser.accountId ||
+        sessionUser.id ||
+        apiUser.id ||
+        normalizedProfile.id ||
+        "",
       profileId: profileId || sessionUser.profileId || "",
       cargo,
       profileType: resolveProfileType(cargo, normalizedProfile),
@@ -642,7 +730,10 @@ export async function requestPasswordReset({ email }) {
       ...result,
     };
   } catch (error) {
-    throw normalizeError(error, "Nao foi possivel solicitar recuperacao de senha.");
+    throw normalizeError(
+      error,
+      "Nao foi possivel solicitar recuperacao de senha.",
+    );
   }
 }
 
