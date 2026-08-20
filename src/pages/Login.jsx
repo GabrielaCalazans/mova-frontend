@@ -66,8 +66,11 @@ function Login() {
       title="Login"
       logoSrc={movaLogo}
       logoAlt="Mova Logo"
+<<<<<<< HEAD
       wordmark="MOVA"
       tagline="Mobilidade on-demand versátil e acessível"
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     >
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         {feedback && (
@@ -80,7 +83,11 @@ function Login() {
           id="email"
           name="email"
           type="email"
+<<<<<<< HEAD
           placeholder="E-mail"
+=======
+          placeholder="seuemail@exemplo.com"
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
           ariaLabel="E-mail"
           value={values.email}
           onChange={(e) => setFieldValue("email", e.target.value)}

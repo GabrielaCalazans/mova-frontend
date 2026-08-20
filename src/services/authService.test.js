@@ -147,7 +147,10 @@ describe("authService profile flow via /conta/auth/me", () => {
         telefone: "11999998888",
         endereco: "",
         cep: "",
+<<<<<<< HEAD
         cargo: "LOCADOR",
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
         senha: "Senha12345",
       }),
     });
@@ -217,7 +220,10 @@ describe("updateUserProfile two-step flow", () => {
         telefone: "11988887777",
         endereco: "Rua A",
         cep: "00000000",
+<<<<<<< HEAD
         cargo: "LOCATARIO",
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
       }),
     });
     expect(apiRequestMock).toHaveBeenNthCalledWith(2, "/locatario/perfil-1", {
@@ -334,7 +340,10 @@ describe("updateUserProfile two-step flow", () => {
         telefone: "11988887777",
         endereco: "Rua B",
         cep: "01001000",
+<<<<<<< HEAD
         cargo: "LOCADOR",
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
       }),
     });
     expect(apiRequestMock).toHaveBeenNthCalledWith(2, "/locador/perfil-locador-1", {
@@ -410,7 +419,10 @@ describe("updateUserProfile two-step flow", () => {
         telefone: "11977776666",
         endereco: "",
         cep: "",
+<<<<<<< HEAD
         cargo: "LOCATARIO",
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
       }),
     });
     expect(apiRequestMock).toHaveBeenNthCalledWith(3, "/locatario/perfil-legacy", {

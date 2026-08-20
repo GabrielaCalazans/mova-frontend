@@ -1,5 +1,8 @@
 ﻿import { Link } from "react-router-dom";
+<<<<<<< HEAD
 import BottomNav from "../components/BottomNav";
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 import "../styles/auth.css";
 
 function AuthLayout({
@@ -11,6 +14,7 @@ function AuthLayout({
   logoSrc,
   logoAlt = "Logo",
   topBarSlot,
+<<<<<<< HEAD
   wordmark,
   tagline,
   compactLogo = false,
@@ -34,6 +38,15 @@ function AuthLayout({
           </div>
         )}
         <h1 className={hideTitle ? "auth-title--sr-only" : undefined}>{title}</h1>
+=======
+}) {
+  return (
+    <main className="auth-page">
+      <section className="auth-card">
+        {topBarSlot}
+        {logoSrc && <img src={logoSrc} className="auth-logo" alt={logoAlt} />}
+        <h1>{title}</h1>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
         {children}
 
@@ -43,7 +56,10 @@ function AuthLayout({
           </p>
         )}
       </section>
+<<<<<<< HEAD
       {hasBottomNav && <BottomNav />}
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     </main>
   );
 }

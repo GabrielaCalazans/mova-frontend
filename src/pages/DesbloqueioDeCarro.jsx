@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import TopBar from "../components/TopBar";
 import BottomNav from "../components/BottomNav";
@@ -41,3 +42,35 @@ export default function TelaDeDesbloqueio() {
     </main>
   );
 }
+=======
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import movaLogo from '../assets/mova_logo.png';
+import AuthenticatedLayout from '../layout/AuthenticatedLayout';
+import {
+  LogoContainer,
+  Title,
+  UnlockContainer,
+  UnlockText,
+  UnlockCode,
+} from '../styles/authStyle';
+
+export default function TelaDeDesbloqueio() {
+  return (
+    <AuthenticatedLayout>
+
+      <LogoContainer>
+        <img src={movaLogo} alt="Mova Logo" />
+      </LogoContainer>
+
+      <Title>Desbloqueio do Veículo</Title>
+
+      <UnlockContainer>
+        <UnlockText>Reserva efetuada com sucesso!</UnlockText>
+        <UnlockText>Código de Desbloqueio:</UnlockText>
+        <UnlockCode>1234-5678</UnlockCode>
+      </UnlockContainer>
+    </AuthenticatedLayout>
+  );
+}
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244

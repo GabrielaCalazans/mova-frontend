@@ -49,11 +49,19 @@ describe("formValidators", () => {
       email: "maria@empresa.com",
       celphone: "(11) 99999-8888",
       empresa: "Empresa Silva LTDA",
+<<<<<<< HEAD
       cnpj: "12.345.678/0001-95",
       address: "Rua Exemplo, 123",
       cep: "12345-678",
       password: "Senha123!",
       confirmPassword: "Senha123!",
+=======
+      cnpj: "12.345.678/0001-99",
+      address: "Rua Exemplo, 123",
+      cep: "12345-678",
+      password: "12345678",
+      confirmPassword: "12345678",
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     };
 
     expect(validateLocadorRegisterForm(validValues)).toEqual({});

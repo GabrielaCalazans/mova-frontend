@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ModalOverlay, ModalContent, MenuItem, HeaderIcons } from "../styles/authStyle";
+<<<<<<< HEAD
 import { Menu, User, Clock, HeadphonesIcon, Settings, LogOut, Sun, Moon } from "lucide-react";
 import { clearAuthSession } from "../services/authSession";
 import { useTheme } from "../context/ThemeContext";
@@ -11,6 +12,20 @@ function TopBar({ showLogo = false, iconColor }) {
     const { temaEscuro, toggleTemaEscuro } = useTheme();
     const [menuVisible, setMenuVisible] = useState(false);
     const resolvedIconColor = iconColor || "var(--color-primary)";
+=======
+import { House, Menu, User, Clock, HeadphonesIcon, Settings, LogOut } from "lucide-react";
+import { resolveAuthRoute } from "../services/authIdentity";
+import { clearAuthSession, getAuthSession } from "../services/authSession";
+
+function resolveHomeRoute() {
+    const session = getAuthSession();
+    return resolveAuthRoute(session?.user);
+}
+
+function TopBar() {
+    const navigate = useNavigate();
+    const [menuVisible, setMenuVisible] = useState(false);
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
     function handleKeyAction(event, action) {
         if (event.key === "Enter" || event.key === " ") {
@@ -35,11 +50,16 @@ function TopBar({ showLogo = false, iconColor }) {
                     tabIndex={0}
                     size={28}
                     strokeWidth={1.5}
+<<<<<<< HEAD
                     color={resolvedIconColor}
+=======
+                    color="#003366"
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
                     onClick={() => setMenuVisible(true)}
                     onKeyDown={(event) => handleKeyAction(event, () => setMenuVisible(true))}
                     style={{ cursor: "pointer" }}
                 />
+<<<<<<< HEAD
 
                 {showLogo && (
                     <img
@@ -52,6 +72,19 @@ function TopBar({ showLogo = false, iconColor }) {
                 {/* Espaco reservado do lado direito para manter a logo centralizada
                     (a navegacao para o inicio agora fica no menu inferior, sempre visivel). */}
                 {showLogo && <span aria-hidden="true" style={{ width: 28, display: "inline-block" }} />}
+=======
+                <House
+                    aria-label="Ir para tela inicial"
+                    role="button"
+                    tabIndex={0}
+                    size={28}
+                    strokeWidth={1.5}
+                    color="#003366"
+                    onClick={() => navigate(resolveHomeRoute())}
+                    onKeyDown={(event) => handleKeyAction(event, () => navigate(resolveHomeRoute()))}
+                    style={{ cursor: "pointer" }}
+                />
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
             </HeaderIcons>
 
             {menuVisible && (
@@ -72,6 +105,7 @@ function TopBar({ showLogo = false, iconColor }) {
                         ))}
 
                         <MenuItem
+<<<<<<< HEAD
                             role="switch"
                             aria-checked={temaEscuro}
                             aria-label={temaEscuro ? "Desativar tema escuro" : "Ativar tema escuro"}
@@ -112,6 +146,8 @@ function TopBar({ showLogo = false, iconColor }) {
                         </MenuItem>
 
                         <MenuItem
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
                             role="button"
                             tabIndex={0}
                             onClick={() => {

@@ -33,5 +33,10 @@ export function isLocatario(user) {
 }
 
 export function resolveAuthRoute(user) {
+<<<<<<< HEAD
   return isLocador(user) ? "/conta" : "/home";
 }
+=======
+  return isLocador(user) ? "/conta" : "/tipos-carros";
+}
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244

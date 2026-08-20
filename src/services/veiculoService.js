@@ -2,6 +2,7 @@ import { apiRequest } from "./apiClient";
 import { getAuthSession } from "./authSession";
 
 /**
+<<<<<<< HEAD
  * Normaliza um veículo do novo modelo da API, onde os dados descritivos
  * ficam em modeloVeiculo (objeto aninhado), mantendo compatibilidade com
  * o restante do front-end que acessa marca, modelo, ano, etc. no nível raiz.
@@ -42,6 +43,8 @@ export function normalizeVeiculo(veiculo) {
 }
 
 /**
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
  * Busca veículos públicos com filtros opcionais (sem autenticação obrigatória).
  * Endpoint: GET /veiculo/search
  *
@@ -49,7 +52,11 @@ export function normalizeVeiculo(veiculo) {
  * @param {string} [filters.marca]
  * @param {string} [filters.modelo]
  * @param {number} [filters.ano]
+<<<<<<< HEAD
  * @param {string} [filters.cambio]       - "Manual" | "Automatico"
+=======
+ * @param {string} [filters.cambio]       - "Manual" | "Automático"
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
  * @param {number} [filters.capacidade]
  * @param {boolean} [filters.eletrico]
  * @param {boolean} [filters.adaptado]
@@ -68,14 +75,22 @@ export async function searchVeiculos(filters = {}) {
 
   const query = params.toString() ? `?${params.toString()}` : "";
   const data = await apiRequest(`/veiculo/search${query}`);
+<<<<<<< HEAD
   const result = data.result ?? [];
   return result.map(normalizeVeiculo);
+=======
+  return data.result ?? [];
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 }
 
 /**
  * Lista veículos autenticados (com token do locatário/admin).
  * Endpoint: GET /veiculo/
+<<<<<<< HEAD
  * Os mesmos filtros de searchVeiculos se aplicam, além de idLocador e garagemId.
+=======
+ * Os mesmos filtros de searchVeiculos se aplicam.
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
  */
 export async function listVeiculos(filters = {}) {
   const session = getAuthSession();
@@ -89,6 +104,7 @@ export async function listVeiculos(filters = {}) {
   if (filters.capacidade) params.set("capacidade", String(filters.capacidade));
   if (filters.eletrico !== undefined) params.set("eletrico", String(filters.eletrico));
   if (filters.adaptado  !== undefined) params.set("adaptado",  String(filters.adaptado));
+<<<<<<< HEAD
   if (filters.idLocador)  params.set("idLocador", filters.idLocador);
   if (filters.garagemId)  params.set("garagemId", filters.garagemId);
 
@@ -153,6 +169,12 @@ export async function deleteVeiculo(id) {
     method: "DELETE",
     authToken,
   });
+=======
+
+  const query = params.toString() ? `?${params.toString()}` : "";
+  const data = await apiRequest(`/veiculo${query}`, { authToken });
+  return data.result ?? [];
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 }
 
 /**
@@ -168,6 +190,10 @@ export async function getVeiculoById(id) {
   const authToken = session?.token;
   const data = await apiRequest(`/veiculo/${id}`, { authToken });
 
+<<<<<<< HEAD
   const raw = data.result ?? data;
   return normalizeVeiculo(raw);
+=======
+  return data.result ?? data;
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 }

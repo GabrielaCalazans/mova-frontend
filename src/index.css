@@ -18,6 +18,7 @@
   --color-error: #b3261e;
   --color-error-soft: #fdecea;
 
+<<<<<<< HEAD
   /* Tokens usados pelos styled-components (authStyle.js) */
   --color-text-secondary: #555555;
   --color-text-strong: #333333;
@@ -40,6 +41,8 @@
   --color-unselected-border: #d0dff0;
   --color-logo-backdrop: transparent;
 
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   --radius-sm: 8px;
   --radius-md: 12px;
   --space-xs: 0.5rem;
@@ -50,6 +53,7 @@
 
   --shadow-card: 0 12px 30px rgba(0, 31, 63, 0.15);
   --transition-fast: 180ms ease;
+<<<<<<< HEAD
 
   /* Cores de preenchimento da marca (headers navy, botoes solidos, badges).
      Propositalmente CONSTANTES nos dois temas: um fundo navy com texto claro
@@ -105,6 +109,8 @@
   /* Mesmos valores do tema claro, de proposito - ver comentario em :root */
   --color-brand-fill: #00264d;
   --color-on-brand: #ffffff;
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 }
 
 body {
@@ -113,7 +119,10 @@ body {
   min-height: 100vh;
   background: linear-gradient(135deg, var(--color-background-start), var(--color-background-end));
   color: var(--color-text);
+<<<<<<< HEAD
   transition: background var(--transition-fast), color var(--transition-fast);
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 }
 
 h1 {

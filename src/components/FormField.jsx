@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿import { useState } from "react";
 
 const EyeIcon = ({ open }) =>
@@ -21,12 +22,18 @@ const EyeIcon = ({ open }) =>
   );
 
 function FormField({
+=======
+﻿function FormField({
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   id,
   name,
   type = "text",
   placeholder,
   ariaLabel,
+<<<<<<< HEAD
   label,
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   value,
   onChange,
   required = false,
@@ -38,11 +45,14 @@ function FormField({
   autoComplete,
   disabled = false,
 }) {
+<<<<<<< HEAD
   const [showPassword, setShowPassword] = useState(false);
 
   const isPasswordField = type === "password";
   const resolvedType = isPasswordField && showPassword ? "text" : type;
 
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   const hintId = `${id}-hint`;
   const hasMessage = Boolean(error || helperText);
 
@@ -54,6 +64,7 @@ function FormField({
 
   return (
     <div className="auth-field">
+<<<<<<< HEAD
       {label && <label htmlFor={id}>{label}</label>}
       <div className={isPasswordField ? "auth-field__password-wrapper" : undefined}>
         <input
@@ -85,6 +96,24 @@ function FormField({
           </button>
         )}
       </div>
+=======
+      <input
+        id={id}
+        name={name}
+        type={type}
+        placeholder={placeholder}
+        aria-label={ariaLabel}
+        aria-invalid={Boolean(error)}
+        aria-describedby={hasMessage ? hintId : undefined}
+        value={value}
+        onChange={onChange}
+        required={required}
+        data-state={dataState}
+        inputMode={inputMode}
+        autoComplete={autoComplete}
+        disabled={disabled}
+      />
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
       {hasMessage && (
         <p id={hintId} className={messageClassName} role={error ? "alert" : undefined}>

@@ -6,8 +6,12 @@ import {
   saveAuthSession,
 } from "./authSession";
 
+<<<<<<< HEAD
 const AUTH_DEBUG_ENABLED =
   String(import.meta.env.AUTH_DEBUG).toLowerCase() === "true";
+=======
+const AUTH_DEBUG_ENABLED = String(import.meta.env.AUTH_DEBUG).toLowerCase() === "true";
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
 function authDebug(label, payload) {
   if (!AUTH_DEBUG_ENABLED) {
@@ -57,6 +61,7 @@ function hasProfileFields(value) {
 
   return Boolean(
     value.id ||
+<<<<<<< HEAD
     value._id ||
     value.nome ||
     value.name ||
@@ -70,6 +75,21 @@ function hasProfileFields(value) {
     value.celphone ||
     value.endereco ||
     value.address,
+=======
+      value._id ||
+      value.nome ||
+      value.name ||
+      value.nomeCompleto ||
+      value.nome_completo ||
+      value.email ||
+      value.empresa ||
+      value.cnpj ||
+      value.telefone ||
+      value.celular ||
+      value.celphone ||
+      value.endereco ||
+      value.address
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   );
 }
 
@@ -96,6 +116,7 @@ function onlyDigits(value) {
 }
 
 function buildContaPayload(values) {
+<<<<<<< HEAD
   // O backend exige o campo "cargo" (LOCATARIO | LOCADOR | ADMIN).
   // Inferimos pelo contexto: se vier em values.cargo, usamos;
   // caso contrario, values.cnpj ou values.empresa indicam LOCADOR; default LOCATARIO.
@@ -103,13 +124,18 @@ function buildContaPayload(values) {
     values.cargo ||
     (values.cnpj || values.empresa ? "LOCADOR" : "LOCATARIO");
 
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   return {
     nome: values.name,
     email: values.email,
     telefone: onlyDigits(values.celphone),
     endereco: values.address || "",
     cep: onlyDigits(values.cep),
+<<<<<<< HEAD
     cargo,
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   };
 }
 
@@ -162,10 +188,14 @@ function pickProfileSource(candidates, fallbackEmail) {
   for (const candidate of candidates) {
     if (Array.isArray(candidate)) {
       const matchingByEmail = targetEmail
+<<<<<<< HEAD
         ? candidate.find(
             (item) =>
               hasProfileFields(item) && getCandidateEmail(item) === targetEmail,
           )
+=======
+        ? candidate.find((item) => hasProfileFields(item) && getCandidateEmail(item) === targetEmail)
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
         : null;
 
       if (matchingByEmail) {
@@ -192,6 +222,7 @@ function normalizeApiUser(payload, fallbackEmail) {
   const result = isObject(root.result) ? root.result : null;
   const data = isObject(root.data) ? root.data : null;
   const nestedData = isObject(result?.data) ? result.data : null;
+<<<<<<< HEAD
   const cargo = resolveCargo(
     root.cargo || result?.cargo || data?.cargo,
     result || data || root,
@@ -213,6 +244,23 @@ function normalizeApiUser(payload, fallbackEmail) {
     ],
     fallbackEmail,
   );
+=======
+  const cargo = resolveCargo(root.cargo || result?.cargo || data?.cargo, result || data || root);
+  const source = pickProfileSource([
+    root.user,
+    root.conta,
+    result?.user,
+    result?.conta,
+    data?.user,
+    data?.conta,
+    nestedData?.user,
+    nestedData?.conta,
+    root.result,
+    root.data,
+    result?.data,
+    result,
+  ], fallbackEmail);
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
   if (!source) {
     return { email: fallbackEmail };
@@ -220,12 +268,16 @@ function normalizeApiUser(payload, fallbackEmail) {
 
   return {
     id: source.id || source._id,
+<<<<<<< HEAD
     name:
       source.nome ||
       source.name ||
       source.nomeCompleto ||
       source.nome_completo ||
       source.fullName,
+=======
+    name: source.nome || source.name || source.nomeCompleto || source.nome_completo || source.fullName,
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     email: source.email || fallbackEmail,
     cargo: resolveCargo(source.cargo || source.profileType || cargo, source),
     empresa: source.empresa,
@@ -284,12 +336,16 @@ function normalizeCurrentUserFromMe(payload) {
     roleData = locatarioNode;
   }
 
+<<<<<<< HEAD
   const accountId =
     conta.id ||
     result.id ||
     result.contaId ||
     roleData.contaId ||
     roleData.accountId;
+=======
+  const accountId = conta.id || result.id || result.contaId || roleData.contaId || roleData.accountId;
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   const profileId = roleData.id || roleData._id;
 
   const user = {
@@ -300,6 +356,7 @@ function normalizeCurrentUserFromMe(payload) {
     email: conta.email || result.email,
     cargo,
     profileType: cargo.toLowerCase(),
+<<<<<<< HEAD
     celphone:
       conta.telefone ||
       conta.celular ||
@@ -308,10 +365,14 @@ function normalizeCurrentUserFromMe(payload) {
       roleData.celular ||
       roleData.celphone ||
       "",
+=======
+    celphone: conta.telefone || conta.celular || conta.celphone || roleData.telefone || roleData.celular || roleData.celphone || "",
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     empresa: roleData.empresa || "",
     cnpj: roleData.cnpj || "",
     cpf: roleData.cpf || "",
     cnh: roleData.cnh || "",
+<<<<<<< HEAD
     address:
       conta.endereco ||
       conta.address ||
@@ -320,6 +381,9 @@ function normalizeCurrentUserFromMe(payload) {
       roleData.endereco ||
       roleData.address ||
       "",
+=======
+    address: conta.endereco || conta.address || result.endereco || result.address || roleData.endereco || roleData.address || "",
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     cep: conta.cep || result.cep || roleData.cep || "",
   };
 
@@ -329,11 +393,15 @@ function normalizeCurrentUserFromMe(payload) {
       cargo: resolveCargo(cargo, user),
       profileType: resolveProfileType(cargo, user),
     },
+<<<<<<< HEAD
     profileSource: locadorNode
       ? "locador"
       : locatarioNode
         ? "locatario"
         : "none",
+=======
+    profileSource: locadorNode ? "locador" : locatarioNode ? "locatario" : "none",
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   };
 }
 
@@ -342,10 +410,14 @@ function extractToken(payload) {
     return null;
   }
 
+<<<<<<< HEAD
   const result =
     payload.result && typeof payload.result === "object"
       ? payload.result
       : null;
+=======
+  const result = payload.result && typeof payload.result === "object" ? payload.result : null;
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
   return payload.token || result?.token || null;
 }
@@ -354,6 +426,7 @@ function persistUserProfile(user, token) {
   const session = getAuthSession();
   const nextToken = token ?? session?.token ?? null;
   const previousUser = session?.user || {};
+<<<<<<< HEAD
   const nextCargo = resolveCargo(
     user?.cargo ||
       user?.profileType ||
@@ -364,6 +437,12 @@ function persistUserProfile(user, token) {
       ...user,
     },
   );
+=======
+  const nextCargo = resolveCargo(user?.cargo || user?.profileType || previousUser.cargo || previousUser.profileType, {
+    ...previousUser,
+    ...user,
+  });
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   const nextUser = {
     ...previousUser,
     ...user,
@@ -427,6 +506,7 @@ export async function loginUser({ email, senha }) {
     const user = {
       ...apiUser,
       ...currentUser,
+<<<<<<< HEAD
       cargo: resolveCargo(
         currentUser?.cargo ||
           apiUser?.cargo ||
@@ -434,6 +514,9 @@ export async function loginUser({ email, senha }) {
           apiUser?.profileType,
         currentUser || apiUser,
       ),
+=======
+      cargo: resolveCargo(currentUser?.cargo || apiUser?.cargo || currentUser?.profileType || apiUser?.profileType, currentUser || apiUser),
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     };
 
     user.profileType = resolveProfileType(user.cargo || user.profileType, user);
@@ -456,10 +539,14 @@ export async function loginUser({ email, senha }) {
       ...result,
     };
   } catch (error) {
+<<<<<<< HEAD
     const normalized = normalizeError(
       error,
       "Nao foi possivel realizar login.",
     );
+=======
+    const normalized = normalizeError(error, "Nao foi possivel realizar login.");
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
     if (/credenciais|unauthorized|401/i.test(normalized.message)) {
       throw new Error("Usuario ou senha inválidos.");
@@ -507,7 +594,10 @@ export async function registerLocatario(values) {
       body: JSON.stringify({
         ...buildContaPayload(values),
         senha: values.password,
+<<<<<<< HEAD
         cargo: "LOCATARIO",
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
       }),
     });
 
@@ -524,9 +614,12 @@ export async function registerLocatario(values) {
         id: contaId,
         cpf: values.cpf.replace(/\D/g, ""),
         cnh: values.cnh.replace(/\D/g, ""),
+<<<<<<< HEAD
         rg: values.rg.replace(/[.\-\s]/g, "").toUpperCase(),
         dataNascimento: values.dataNascimento,
         ...(values.deficienciaId ? { deficiencia_id: values.deficienciaId } : {}),
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
       }),
     });
 
@@ -537,10 +630,14 @@ export async function registerLocatario(values) {
       locatario: locatarioResult,
     };
   } catch (error) {
+<<<<<<< HEAD
     throw normalizeError(
       error,
       "Nao foi possivel concluir o cadastro de locatario.",
     );
+=======
+    throw normalizeError(error, "Nao foi possivel concluir o cadastro de locatario.");
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   }
 }
 
@@ -581,10 +678,14 @@ export async function registerLocador(values) {
       ...result,
     };
   } catch (error) {
+<<<<<<< HEAD
     throw normalizeError(
       error,
       "Nao foi possivel concluir o cadastro de locador.",
     );
+=======
+    throw normalizeError(error, "Nao foi possivel concluir o cadastro de locador.");
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   }
 }
 
@@ -593,6 +694,7 @@ export async function updateUserProfile(values) {
   const session = getAuthSession();
   const token = session?.token;
   const sessionUser = session?.user || {};
+<<<<<<< HEAD
   const accountId =
     values.id || values.accountId || sessionUser.accountId || sessionUser.id;
   let profileId = values.profileId || sessionUser.profileId;
@@ -606,6 +708,14 @@ export async function updateUserProfile(values) {
       ...values,
     },
   );
+=======
+  const accountId = values.id || values.accountId || sessionUser.accountId || sessionUser.id;
+  let profileId = values.profileId || sessionUser.profileId;
+  let cargo = resolveCargo(values.cargo || values.profileType || sessionUser.cargo || sessionUser.profileType, {
+    ...sessionUser,
+    ...values,
+  });
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
   if (!isApiConfigured()) {
     throw new Error("API_BASE_URL nao configurada.");
@@ -623,6 +733,7 @@ export async function updateUserProfile(values) {
       });
 
       if (freshProfile) {
+<<<<<<< HEAD
         cargo = resolveCargo(
           freshProfile.cargo || freshProfile.profileType || cargo,
           {
@@ -630,6 +741,12 @@ export async function updateUserProfile(values) {
             ...values,
           },
         );
+=======
+        cargo = resolveCargo(freshProfile.cargo || freshProfile.profileType || cargo, {
+          ...freshProfile,
+          ...values,
+        });
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
         profileId = freshProfile.profileId || profileId;
       }
     } catch {
@@ -648,9 +765,13 @@ export async function updateUserProfile(values) {
 
     if (cargo === "LOCATARIO") {
       if (!profileId) {
+<<<<<<< HEAD
         throw new Error(
           "Nao foi possivel identificar o perfil vinculado da conta autenticada.",
         );
+=======
+        throw new Error("Nao foi possivel identificar o perfil vinculado da conta autenticada.");
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
       }
 
       try {
@@ -660,17 +781,25 @@ export async function updateUserProfile(values) {
           body: JSON.stringify(buildLocatarioUpdatePayload(values)),
         });
       } catch {
+<<<<<<< HEAD
         throw new Error(
           "Dados da conta atualizados, mas falha ao atualizar dados de perfil.",
         );
+=======
+        throw new Error("Dados da conta atualizados, mas falha ao atualizar dados de perfil.");
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
       }
     }
 
     if (cargo === "LOCADOR") {
       if (!profileId) {
+<<<<<<< HEAD
         throw new Error(
           "Nao foi possivel identificar o perfil vinculado da conta autenticada.",
         );
+=======
+        throw new Error("Nao foi possivel identificar o perfil vinculado da conta autenticada.");
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
       }
 
       try {
@@ -680,9 +809,13 @@ export async function updateUserProfile(values) {
           body: JSON.stringify(buildLocadorUpdatePayload(values)),
         });
       } catch {
+<<<<<<< HEAD
         throw new Error(
           "Dados da conta atualizados, mas falha ao atualizar dados de perfil.",
         );
+=======
+        throw new Error("Dados da conta atualizados, mas falha ao atualizar dados de perfil.");
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
       }
     }
 
@@ -690,6 +823,7 @@ export async function updateUserProfile(values) {
     const mergedUser = {
       ...normalizedProfile,
       ...apiUser,
+<<<<<<< HEAD
       id:
         accountId || sessionUser.id || apiUser.id || normalizedProfile.id || "",
       accountId:
@@ -699,6 +833,10 @@ export async function updateUserProfile(values) {
         apiUser.id ||
         normalizedProfile.id ||
         "",
+=======
+      id: accountId || sessionUser.id || apiUser.id || normalizedProfile.id || "",
+      accountId: accountId || sessionUser.accountId || sessionUser.id || apiUser.id || normalizedProfile.id || "",
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
       profileId: profileId || sessionUser.profileId || "",
       cargo,
       profileType: resolveProfileType(cargo, normalizedProfile),
@@ -733,10 +871,14 @@ export async function requestPasswordReset({ email }) {
       ...result,
     };
   } catch (error) {
+<<<<<<< HEAD
     throw normalizeError(
       error,
       "Nao foi possivel solicitar recuperacao de senha.",
     );
+=======
+    throw normalizeError(error, "Nao foi possivel solicitar recuperacao de senha.");
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   }
 }
 
@@ -852,4 +994,8 @@ export async function fetchCurrentUserProfile(options = {}) {
   }
 
   return user;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244

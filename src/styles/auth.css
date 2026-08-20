@@ -1,24 +1,38 @@
 ﻿.auth-page {
   min-height: 100vh;
   display: grid;
+<<<<<<< HEAD
   place-items: start center;
   padding: var(--space-xl) var(--space-lg);
   background: linear-gradient(180deg, var(--color-background-start), var(--color-background-end));
+=======
+  place-items: center;
+  padding: var(--space-lg);
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 }
 
 .auth-card {
   width: 100%;
+<<<<<<< HEAD
   max-width: 380px;
   background: transparent;
   border-radius: var(--radius-md);
   box-shadow: none;
   padding: var(--space-lg) 0;
+=======
+  max-width: 500px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-xl);
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   text-align: center;
 }
 
 .auth-card h1 {
   margin: 0 0 1.25rem;
   color: var(--color-primary-strong);
+<<<<<<< HEAD
   font-weight: 700;
   font-size: clamp(1.5rem, 4vw, 1.85rem);
 }
@@ -57,6 +71,15 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+=======
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+}
+
+.auth-logo {
+  height: 7em;
+  margin-bottom: 0.75rem;
+  transition: filter 300ms;
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 }
 
 .auth-logo:hover {
@@ -80,21 +103,30 @@
 
 .auth-form input {
   width: 100%;
+<<<<<<< HEAD
   box-sizing: border-box;
   padding: 0.85rem 1rem;
   border-radius: 14px;
   border: 1.5px solid var(--color-border);
+=======
+  padding: 0.72rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   background: var(--color-surface);
   color: var(--color-text);
   font-size: 1rem;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
+<<<<<<< HEAD
 .auth-form input::placeholder {
   color: var(--color-text-muted);
   opacity: 1;
 }
 
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 .auth-form input[aria-invalid="true"] {
   border-color: var(--color-error);
   box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.12);
@@ -119,6 +151,7 @@
 
 .auth-button,
 .auth-button-secondary {
+<<<<<<< HEAD
   display: flex;
   align-items: center;
   justify-content: center;
@@ -129,15 +162,47 @@
   cursor: pointer;
   font-weight: 600;
   font-size: 0.95rem;
+=======
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.25rem;
+  padding: 0.72rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   text-decoration: none;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
 }
 
 .auth-button {
+<<<<<<< HEAD
   background: var(--color-brand-fill);
   color: var(--color-on-brand);
 }
 
+=======
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-soft));
+  color: var(--color-text-inverse);
+}
+
+.auth-button-callout {
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: var(--space-xs);
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  color: var(--color-text-inverse);
+  border-color: rgba(20, 184, 166, 0.45);
+  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.25);
+}
+
+.auth-button-callout:hover {
+  background: linear-gradient(135deg, #0d6b62, #0f9d8e);
+}
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
 .auth-actions {
   display: grid;
@@ -147,8 +212,13 @@
 }
 
 .auth-button-secondary {
+<<<<<<< HEAD
   background: var(--color-brand-fill);
   color: var(--color-on-brand);
+=======
+  background: transparent;
+  color: var(--color-primary);
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 }
 
 .auth-button:hover,
@@ -166,7 +236,11 @@
 }
 
 .auth-button-secondary:hover {
+<<<<<<< HEAD
   opacity: 0.9;
+=======
+  background: rgba(174, 197, 231, 0.35);
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 }
 
 .auth-forgot {
@@ -268,6 +342,7 @@
   .auth-actions {
     grid-template-columns: 1fr;
   }
+<<<<<<< HEAD
 }
 /* ── Password toggle ─────────────────────────────────────────── */
 .auth-field__password-wrapper {
@@ -510,4 +585,6 @@
   .auth-card--left {
     max-width: 480px;
   }
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 }

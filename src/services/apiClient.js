@@ -10,6 +10,7 @@ function parseApiErrorMessage(payload) {
   }
 
   if (typeof payload === "object") {
+<<<<<<< HEAD
     // Erros de validacao (Zod) vem como { message: "Invalid Data Format",
     // errors: [{ path: [...], message: "..." }, ...] }. O "message" sozinho
     // e generico; o detalhe util (qual campo, qual regra falhou) esta em
@@ -26,6 +27,8 @@ function parseApiErrorMessage(payload) {
       return detalhes || payload.message || null;
     }
 
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     return (
       payload.message ||
       payload.error?.message ||

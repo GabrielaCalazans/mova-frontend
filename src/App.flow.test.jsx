@@ -89,12 +89,17 @@ describe("Fluxo de autenticacao", () => {
       senha: "Senha12345",
     });
 
+<<<<<<< HEAD
     expect(await screen.findByRole("heading", { name: /página inicial/i })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /alugar um carro/i }));
 
     expect(await screen.findByRole("heading", { name: /escolha o tipo de carro/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /selecionar/i })).toBeInTheDocument();
+=======
+    expect(await screen.findByRole("heading", { name: /escolha o tipo de carro/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /selecionar/i }).length).toBeGreaterThan(0);
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   });
 
   it("faz logout e limpa a sessao", async () => {
@@ -107,9 +112,15 @@ describe("Fluxo de autenticacao", () => {
     await user.type(screen.getByLabelText(/senha/i), "Senha12345");
     await user.click(screen.getByRole("button", { name: /entrar/i }));
 
+<<<<<<< HEAD
     expect(await screen.findByRole("heading", { name: /página inicial/i })).toBeInTheDocument();
 
     await user.click(screen.getAllByRole("button", { name: /perfil/i })[0]);
+=======
+    expect(await screen.findByRole("heading", { name: /escolha o tipo de carro/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /abrir menu/i }));
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     await user.click(await screen.findByText(/^sair$/i));
 
     expect(await screen.findByRole("heading", { name: /login/i })).toBeInTheDocument();
@@ -158,7 +169,11 @@ describe("Fluxo de autenticacao", () => {
     render(<App />);
 
     expect(
+<<<<<<< HEAD
       await screen.findByRole("heading", { name: /crie uma conta/i })
+=======
+      await screen.findByRole("heading", { name: /cadastro de locatário/i })
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     ).toBeInTheDocument();
 
     await user.click(screen.getByRole("link", { name: /seja um locador/i }));
@@ -288,7 +303,11 @@ describe("Fluxo de autenticacao", () => {
     render(<App />);
 
     expect(await screen.findByRole("heading", { name: /checkout da reserva/i })).toBeInTheDocument();
+<<<<<<< HEAD
     expect(screen.getAllByText(/hatch plus/i).length).toBeGreaterThan(0);
+=======
+    expect(screen.getByText(/hatch plus/i)).toBeInTheDocument();
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     expect(screen.getByText(/garagem centro/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /confirmar e seguir para pagamento/i })).toBeInTheDocument();
   });

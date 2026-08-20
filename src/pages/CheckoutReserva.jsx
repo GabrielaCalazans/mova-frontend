@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import movaLogo from "../assets/mova_logo.png";
+<<<<<<< HEAD
 import { getJourneyStep, updateJourneyStep } from "../utils/journeyStorage";
 import {
   calculateReservationDays,
@@ -13,6 +14,12 @@ import { getVeiculoById } from "../services/veiculoService";
 import { getReservationPricing } from "../services/reservationPricing";
 import { createReserva } from "../services/reservaService";
 import { getAuthSession } from "../services/authSession";
+=======
+import { getJourneyStep } from "../utils/journeyStorage";
+import { calculateReservationDays, formatMoneyBRL, parseJourneyDateTime } from "../utils/reservationMath";
+import { getVeiculoById } from "../services/veiculoService";
+import { getReservationPricing } from "../services/reservationPricing";
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 import {
   LogoContainer,
   PrimaryButton,
@@ -200,6 +207,7 @@ function resolveVehicleImage(vehicle) {
   );
 }
 
+<<<<<<< HEAD
 function resolveModeloVeiculo(vehicle) {
   return vehicle?.modeloVeiculo ?? {};
 }
@@ -221,6 +229,11 @@ function resolveVehicleName(vehicle) {
       .filter(Boolean)
       .join(" ")
       .trim() ||
+=======
+function resolveVehicleName(vehicle) {
+  return (
+    vehicle?.nome ||
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     [vehicle?.marca, vehicle?.modelo].filter(Boolean).join(" ").trim() ||
     vehicle?.modelo ||
     "Veículo selecionado"
@@ -252,9 +265,13 @@ function normalizeDisplayValue(value) {
 }
 
 function formatEnergyText(autonomy, fuel) {
+<<<<<<< HEAD
   const parts = [autonomy, fuel]
     .map((part) => normalizeDisplayValue(part))
     .filter((part) => part !== "Não informado");
+=======
+  const parts = [autonomy, fuel].map((part) => normalizeDisplayValue(part)).filter((part) => part !== "Não informado");
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
   return parts.length > 0 ? parts.join(" • ") : "Não informado";
 }
@@ -262,8 +279,11 @@ function formatEnergyText(autonomy, fuel) {
 function buildAdditionalDetails(vehicle) {
   const ignoredKeys = new Set([
     "id",
+<<<<<<< HEAD
     "idLocador",
     "idModeloVeiculo",
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     "nome",
     "marca",
     "modelo",
@@ -277,8 +297,11 @@ function buildAdditionalDetails(vehicle) {
     "capacidade",
     "caracteristicas",
     "acessibilidade",
+<<<<<<< HEAD
     "adaptado",
     "eletrico",
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     "cambio",
     "transmissao",
     "autonomia",
@@ -287,6 +310,7 @@ function buildAdditionalDetails(vehicle) {
     "valorDiaria",
     "precoDiaria",
     "dailyRate",
+<<<<<<< HEAD
     "locadorId",
     "idModeloVeiculo",
     "modeloVeiculo",  // objeto aninhado — campos já promovidos pela normalização
@@ -306,6 +330,17 @@ function buildAdditionalDetails(vehicle) {
         value !== null &&
         value !== "",
     )
+=======
+    "idLocador",
+    "locadorId",
+    "createdAt",
+    "criadoEm",
+    "status",
+  ]);
+
+  return Object.entries(vehicle || {})
+    .filter(([key, value]) => !ignoredKeys.has(key) && value !== undefined && value !== null && value !== "")
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     .map(([key, value]) => ({
       label: key
         .replace(/([a-z])([A-Z])/g, "$1 $2")
@@ -319,9 +354,13 @@ function JourneySummary({ label, value }) {
   return (
     <JourneySummaryCard>
       <JourneySummaryLabel>{label}</JourneySummaryLabel>
+<<<<<<< HEAD
       <JourneySummaryValue style={{ whiteSpace: "pre-line" }}>
         {value}
       </JourneySummaryValue>
+=======
+      <JourneySummaryValue style={{ whiteSpace: "pre-line" }}>{value}</JourneySummaryValue>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     </JourneySummaryCard>
   );
 }
@@ -340,6 +379,7 @@ export default function CheckoutReserva() {
   const [error, setError] = useState("");
   const [vehicle, setVehicle] = useState(null);
   const [pricing, setPricing] = useState(null);
+<<<<<<< HEAD
   const [confirmando, setConfirmando] = useState(false);
   const [confirmError, setConfirmError] = useState("");
 
@@ -387,6 +427,11 @@ export default function CheckoutReserva() {
     () => parseJourneyDateTime(devolucao),
     [devolucao],
   );
+=======
+
+  const pickupDateTime = useMemo(() => parseJourneyDateTime(retirada), [retirada]);
+  const dropoffDateTime = useMemo(() => parseJourneyDateTime(devolucao), [devolucao]);
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
   useEffect(() => {
     document.title = "MOVA - Checkout da Reserva";
@@ -404,10 +449,14 @@ export default function CheckoutReserva() {
           throw new Error("Selecione um veículo para continuar.");
         }
 
+<<<<<<< HEAD
         const totalDiarias = calculateReservationDays(
           pickupDateTime,
           dropoffDateTime,
         );
+=======
+        const totalDiarias = calculateReservationDays(pickupDateTime, dropoffDateTime);
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
         const [vehicleDetails, pricingDetails] = await Promise.all([
           getVeiculoById(veiculoSalvo.id),
           getReservationPricing({
@@ -427,10 +476,14 @@ export default function CheckoutReserva() {
           return;
         }
 
+<<<<<<< HEAD
         setError(
           caughtError?.message ||
             "Não foi possível carregar o checkout da reserva.",
         );
+=======
+        setError(caughtError?.message || "Não foi possível carregar o checkout da reserva.");
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
       } finally {
         if (active) {
           setLoading(false);
@@ -445,6 +498,7 @@ export default function CheckoutReserva() {
     };
   }, [dropoffDateTime, pickupDateTime, veiculoSalvo]);
 
+<<<<<<< HEAD
   const additionalDetails = useMemo(
     () => buildAdditionalDetails(vehicle),
     [vehicle],
@@ -453,6 +507,13 @@ export default function CheckoutReserva() {
   if (loading) {
     return (
       <AuthenticatedLayout topBarShowLogo={false}>
+=======
+  const additionalDetails = useMemo(() => buildAdditionalDetails(vehicle), [vehicle]);
+
+  if (loading) {
+    return (
+      <AuthenticatedLayout>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
         <LogoContainer>
           <img src={movaLogo} alt="Mova Logo" />
         </LogoContainer>
@@ -464,13 +525,18 @@ export default function CheckoutReserva() {
 
   if (error) {
     return (
+<<<<<<< HEAD
       <AuthenticatedLayout topBarShowLogo={false}>
+=======
+      <AuthenticatedLayout>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
         <LogoContainer>
           <img src={movaLogo} alt="Mova Logo" />
         </LogoContainer>
         <Title>Checkout da Reserva</Title>
         <StatusMessage style={{ color: "#c0392b" }}>{error}</StatusMessage>
         <SummaryActionRow>
+<<<<<<< HEAD
           <SecondaryButton
             type="button"
             onClick={() => navigate("/escolha-garagem-devolucao")}
@@ -480,6 +546,10 @@ export default function CheckoutReserva() {
           <PrimaryButton type="button" onClick={() => navigate("/carros")}>
             Escolher outro veículo
           </PrimaryButton>
+=======
+          <SecondaryButton type="button" onClick={() => navigate("/escolha-garagem-devolucao")}>Voltar para devolução</SecondaryButton>
+          <PrimaryButton type="button" onClick={() => navigate("/carros")}>Escolher outro veículo</PrimaryButton>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
         </SummaryActionRow>
       </AuthenticatedLayout>
     );
@@ -491,6 +561,7 @@ export default function CheckoutReserva() {
   const diariaValue = pricing?.dailyRate ?? 0;
   const feeValue = pricing?.fees ?? 0;
   const totalValue = pricing?.total ?? 0;
+<<<<<<< HEAD
   // Novo modelo: campos descritivos vêm de modeloVeiculo mas já normalizados
   // por normalizeVeiculo() no serviço. Fallback para veiculoSalvo (journey storage).
   const vehicleCategory = resolveVehicleField(
@@ -532,14 +603,31 @@ export default function CheckoutReserva() {
 
   return (
     <AuthenticatedLayout topBarShowLogo={false}>
+=======
+  const vehicleCategory = vehicle?.categoria ?? veiculoSalvo?.categoria ?? "Não informado";
+  const vehicleTransmission = vehicle?.transmissao ?? vehicle?.cambio ?? veiculoSalvo?.cambio ?? "Não informado";
+  const vehicleCapacity = vehicle?.capacidade ?? veiculoSalvo?.capacidade ?? "Não informado";
+  const vehicleAccessibility = vehicle?.acessibilidade ?? veiculoSalvo?.acessibilidade ?? "Não informado";
+  const vehicleAutonomy = vehicle?.autonomia ?? veiculoSalvo?.autonomia ?? "Não informado";
+  const vehicleFuel = vehicle?.combustivel ?? vehicle?.energia ?? veiculoSalvo?.combustivel ?? "Não informado";
+  const pickupAddress = retirada.garageAddress || retirada.garageName || "Não informado";
+  const dropoffAddress = devolucao.garageAddress || devolucao.garageName || "Não informado";
+
+  return (
+    <AuthenticatedLayout>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
       <LogoContainer>
         <img src={movaLogo} alt="Mova Logo" />
       </LogoContainer>
 
       <Title>Checkout da Reserva</Title>
+<<<<<<< HEAD
       <Subtitle>
         Confira todos os detalhes antes de seguir para o pagamento.
       </Subtitle>
+=======
+      <Subtitle>Confira todos os detalhes antes de seguir para o pagamento.</Subtitle>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
       <PageStack>
         <SectionCard>
@@ -556,6 +644,7 @@ export default function CheckoutReserva() {
             <div>
               <VehicleTitle>{vehicleName}</VehicleTitle>
               <VehicleMeta>{vehicleCategory}</VehicleMeta>
+<<<<<<< HEAD
               <VehicleMeta>
                 Transmissão: {normalizeDisplayValue(vehicleTransmission)}
               </VehicleMeta>
@@ -577,6 +666,12 @@ export default function CheckoutReserva() {
                 Autonomia/combustível:{" "}
                 {formatEnergyText(vehicleAutonomy, vehicleFuel)}
               </VehicleMeta>
+=======
+              <VehicleMeta>Transmissão: {normalizeDisplayValue(vehicleTransmission)}</VehicleMeta>
+              <VehicleMeta>Capacidade: {normalizeDisplayValue(vehicleCapacity)}</VehicleMeta>
+              <VehicleMeta>Acessibilidade: {normalizeDisplayValue(vehicleAccessibility)}</VehicleMeta>
+              <VehicleMeta>Autonomia/combustível: {formatEnergyText(vehicleAutonomy, vehicleFuel)}</VehicleMeta>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
             </div>
           </VehicleTop>
 
@@ -585,15 +680,20 @@ export default function CheckoutReserva() {
           <KeyValueGrid>
             <KeyValueItem>
               <KeyValueLabel>Características</KeyValueLabel>
+<<<<<<< HEAD
               <KeyValueValue>
                 {normalizeDisplayValue(
                   vehicle?.caracteristicas ?? veiculoSalvo?.caracteristicas,
                 )}
               </KeyValueValue>
+=======
+              <KeyValueValue>{normalizeDisplayValue(vehicle?.caracteristicas ?? veiculoSalvo?.caracteristicas)}</KeyValueValue>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
             </KeyValueItem>
 
             <KeyValueItem>
               <KeyValueLabel>Placa</KeyValueLabel>
+<<<<<<< HEAD
               <KeyValueValue>
                 {normalizeDisplayValue(vehicle?.placa ?? veiculoSalvo?.placa)}
               </KeyValueValue>
@@ -616,17 +716,24 @@ export default function CheckoutReserva() {
               <KeyValueValue>
                 {normalizeDisplayValue(vehicle?.status ?? veiculoSalvo?.status)}
               </KeyValueValue>
+=======
+              <KeyValueValue>{normalizeDisplayValue(vehicle?.placa ?? veiculoSalvo?.placa)}</KeyValueValue>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
             </KeyValueItem>
           </KeyValueGrid>
 
           {additionalDetails.length > 0 && (
             <>
               <Divider />
+<<<<<<< HEAD
               <SectionTitle
                 style={{ fontSize: "0.95rem", marginBottom: "0.75rem" }}
               >
                 Detalhes adicionais
               </SectionTitle>
+=======
+              <SectionTitle style={{ fontSize: "0.95rem", marginBottom: "0.75rem" }}>Detalhes adicionais</SectionTitle>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
               <KeyValueGrid>
                 {additionalDetails.map((detail) => (
                   <KeyValueItem key={detail.label}>
@@ -653,6 +760,7 @@ export default function CheckoutReserva() {
         <JourneySummaryCard>
           <JourneySummaryLabel>Resumo financeiro</JourneySummaryLabel>
           <PriceList>
+<<<<<<< HEAD
             <PriceRow>
               <PriceLabel>Diárias</PriceLabel>
               <PriceValue>{totalDiarias}</PriceValue>
@@ -670,10 +778,18 @@ export default function CheckoutReserva() {
               <PriceLabel>Total</PriceLabel>
               <PriceValue>{formatMoneyBRL(totalValue)}</PriceValue>
             </PriceRow>
+=======
+            <PriceRow><PriceLabel>Diárias</PriceLabel><PriceValue>{totalDiarias}</PriceValue></PriceRow>
+            <PriceRow><PriceLabel>Valor da diária</PriceLabel><PriceValue>{formatMoneyBRL(diariaValue)}</PriceValue></PriceRow>
+            <PriceRow><PriceLabel>Taxas</PriceLabel><PriceValue>{formatMoneyBRL(feeValue)}</PriceValue></PriceRow>
+            <Divider />
+            <PriceRow><PriceLabel>Total</PriceLabel><PriceValue>{formatMoneyBRL(totalValue)}</PriceValue></PriceRow>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
           </PriceList>
         </JourneySummaryCard>
 
         <SummaryActionRow>
+<<<<<<< HEAD
           <SecondaryButton
             type="button"
             onClick={() => navigate("/escolha-garagem-devolucao")}
@@ -691,3 +807,12 @@ export default function CheckoutReserva() {
     </AuthenticatedLayout>
   );
 }
+=======
+          <SecondaryButton type="button" onClick={() => navigate("/escolha-garagem-devolucao")}>Editar devolução</SecondaryButton>
+          <PrimaryButton type="button" onClick={() => navigate("/pagamento")}>Confirmar e seguir para pagamento</PrimaryButton>
+        </SummaryActionRow>
+      </PageStack>
+    </AuthenticatedLayout>
+  );
+}
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244

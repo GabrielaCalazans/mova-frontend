@@ -1,6 +1,10 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import { User, ChevronDown } from "lucide-react";
+=======
+import movaLogo from "../assets/mova_logo.png";
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import FormField from "../components/FormField";
 import { useFormState } from "../hooks/useFormState";
@@ -15,7 +19,11 @@ import {
   updateUserProfile,
 } from "../services/authService";
 import { maskCelphone, maskCep, maskCpf, maskCnpj } from "../utils/inputMasks";
+<<<<<<< HEAD
 import { validateProfileForm, isSenhaForte } from "../utils/formValidators";
+=======
+import { validateProfileForm } from "../utils/formValidators";
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
 const CONTA_DEBUG_ENABLED = String(import.meta.env.AUTH_DEBUG).toLowerCase() === "true";
 
@@ -29,6 +37,7 @@ function contaDebug(label, payload) {
   console.groupEnd();
 }
 
+<<<<<<< HEAD
 function ProfileMenuRow({ label, open, onToggle, tone = "default", children }) {
   const isExpandable = Boolean(children);
 
@@ -55,6 +64,8 @@ function ProfileMenuRow({ label, open, onToggle, tone = "default", children }) {
   );
 }
 
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 function Conta() {
   const navigate = useNavigate();
   const authSession = getAuthSession();
@@ -69,11 +80,14 @@ function Conta() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+<<<<<<< HEAD
   const [openSection, setOpenSection] = useState(null);
 
   function toggleSection(key) {
     setOpenSection((current) => (current === key ? null : key));
   }
+=======
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
   const sessionUser = authSession?.user || null;
   const authToken = authSession?.token || null;
@@ -217,11 +231,16 @@ function Conta() {
       return;
     }
 
+<<<<<<< HEAD
     if (!isSenhaForte(passwordValues.novaSenha)) {
       setPasswordFeedback({
         type: "error",
         message: "Nova senha deve ter 8+ caracteres, com maiuscula, minuscula, numero e caractere especial.",
       });
+=======
+    if (passwordValues.novaSenha.length < 8) {
+      setPasswordFeedback({ type: "error", message: "A senha precisa ter mais de 7 caracteres." });
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
       return;
     }
 
@@ -299,8 +318,13 @@ function Conta() {
     return (
       <AuthenticatedLayout
         title="Minha Conta"
+<<<<<<< HEAD
         topBarShowLogo
         hideTitle
+=======
+        logoSrc={movaLogo}
+        logoAlt="Mova Logo"
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
         footerText="Quer sair da conta?"
         footerLinkTo="/login"
         footerLinkLabel="Voltar ao login"
@@ -321,8 +345,16 @@ function Conta() {
     return (
       <AuthenticatedLayout
         title="Minha Conta"
+<<<<<<< HEAD
         topBarShowLogo
         hideTitle
+=======
+        logoSrc={movaLogo}
+        logoAlt="Mova Logo"
+        footerText="Quer sair da conta?"
+        footerLinkTo="/login"
+        footerLinkLabel="Voltar ao login"
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
       >
         <p className="auth-feedback auth-feedback--warning" role="status" aria-live="polite">
           Carregando dados da conta...
@@ -335,8 +367,13 @@ function Conta() {
     return (
       <AuthenticatedLayout
         title="Minha Conta"
+<<<<<<< HEAD
         topBarShowLogo
         hideTitle
+=======
+        logoSrc={movaLogo}
+        logoAlt="Mova Logo"
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
         footerText="Quer sair da conta?"
         footerLinkTo="/login"
         footerLinkLabel="Voltar ao login"
@@ -356,8 +393,16 @@ function Conta() {
   return (
     <AuthenticatedLayout
       title="Minha Conta"
+<<<<<<< HEAD
       topBarShowLogo
       hideTitle
+=======
+      logoSrc={movaLogo}
+      logoAlt="Mova Logo"
+      footerText="Quer sair da conta?"
+      footerLinkTo="/login"
+      footerLinkLabel="Voltar ao login"
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     >
       {profileStatus === "loading" && (
         <StatusMessage role="status" aria-live="polite">
@@ -375,17 +420,22 @@ function Conta() {
         {profileLabel}
       </p>
 
+<<<<<<< HEAD
       <div className="profile-menu-card">
         <div className="profile-avatar">
           <User size={34} strokeWidth={1.75} />
         </div>
 
+=======
+      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
         {feedback && (
           <p className={`auth-feedback auth-feedback--${feedback.type}`} role="status" aria-live="polite">
             {feedback.message}
           </p>
         )}
 
+<<<<<<< HEAD
         <ProfileMenuRow
           label="Alterar Nome"
           open={openSection === "name"}
@@ -640,10 +690,113 @@ function Conta() {
               label="Minhas Garagens"
               open={false}
               onToggle={() => navigate("/cadastro-garagens")}
+=======
+        <FormField
+          id="name"
+          name="name"
+          type="text"
+          placeholder={nameLabel}
+          ariaLabel={nameLabel}
+          value={values.name}
+          onChange={(e) => handleChange("name", e.target.value)}
+          required
+          error={errors.name}
+          autoComplete="name"
+          disabled={profileStatus === "loading"}
+        />
+
+        <FormField
+          id="email"
+          name="email"
+          type="email"
+          placeholder="E-mail"
+          ariaLabel="E-mail"
+          value={values.email}
+          onChange={(e) => handleChange("email", e.target.value)}
+          required
+          error={errors.email}
+          autoComplete="email"
+          disabled={profileStatus === "loading"}
+        />
+
+        <FormField
+          id="celphone"
+          name="celphone"
+          type="text"
+          placeholder="Numero de Celular"
+          ariaLabel="Numero de Celular"
+          value={values.celphone}
+          onChange={(e) => handleChange("celphone", e.target.value)}
+          required
+          error={errors.celphone}
+          inputMode="numeric"
+          autoComplete="tel-national"
+          disabled={profileStatus === "loading"}
+        />
+
+        <FormField
+          id="address"
+          name="address"
+          type="text"
+          placeholder="Endereco Completo"
+          ariaLabel="Endereco Completo"
+          value={values.address}
+          onChange={(e) => handleChange("address", e.target.value)}
+          required
+          error={errors.address}
+          autoComplete="street-address"
+          disabled={profileStatus === "loading"}
+        />
+
+        <FormField
+          id="cep"
+          name="cep"
+          type="text"
+          placeholder="CEP"
+          ariaLabel="CEP"
+          value={values.cep}
+          onChange={(e) => handleChange("cep", e.target.value)}
+          required
+          error={errors.cep}
+          inputMode="numeric"
+          autoComplete="postal-code"
+          disabled={profileStatus === "loading"}
+        />
+
+        {isLocador && (
+          <>
+            <FormField
+              id="empresa"
+              name="empresa"
+              type="text"
+              placeholder="Empresa"
+              ariaLabel="Empresa"
+              value={values.empresa}
+              onChange={(e) => handleChange("empresa", e.target.value)}
+              required
+              error={errors.empresa}
+              autoComplete="organization"
+              disabled={profileStatus === "loading"}
+            />
+
+            <FormField
+              id="cnpj"
+              name="cnpj"
+              type="text"
+              placeholder="CNPJ"
+              ariaLabel="CNPJ"
+              value={values.cnpj}
+              onChange={(e) => handleChange("cnpj", e.target.value)}
+              required
+              error={errors.cnpj}
+              inputMode="numeric"
+              disabled={profileStatus === "loading"}
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
             />
           </>
         )}
 
+<<<<<<< HEAD
         <ProfileMenuRow
           label="Sair"
           tone="muted"
@@ -658,6 +811,107 @@ function Conta() {
           onToggle={handleDeleteAccount}
         />
       </div>
+=======
+        {!isLocador && (
+          <>
+            <FormField
+              id="cpf"
+              name="cpf"
+              type="text"
+              placeholder="Numero de CPF"
+              ariaLabel="Numero de CPF"
+              value={values.cpf}
+              onChange={(e) => handleChange("cpf", e.target.value)}
+              required
+              error={errors.cpf}
+              inputMode="numeric"
+              disabled={profileStatus === "loading"}
+            />
+
+            <FormField
+              id="cnh"
+              name="cnh"
+              type="text"
+              placeholder="Numero de CNH"
+              ariaLabel="Numero de CNH"
+              value={values.cnh}
+              onChange={(e) => handleChange("cnh", e.target.value)}
+              required
+              error={errors.cnh}
+              inputMode="numeric"
+              disabled={profileStatus === "loading"}
+            />
+          </>
+        )}
+
+        <div className="auth-actions">
+          <button type="submit" className="auth-button" disabled={isSubmitting || profileStatus === "loading"}>
+            {isSubmitting ? "Salvando..." : "Salvar alteracoes"}
+          </button>
+          <button type="button" className="auth-button-secondary" onClick={handleLogout} disabled={profileStatus === "loading"}>
+            Sair
+          </button>
+        </div>
+      </form>
+
+      <form className="auth-form" onSubmit={handleChangePassword} noValidate>
+        {passwordFeedback && (
+          <p className={`auth-feedback auth-feedback--${passwordFeedback.type}`} role="status" aria-live="polite">
+            {passwordFeedback.message}
+          </p>
+        )}
+
+        <FormField
+          id="senhaAtual"
+          name="senhaAtual"
+          type="password"
+          placeholder="Senha atual"
+          ariaLabel="Senha atual"
+          value={passwordValues.senhaAtual}
+          onChange={(e) => handlePasswordFieldChange("senhaAtual", e.target.value)}
+          required
+          disabled={profileStatus === "loading"}
+        />
+
+        <FormField
+          id="novaSenha"
+          name="novaSenha"
+          type="password"
+          placeholder="Nova senha"
+          ariaLabel="Nova senha"
+          value={passwordValues.novaSenha}
+          onChange={(e) => handlePasswordFieldChange("novaSenha", e.target.value)}
+          required
+          disabled={profileStatus === "loading"}
+        />
+
+        <FormField
+          id="confirmarNovaSenha"
+          name="confirmarNovaSenha"
+          type="password"
+          placeholder="Confirmar nova senha"
+          ariaLabel="Confirmar nova senha"
+          value={passwordValues.confirmarNovaSenha}
+          onChange={(e) => handlePasswordFieldChange("confirmarNovaSenha", e.target.value)}
+          required
+          disabled={profileStatus === "loading"}
+        />
+
+        <div className="auth-actions">
+          <button type="submit" className="auth-button" disabled={isChangingPassword || profileStatus === "loading"}>
+            {isChangingPassword ? "Alterando..." : "Alterar senha"}
+          </button>
+          <button
+            type="button"
+            className="auth-button-secondary"
+            onClick={handleDeleteAccount}
+            disabled={isDeletingAccount || profileStatus === "loading"}
+          >
+            {isDeletingAccount ? "Deletando..." : "Deletar conta"}
+          </button>
+        </div>
+      </form>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
       {isDeleteModalOpen && (
         <ModalOverlay

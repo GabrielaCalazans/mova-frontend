@@ -1,12 +1,18 @@
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+=======
+﻿import { useEffect } from "react";
+import { Link } from "react-router-dom";
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 import movaLogo from "../assets/mova_logo.png";
 import AuthLayout from "../layout/AuthLayout";
 import FormField from "../components/FormField";
 import { useFormState } from "../hooks/useFormState";
 import { useFormSubmit } from "../hooks/useFormSubmit";
 import { registerLocatario } from "../services/authService";
+<<<<<<< HEAD
 import { listDeficiencias } from "../services/deficienciaService";
 import { maskCelphone, maskCep, maskCpf } from "../utils/inputMasks";
 import {
@@ -24,6 +30,12 @@ function Register() {
     listDeficiencias().then(setDeficiencias);
   }, []);
 
+=======
+import { maskCelphone, maskCpf, maskCep } from "../utils/inputMasks";
+import { getPasswordState, validateLocatarioRegisterForm } from "../utils/formValidators";
+
+function Register() {
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   const {
     values,
     errors,
@@ -32,6 +44,7 @@ function Register() {
     setFieldValue,
     setFormErrors,
   } = useFormState({
+<<<<<<< HEAD
     email: "",
     password: "",
     name: "",
@@ -45,6 +58,17 @@ function Register() {
     deficienciaId: "",
     agreeTerms: false,
     agreePrivacy: false,
+=======
+    name: "",
+    email: "",
+    celphone: "",
+    cpf: "",
+    cnh: "",
+    address: "",
+    cep: "",
+    password: "",
+    confirmPassword: "",
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   });
 
   useEffect(() => {
@@ -53,6 +77,7 @@ function Register() {
 
   const passwordState = getPasswordState(values.password);
 
+<<<<<<< HEAD
   const passwordHelperText =
     passwordState === "default" || passwordState === "warning"
       ? "Minimo 8 caracteres, com maiuscula, minuscula, numero e caractere especial."
@@ -77,6 +102,11 @@ function Register() {
   const { handleSubmit: handleDetailsSubmit, isSubmitting: isRegistering } = useFormSubmit({
     values,
     validate: validateCadastroDetalhesForm,
+=======
+  const { handleSubmit, isSubmitting } = useFormSubmit({
+    values,
+    validate: validateLocatarioRegisterForm,
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     setFormErrors,
     setFeedback,
     getInvalidFeedback: () => ({
@@ -94,6 +124,7 @@ function Register() {
     onSubmit: registerLocatario,
   });
 
+<<<<<<< HEAD
   if (step === 1) {
     return (
       <AuthLayout
@@ -174,19 +205,54 @@ function Register() {
       }
     >
       <form className="auth-form" onSubmit={handleDetailsSubmit} noValidate>
+=======
+  const passwordHelperText =
+    passwordState === "default"
+      ? "Use pelo menos 8 caracteres."
+      : passwordState === "warning"
+        ? "Use pelo menos 8 caracteres."
+      : passwordState === "success"
+        ? "Senha forte para cadastro."
+        : undefined;
+
+  const passwordHelperType = passwordState === "success" ? "success" : "warning";
+
+  return (
+    <AuthLayout
+      title="Cadastro de Locatário"
+      logoSrc={movaLogo}
+      logoAlt="Mova Logo"
+      footerText="Ja tem conta?"
+      footerLinkTo="/login"
+      footerLinkLabel="Entrar"
+    >
+      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
         {feedback && (
           <p className={`auth-feedback auth-feedback--${feedback.type}`} role="status" aria-live="polite">
             {feedback.message}
           </p>
         )}
 
+<<<<<<< HEAD
+=======
+        <Link to="/cadastro-locador" className="auth-button auth-button-callout">
+          SEJA UM LOCADOR
+        </Link>
+
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
         <FormField
           id="name"
           name="name"
           type="text"
+<<<<<<< HEAD
           label="Nome*"
           placeholder="Nome*"
           ariaLabel="Nome"
+=======
+          placeholder="Nome Completo"
+          ariaLabel="Nome Completo"
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
           value={values.name}
           onChange={(e) => setFieldValue("name", e.target.value)}
           required
@@ -195,11 +261,18 @@ function Register() {
         />
 
         <FormField
+<<<<<<< HEAD
           id="email-details"
           name="email"
           type="email"
           label="E-mail*"
           placeholder="E-mail*"
+=======
+          id="email"
+          name="email"
+          type="email"
+          placeholder="E-mail"
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
           ariaLabel="E-mail"
           value={values.email}
           onChange={(e) => setFieldValue("email", e.target.value)}
@@ -212,9 +285,14 @@ function Register() {
           id="celphone"
           name="celphone"
           type="text"
+<<<<<<< HEAD
           label="Celular*"
           placeholder="Celular*"
           ariaLabel="Celular"
+=======
+          placeholder="Numero de telefone"
+          ariaLabel="Numero de telefone"
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
           value={values.celphone}
           onChange={(e) => setFieldValue("celphone", maskCelphone(e.target.value))}
           required
@@ -227,9 +305,14 @@ function Register() {
           id="cpf"
           name="cpf"
           type="text"
+<<<<<<< HEAD
           label="CPF*"
           placeholder="CPF*"
           ariaLabel="CPF"
+=======
+          placeholder="Numero de CPF"
+          ariaLabel="Numero de CPF"
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
           value={values.cpf}
           onChange={(e) => setFieldValue("cpf", maskCpf(e.target.value))}
           required
@@ -241,9 +324,14 @@ function Register() {
           id="cnh"
           name="cnh"
           type="text"
+<<<<<<< HEAD
           label="CNH*"
           placeholder="CNH*"
           ariaLabel="CNH"
+=======
+          placeholder="Numero de CNH"
+          ariaLabel="Numero de CNH"
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
           value={values.cnh}
           onChange={(e) => setFieldValue("cnh", e.target.value)}
           required
@@ -252,6 +340,7 @@ function Register() {
         />
 
         <FormField
+<<<<<<< HEAD
           id="rg"
           name="rg"
           type="text"
@@ -283,6 +372,13 @@ function Register() {
           label="Endereço Residencial*"
           placeholder="Endereço Residencial*"
           ariaLabel="Endereço Residencial"
+=======
+          id="address"
+          name="address"
+          type="text"
+          placeholder="Endereco Completo"
+          ariaLabel="Endereco Completo"
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
           value={values.address}
           onChange={(e) => setFieldValue("address", e.target.value)}
           required
@@ -294,8 +390,12 @@ function Register() {
           id="cep"
           name="cep"
           type="text"
+<<<<<<< HEAD
           label="CEP*"
           placeholder="CEP*"
+=======
+          placeholder="CEP"
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
           ariaLabel="CEP"
           value={values.cep}
           onChange={(e) => setFieldValue("cep", maskCep(e.target.value))}
@@ -305,6 +405,7 @@ function Register() {
           autoComplete="postal-code"
         />
 
+<<<<<<< HEAD
         <div className="auth-field">
           <label htmlFor="deficienciaId">Deficiência (opcional)</label>
           <select
@@ -352,10 +453,47 @@ function Register() {
 
         <button type="submit" className="auth-button" disabled={isRegistering}>
           {isRegistering ? "Cadastrando..." : "Finalizar Cadastro"}
+=======
+        <FormField
+          id="password"
+          name="password"
+          type="password"
+          placeholder="Senha"
+          ariaLabel="Senha"
+          value={values.password}
+          onChange={(e) => setFieldValue("password", e.target.value)}
+          required
+          error={errors.password}
+          helperText={!errors.password ? passwordHelperText : undefined}
+          helperType={passwordHelperType}
+          inputState={passwordState}
+          autoComplete="new-password"
+        />
+
+        <FormField
+          id="confirmPassword"
+          name="confirmPassword"
+          type="password"
+          placeholder="Repita a senha"
+          ariaLabel="Repita a senha"
+          value={values.confirmPassword}
+          onChange={(e) => setFieldValue("confirmPassword", e.target.value)}
+          required
+          error={errors.confirmPassword}
+          autoComplete="new-password"
+        />
+
+        <button type="submit" className="auth-button" disabled={isSubmitting}>
+          {isSubmitting ? "Cadastrando..." : "Cadastrar"}
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
         </button>
       </form>
     </AuthLayout>
   );
 }
 
+<<<<<<< HEAD
 export default Register;
+=======
+export default Register;
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244

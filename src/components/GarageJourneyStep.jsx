@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import garagemImg from "../assets/garagem.png";
 import TopBar from "../components/TopBar";
 import BottomNav from "../components/BottomNav";
@@ -8,6 +9,25 @@ import "../styles/home.css";
 import {
   StyledForm,
   JourneySectionHint,
+=======
+import movaLogo from "../assets/mova_logo.png";
+import garagemImg from "../assets/garagem.png";
+import AuthenticatedLayout from "../layout/AuthenticatedLayout";
+import {
+  LogoContainer,
+  Title,
+  Subtitle,
+  StyledForm,
+  PrimaryButton,
+  OptionCard,
+  GarageInfo,
+  JourneySection,
+  JourneySectionHeader,
+  JourneySectionTitle,
+  JourneySectionHint,
+  GarageActionsRow,
+  TextButton,
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   JourneyFieldGroup,
   JourneyFieldLabel,
   JourneyFieldsGrid,
@@ -35,10 +55,16 @@ import {
 import { getJourneyStep, updateJourneyStep } from "../utils/journeyStorage";
 
 const GARAGES = [
+<<<<<<< HEAD
   { id: 1, nome: "Garagem Norte", endereco: "Rua Principal, 12", info: "Capacidade: 30 Carros" },
   { id: 2, nome: "Garagem Centro", endereco: "Av. Pompeia, 150", info: "Capacidade: 30 Carros" },
   { id: 3, nome: "Garagem Sul", endereco: "Rua Jabuti, 172", info: "Capacidade: 30 Carros" },
   { id: 4, nome: "Garagem Leste", endereco: "Rua Piraporinha, 12", info: "Capacidade: 30 Carros" },
+=======
+  { id: 1, nome: "Garagem Centro", endereco: "Rua Principal, 123", info: "" },
+  { id: 2, nome: "Garagem Sul", endereco: "Avenida Sul, 456", info: "Capacidade: 30 carros" },
+  { id: 3, nome: "Garagem Norte", endereco: "Rua Norte, 789", info: "Capacidade: 40 carros" },
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 ];
 
 const MONTHS = [
@@ -267,6 +293,7 @@ export default function GarageJourneyStep({
   const numbers = buildNumbers();
 
   return (
+<<<<<<< HEAD
     <main className="carro-page">
       <div className="carro-header">
         <TopBar showLogo iconColor="white" />
@@ -305,12 +332,59 @@ export default function GarageJourneyStep({
                     {garage.info && <p>{garage.info}</p>}
                   </div>
                 </button>
+=======
+    <AuthenticatedLayout>
+      <LogoContainer>
+        <img src={movaLogo} alt="Mova Logo" />
+      </LogoContainer>
+
+      <Title>{title}</Title>
+      <Subtitle>{subtitle}</Subtitle>
+
+      <StyledForm
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (canContinue) {
+            navigate(nextPath);
+          }
+        }}
+      >
+        <JourneySection>
+          <JourneySectionHeader>
+            <JourneySectionTitle>{stepLabel}</JourneySectionTitle>
+            <JourneySectionHint>
+              {selectedGarage
+                ? "A garagem selecionada permanece em destaque até você trocar a opção."
+                : "Escolha uma garagem para liberar data e horário."}
+            </JourneySectionHint>
+          </JourneySectionHeader>
+
+          {!selectedGarage && (
+            <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+              {visibleGarages.map((garage) => (
+                <OptionCard
+                  as="button"
+                  type="button"
+                  key={garage.id}
+                  $selected={String(garage.id) === selectedGarageId}
+                  onClick={() => setSelectedGarageId(String(garage.id))}
+                  aria-pressed={String(garage.id) === selectedGarageId}
+                >
+                  <img src={garagemImg} alt="Garagem" />
+                  <GarageInfo>
+                    <h3>{garage.nome}</h3>
+                    <p>{garage.endereco}</p>
+                    {garage.info && <p>{garage.info}</p>}
+                  </GarageInfo>
+                </OptionCard>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
               ))}
             </div>
           )}
 
           {selectedGarage && (
             <>
+<<<<<<< HEAD
               <div className="garage-list">
                 <div className="garage-card garage-card--selected" style={{ cursor: "default" }}>
                   <img src={garagemImg} alt="Garagem selecionada" className="garage-card__image" />
@@ -329,6 +403,23 @@ export default function GarageJourneyStep({
               </div>
             </>
           )}
+=======
+              <OptionCard $selected>
+                <img src={garagemImg} alt="Garagem selecionada" />
+                <GarageInfo>
+                  <h3>{selectedGarage.nome}</h3>
+                  <p>{selectedGarage.endereco}</p>
+                  {selectedGarage.info && <p>{selectedGarage.info}</p>}
+                </GarageInfo>
+              </OptionCard>
+
+              <GarageActionsRow>
+                <TextButton type="button" onClick={() => setSelectedGarageId("")}>Trocar garagem</TextButton>
+              </GarageActionsRow>
+            </>
+          )}
+        </JourneySection>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
         <JourneyFieldsGrid>
           <JourneyFieldGroup>
@@ -503,6 +594,7 @@ export default function GarageJourneyStep({
           </JourneyFieldGroup>
         </JourneyFieldsGrid>
 
+<<<<<<< HEAD
         <button type="submit" className="carro-button" disabled={!canContinue} style={{ marginTop: "1rem" }}>
           {nextButtonLabel}
         </button>
@@ -511,5 +603,12 @@ export default function GarageJourneyStep({
 
       <BottomNav />
     </main>
+=======
+        <PrimaryButton type="submit" disabled={!canContinue} style={{ marginTop: "1rem" }}>
+          {nextButtonLabel}
+        </PrimaryButton>
+      </StyledForm>
+    </AuthenticatedLayout>
+>>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   );
 }
