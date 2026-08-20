@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 ﻿import { useState } from "react";
 
 const EyeIcon = ({ open }) =>
@@ -22,9 +25,12 @@ const EyeIcon = ({ open }) =>
   );
 
 function FormField({
+<<<<<<< HEAD
 =======
 ﻿function FormField({
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   id,
   name,
   type = "text",
@@ -46,13 +52,19 @@ function FormField({
   disabled = false,
 }) {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   const [showPassword, setShowPassword] = useState(false);
 
   const isPasswordField = type === "password";
   const resolvedType = isPasswordField && showPassword ? "text" : type;
 
+<<<<<<< HEAD
 =======
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   const hintId = `${id}-hint`;
   const hasMessage = Boolean(error || helperText);
 
@@ -65,7 +77,10 @@ function FormField({
   return (
     <div className="auth-field">
 <<<<<<< HEAD
+<<<<<<< HEAD
       {label && <label htmlFor={id}>{label}</label>}
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
       <div className={isPasswordField ? "auth-field__password-wrapper" : undefined}>
         <input
           id={id}
@@ -89,13 +104,18 @@ function FormField({
             type="button"
             className="auth-field__eye-btn"
             onClick={() => setShowPassword((v) => !v)}
+<<<<<<< HEAD
             aria-label={showPassword ? "Ocultar caracteres digitados" : "Exibir caracteres digitados"}
+=======
+            aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
             tabIndex={-1}
           >
             <EyeIcon open={showPassword} />
           </button>
         )}
       </div>
+<<<<<<< HEAD
 =======
       <input
         id={id}
@@ -114,6 +134,8 @@ function FormField({
         disabled={disabled}
       />
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 
       {hasMessage && (
         <p id={hintId} className={messageClassName} role={error ? "alert" : undefined}>

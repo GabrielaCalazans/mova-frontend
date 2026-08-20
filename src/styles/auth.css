@@ -78,8 +78,16 @@
 .auth-logo {
   height: 7em;
   margin-bottom: 0.75rem;
+<<<<<<< HEAD
   transition: filter 300ms;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  transition: filter 300ms, background 300ms;
+  background: var(--color-logo-backdrop);
+  border-radius: var(--radius-md);
+  padding: 0.35rem 0.6rem;
+  box-sizing: content-box;
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 }
 
 .auth-logo:hover {
@@ -104,11 +112,15 @@
 .auth-form input {
   width: 100%;
 <<<<<<< HEAD
+<<<<<<< HEAD
   box-sizing: border-box;
   padding: 0.85rem 1rem;
   border-radius: 14px;
   border: 1.5px solid var(--color-border);
 =======
+=======
+  box-sizing: border-box;
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   padding: 0.72rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
@@ -120,13 +132,19 @@
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 .auth-form input::placeholder {
   color: var(--color-text-muted);
   opacity: 1;
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 .auth-form input[aria-invalid="true"] {
   border-color: var(--color-error);
   box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.12);
@@ -152,6 +170,7 @@
 .auth-button,
 .auth-button-secondary {
 <<<<<<< HEAD
+<<<<<<< HEAD
   display: flex;
   align-items: center;
   justify-content: center;
@@ -164,6 +183,9 @@
   font-size: 0.95rem;
 =======
   display: inline-flex;
+=======
+  display: flex;
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   align-items: center;
   justify-content: center;
   margin-top: 0.25rem;
@@ -175,6 +197,7 @@
   font-size: 1rem;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   text-decoration: none;
+  text-transform: uppercase;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
 }
 
@@ -189,6 +212,7 @@
   color: var(--color-text-inverse);
 }
 
+<<<<<<< HEAD
 .auth-button-callout {
   width: 100%;
   margin-top: 0;
@@ -203,6 +227,8 @@
   background: linear-gradient(135deg, #0d6b62, #0f9d8e);
 }
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 
 .auth-actions {
   display: grid;
@@ -343,6 +369,9 @@
     grid-template-columns: 1fr;
   }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 }
 /* ── Password toggle ─────────────────────────────────────────── */
 .auth-field__password-wrapper {
@@ -393,6 +422,7 @@
 }
 .auth-button--green:hover {
   background: linear-gradient(135deg, #0d6b62, #0f9d8e);
+<<<<<<< HEAD
 }
 
 /* ── Registration step bar (back arrow + compact logo) ─────────── */
@@ -587,4 +617,6 @@
   }
 =======
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 }

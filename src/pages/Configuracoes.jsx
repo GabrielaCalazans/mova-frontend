@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '../layout/AuthenticatedLayout';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { useTheme } from '../context/ThemeContext';
 =======
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+import { useTheme } from '../context/ThemeContext';
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 import {
   Title,
   Section,
@@ -18,10 +22,14 @@ import {
 
 export default function Configuracoes() {
 <<<<<<< HEAD
+<<<<<<< HEAD
   const { temaEscuro, toggleTemaEscuro } = useTheme();
 =======
   const [temaEscuro, setTemaEscuro]       = useState(false);
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  const { temaEscuro, toggleTemaEscuro } = useTheme();
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   const [fonte, setFonte]                 = useState(12);
   const [idioma, setIdioma]               = useState('Português');
   const [notificacoes, setNotificacoes]   = useState(true);
@@ -42,10 +50,14 @@ export default function Configuracoes() {
           <Toggle
             checked={temaEscuro}
 <<<<<<< HEAD
+<<<<<<< HEAD
             onChange={toggleTemaEscuro}
 =======
             onChange={() => setTemaEscuro(!temaEscuro)}
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+            onChange={toggleTemaEscuro}
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
           />
         </Row>
 

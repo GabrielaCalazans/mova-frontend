@@ -4,6 +4,7 @@ const BaseInputStyles = css`
   width: 100%;
   padding: 0.75rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   border: 1px solid var(--color-primary);
   border-radius: 0.7rem;
   font-size: 1rem;
@@ -23,17 +24,30 @@ const BaseInputStyles = css`
     border-color: var(--color-primary-soft);
 =======
   border: 1px solid #003366;
+=======
+  border: 1px solid var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   border-radius: 0.7rem;
   font-size: 1rem;
   font-family: inherit;
-  background-color: #fff;
+  background-color: var(--color-surface);
+  color: var(--color-text);
   box-sizing: border-box;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
+  &::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
+  }
+
   &:focus {
     outline: none;
+<<<<<<< HEAD
     border-color: #aec5e7;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+    border-color: var(--color-primary-soft);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
     box-shadow: 0 0 0 3px rgba(174, 197, 231, 0.3);
   }
 
@@ -41,10 +55,14 @@ const BaseInputStyles = css`
     cursor: not-allowed;
     opacity: 0.7;
 <<<<<<< HEAD
+<<<<<<< HEAD
     background-color: var(--color-disabled-bg);
 =======
     background-color: #f7fafc;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+    background-color: var(--color-disabled-bg);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   }
 `;
 
@@ -54,20 +72,28 @@ export const AuthPage = styled.div`
   place-items: center;
   padding: 1.5rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   background-color: var(--color-page-bg);
 =======
   background-color: #f4f4f4;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background-color: var(--color-page-bg);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
 
 export const AuthCard = styled.div`
   width: 100%;
   max-width: 500px;
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: var(--color-surface);
 =======
   background: #fff;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: var(--color-surface);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 2.5rem 2rem;
@@ -80,12 +106,18 @@ export const AuthLogo = styled.img`
   margin-bottom: 1rem;
   object-fit: contain;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   background: var(--color-logo-backdrop);
   border-radius: var(--radius-md);
   padding: 0.35rem 0.6rem;
   box-sizing: content-box;
+<<<<<<< HEAD
 =======
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
 
 export const LogoContainer = styled.div`
@@ -99,22 +131,32 @@ export const LogoContainer = styled.div`
     height: 6em; /* Altura que você definiu no inline */
     object-fit: contain;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
     background: var(--color-logo-backdrop);
     border-radius: var(--radius-md);
     padding: 0.3rem 0.5rem;
     box-sizing: content-box;
+<<<<<<< HEAD
 =======
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   }
 `;
 
 export const Title = styled.h1`
   margin-bottom: 1.5rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
 
 export const StyledForm = styled.form`
@@ -147,10 +189,14 @@ export const ToggleButton = styled.button`
   background: none;
   border: none;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -164,6 +210,7 @@ export const PrimaryButton = styled.button`
   padding: 0.8rem;
   border-radius: 0.7rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   border: 1px solid var(--color-primary);
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-soft));
   color: var(--color-surface);
@@ -172,6 +219,11 @@ export const PrimaryButton = styled.button`
   background: linear-gradient(135deg, #003366, #aec5e7);
   color: #ffffff;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  border: 1px solid var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-soft));
+  color: var(--color-surface);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   cursor: pointer;
   font-weight: 600;
   font-size: 1.1rem;
@@ -192,6 +244,7 @@ export const SecondaryButton = styled.button`
   padding: 0.8rem;
   border-radius: 0.7rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   border: 1px solid var(--color-primary-soft);
   background: var(--color-hover-bg-soft);
   color: var(--color-primary);
@@ -200,6 +253,11 @@ export const SecondaryButton = styled.button`
   background: #f7fbff;
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  border: 1px solid var(--color-primary-soft);
+  background: var(--color-hover-bg-soft);
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   cursor: pointer;
   font-weight: 700;
   font-size: 1.05rem;
@@ -208,12 +266,17 @@ export const SecondaryButton = styled.button`
 
   &:hover {
 <<<<<<< HEAD
+<<<<<<< HEAD
     background: var(--color-hover-bg-strong);
     border-color: var(--color-accent-soft);
 =======
     background: #eef5ff;
     border-color: #7da2d6;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+    background: var(--color-hover-bg-strong);
+    border-color: var(--color-accent-soft);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   }
 
   &:disabled {
@@ -227,6 +290,7 @@ export const FooterText = styled.p`
   margin-top: 1.5rem;
   font-size: 0.95rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-text-secondary);
 
   a {
@@ -237,6 +301,12 @@ export const FooterText = styled.p`
   a {
     color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-text-secondary);
+
+  a {
+    color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
     font-weight: 700;
     text-decoration: none;
 
@@ -251,12 +321,17 @@ export const SelectionButton = styled.button`
   border-radius: 8px;
   border: none;
 <<<<<<< HEAD
+<<<<<<< HEAD
   background-color: var(--color-primary);
   color: var(--color-surface);
 =======
   background-color: #003366;
   color: white;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   font-weight: bold;
   cursor: pointer;
   margin-top: 10px;
@@ -277,10 +352,14 @@ export const OptionCard = styled.div`
   align-items: center;
   justify-content: ${props => props.variant === 'type' ? 'center' : 'flex-start'};
 <<<<<<< HEAD
+<<<<<<< HEAD
   background-color: ${props => props.variant === 'type' ? 'var(--color-card-bg-alt)' : 'var(--color-primary)'};
 =======
   background-color: ${props => props.variant === 'type' ? '#E0F7FA' : '#003366'};
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background-color: ${props => props.variant === 'type' ? 'var(--color-card-bg-alt)' : 'var(--color-primary)'};
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   padding: 15px 20px;
   border-radius: 12px;
   width: 100%;
@@ -290,10 +369,14 @@ export const OptionCard = styled.div`
   transition: transform 0.2s;
   margin: calc(10px + 0.25rem) 0;
 <<<<<<< HEAD
+<<<<<<< HEAD
   border: 2px solid ${props => props.$selected ? 'var(--color-primary-soft)' : 'transparent'};
 =======
   border: 2px solid ${props => props.$selected ? '#aec5e7' : 'transparent'};
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  border: 2px solid ${props => props.$selected ? 'var(--color-primary-soft)' : 'transparent'};
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   box-shadow: ${props => props.$selected ? '0 0 0 3px rgba(174, 197, 231, 0.2)' : 'none'};
 
   &:hover { transform: scale(1.02); }
@@ -301,10 +384,14 @@ export const OptionCard = styled.div`
   h3 {
     margin: 0;
 <<<<<<< HEAD
+<<<<<<< HEAD
     color: ${props => props.variant === 'type' ? 'var(--color-primary)' : 'var(--color-surface)'};
 =======
     color: ${props => props.variant === 'type' ? '#003366' : '#ffffff'};
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+    color: ${props => props.variant === 'type' ? 'var(--color-primary)' : 'var(--color-surface)'};
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
     font-size: 1.2rem;
   }
 
@@ -322,10 +409,14 @@ export const GarageInfo = styled.div`
   text-align: left;
  
 <<<<<<< HEAD
+<<<<<<< HEAD
   p { margin: 2px 0 0 0; font-size: 0.85rem; color: var(--color-muted-light); }
 =======
   p { margin: 2px 0 0 0; font-size: 0.85rem; color: #dcdcdc; }
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  p { margin: 2px 0 0 0; font-size: 0.85rem; color: var(--color-muted-light); }
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
 
 export const JourneySection = styled.section`
@@ -347,20 +438,28 @@ export const JourneySectionHeader = styled.div`
 export const JourneySectionTitle = styled.h2`
   margin: 0;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   font-size: 1.05rem;
 `;
 
 export const JourneySectionHint = styled.p`
   margin: -0.15rem 0 0;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-text-secondary);
 =======
   color: #555;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-text-secondary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   font-size: 0.92rem;
   line-height: 1.4;
 `;
@@ -375,10 +474,14 @@ export const TextButton = styled.button`
   border: none;
   background: transparent;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   font-family: inherit;
   font-size: 0.9rem;
   font-weight: 700;
@@ -389,10 +492,14 @@ export const TextButton = styled.button`
 
   &:hover {
 <<<<<<< HEAD
+<<<<<<< HEAD
     color: var(--color-accent);
 =======
     color: #2b5ba8;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+    color: var(--color-accent);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   }
 `;
 
@@ -407,10 +514,14 @@ export const JourneyFieldLabel = styled.label`
   font-size: 0.8rem;
   font-weight: 700;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   text-transform: uppercase;
   letter-spacing: 0.05em;
 `;
@@ -431,12 +542,17 @@ export const JourneySummaryCard = styled.div`
   padding: 1rem 1.1rem;
   border-radius: 12px;
 <<<<<<< HEAD
+<<<<<<< HEAD
   border: 1px solid var(--color-primary-soft);
   background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
 =======
   border: 1px solid #aec5e7;
   background: linear-gradient(135deg, #003366, #2b5ba8);
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  border: 1px solid var(--color-primary-soft);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   box-sizing: border-box;
 `;
 
@@ -453,10 +569,14 @@ export const JourneySummaryLabel = styled.span`
 export const JourneySummaryValue = styled.p`
   margin: 0;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-surface);
 =======
   color: #ffffff;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-surface);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   font-size: 0.98rem;
   line-height: 1.45;
   font-weight: 600;
@@ -469,10 +589,14 @@ export const HeaderIcons = styled.div`
   width: 100%;
   margin-bottom: 20px;
 <<<<<<< HEAD
+<<<<<<< HEAD
   .back-arrow { font-size: 1.8rem; color: var(--color-primary); cursor: pointer; }
 =======
   .back-arrow { font-size: 1.8rem; color: #003366; cursor: pointer; }
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  .back-arrow { font-size: 1.8rem; color: var(--color-primary); cursor: pointer; }
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   img { width: 30px; cursor: pointer; }
 `;
 
@@ -481,15 +605,22 @@ export const StyledInput = styled.input`
   max-width: 400px;
   height: 45px;
 <<<<<<< HEAD
+<<<<<<< HEAD
   border: 1px solid var(--color-border-soft);
 =======
   border: 1px solid #ccc;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  border: 1px solid var(--color-border-soft);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   border-radius: 8px;
   padding: 0 15px;
   margin-bottom: 20px;
   box-sizing: border-box;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   background-color: var(--color-surface);
   color: var(--color-text);
 
@@ -497,8 +628,11 @@ export const StyledInput = styled.input`
     color: var(--color-text-muted);
     opacity: 1;
   }
+<<<<<<< HEAD
 =======
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
 
 export const ModalOverlay = styled.div`
@@ -507,6 +641,7 @@ export const ModalOverlay = styled.div`
 `;
 
 export const ModalContent = styled.div`
+<<<<<<< HEAD
 <<<<<<< HEAD
   background: var(--color-surface); width: 80%; max-width: 350px; border-radius: 12px; padding: 20px; text-align: center;
 `;
@@ -522,6 +657,14 @@ export const MenuItem = styled.div`
   padding: 15px; border-bottom: 1px solid #eee; color: #003366; font-weight: 500; cursor: pointer;
   &:hover { background: #f0f8ff; }
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: var(--color-surface); width: 80%; max-width: 350px; border-radius: 12px; padding: 20px; text-align: center;
+`;
+
+export const MenuItem = styled.div`
+  padding: 15px; border-bottom: 1px solid var(--color-divider); color: var(--color-primary); font-weight: 500; cursor: pointer;
+  &:hover { background: var(--color-hover-bg); }
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
 
 export const CarImage = styled.img`
@@ -540,10 +683,14 @@ export const CarListContainer = styled.div`
  
 export const CarCard = styled.div`
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: var(--color-surface);
 =======
   background: #fff;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: var(--color-surface);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   border-radius: 12px;
   padding: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -558,10 +705,14 @@ export const CarCard = styled.div`
  
   h3 {
 <<<<<<< HEAD
+<<<<<<< HEAD
     color: var(--color-primary);
 =======
     color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+    color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
     margin: 0 0 8px;
   }
  
@@ -577,20 +728,28 @@ export const CarInfoText = styled.p`
   margin: 0;
   font-size: 0.85rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-text-secondary);
 =======
   color: #555;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-text-secondary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
  
 export const PriceTag = styled.p`
   font-size: 1rem;
   font-weight: 700;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   margin: 8px 0 0;
 `;
 
@@ -598,15 +757,20 @@ export const Subtitle = styled.p`
   font-size: 1rem;
   text-align: center;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-text-secondary);
 =======
   color: #555;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-text-secondary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   margin-bottom: 2rem;
   line-height: 1.4;
 `;
 
 export const LightInput = styled(Input)`
+<<<<<<< HEAD
 <<<<<<< HEAD
   background-color: var(--color-hover-bg); /* Azul bem clarinho para diferenciar */
   border-bottom: 2px solid var(--color-primary); /* Estilo que remete ao mobile original */
@@ -614,6 +778,10 @@ export const LightInput = styled(Input)`
   background-color: #f0f8ff; /* Azul bem clarinho para diferenciar */
   border-bottom: 2px solid #003366; /* Estilo que remete ao mobile original */
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background-color: var(--color-hover-bg); /* Azul bem clarinho para diferenciar */
+  border-bottom: 2px solid var(--color-primary); /* Estilo que remete ao mobile original */
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
 
 // ── EscolhaDataHora ──────────────────────────────────────────
@@ -632,10 +800,14 @@ export const IconBtn = styled.span`
   transform: translateY(-50%);
   pointer-events: none;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   display: flex;
   align-items: center;
 `;
@@ -648,12 +820,17 @@ export const Popup = styled.div`
   width: 90%;
   max-width: 380px;
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: var(--color-surface);
   border: 1px solid var(--color-primary-soft);
 =======
   background: #fff;
   border: 1px solid #aec5e7;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: var(--color-surface);
+  border: 1px solid var(--color-primary-soft);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   border-radius: 12px;
   box-shadow: 0 8px 28px rgba(0,51,102,.25);
   z-index: 9999;
@@ -687,10 +864,14 @@ export const CalHeader = styled.div`
 export const CalTitle = styled.span`
   font-weight: 800;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   font-size: .9rem;
 `;
 
@@ -698,19 +879,27 @@ export const NavBtn = styled.button`
   background: none;
   border: none;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   font-size: 1.2rem;
   cursor: pointer;
   padding: 2px 8px;
   border-radius: 6px;
 <<<<<<< HEAD
+<<<<<<< HEAD
   &:hover { background: var(--color-hover-bg); }
 =======
   &:hover { background: #f0f8ff; }
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  &:hover { background: var(--color-hover-bg); }
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
 
 export const DayNames = styled.div`
@@ -719,10 +908,14 @@ export const DayNames = styled.div`
   text-align: center;
   margin-bottom: 4px;
 <<<<<<< HEAD
+<<<<<<< HEAD
   span { font-size:.68rem; font-weight:700; color:var(--color-primary-soft); }
 =======
   span { font-size:.68rem; font-weight:700; color:#aec5e7; }
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  span { font-size:.68rem; font-weight:700; color:var(--color-primary-soft); }
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
 
 export const DayGrid = styled.div`
@@ -738,16 +931,22 @@ export const DayCell = styled.button`
   justify-content: center;
   border: none;
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: ${p => p.selected ? 'var(--color-primary)' : 'none'};
   color: ${p => p.selected ? 'var(--color-surface)' : p.disabled ? 'var(--color-border-soft)' : p.today ? 'var(--color-accent)' : 'var(--color-primary)'};
 =======
   background: ${p => p.selected ? '#003366' : 'none'};
   color: ${p => p.selected ? '#fff' : p.disabled ? '#ccc' : p.today ? '#2b5ba8' : '#003366'};
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: ${p => p.selected ? 'var(--color-primary)' : 'none'};
+  color: ${p => p.selected ? 'var(--color-surface)' : p.disabled ? 'var(--color-border-soft)' : p.today ? 'var(--color-accent)' : 'var(--color-primary)'};
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   border-radius: 50%;
   font-size: .82rem;
   font-weight: 600;
   cursor: ${p => p.disabled || p.empty ? 'default' : 'pointer'};
+<<<<<<< HEAD
 <<<<<<< HEAD
   outline: ${p => p.today && !p.selected ? '2px solid var(--color-primary-soft)' : 'none'};
   font-family: inherit;
@@ -759,6 +958,12 @@ export const DayCell = styled.button`
   transition: background .15s, color .15s;
   &:hover:not([disabled]) { background: ${p => p.selected ? '#003366' : '#f0f8ff'}; }
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  outline: ${p => p.today && !p.selected ? '2px solid var(--color-primary-soft)' : 'none'};
+  font-family: inherit;
+  transition: background .15s, color .15s;
+  &:hover:not([disabled]) { background: ${p => p.selected ? 'var(--color-primary)' : 'var(--color-hover-bg)'}; }
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
 
 export const ClockDisplay = styled.div`
@@ -766,10 +971,14 @@ export const ClockDisplay = styled.div`
   font-size: 2.6rem;
   font-weight: 900;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   margin-bottom: 14px;
   user-select: none;
   letter-spacing: .04em;
@@ -777,10 +986,14 @@ export const ClockDisplay = styled.div`
 
 export const ClockPart = styled.span`
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: ${p => p.active ? 'var(--color-accent)' : 'var(--color-primary)'};
 =======
   color: ${p => p.active ? '#2b5ba8' : '#003366'};
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: ${p => p.active ? 'var(--color-accent)' : 'var(--color-primary)'};
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   text-decoration: ${p => p.active ? 'underline' : 'none'};
   text-underline-offset: 4px;
   cursor: pointer;
@@ -797,6 +1010,7 @@ export const ModeBtn = styled.button`
   padding: 8px;
   border-radius: 8px;
 <<<<<<< HEAD
+<<<<<<< HEAD
   border: 2px solid ${p => p.active ? 'var(--color-primary)' : 'var(--color-unselected-border)'};
   background: ${p => p.active ? 'var(--color-hover-bg)' : 'none'};
   color: ${p => p.active ? 'var(--color-primary)' : 'var(--color-primary-soft)'};
@@ -805,6 +1019,11 @@ export const ModeBtn = styled.button`
   background: ${p => p.active ? '#f0f8ff' : 'none'};
   color: ${p => p.active ? '#003366' : '#aec5e7'};
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  border: 2px solid ${p => p.active ? 'var(--color-primary)' : 'var(--color-unselected-border)'};
+  background: ${p => p.active ? 'var(--color-hover-bg)' : 'none'};
+  color: ${p => p.active ? 'var(--color-primary)' : 'var(--color-primary-soft)'};
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   font-family: inherit;
   font-weight: 700;
   font-size: .85rem;
@@ -839,6 +1058,7 @@ export const AmPmBtn = styled.button`
   padding: 6px 24px;
   border-radius: 8px;
 <<<<<<< HEAD
+<<<<<<< HEAD
   border: 2px solid ${p => p.active ? 'var(--color-primary)' : 'var(--color-unselected-border)'};
   background: ${p => p.active ? 'var(--color-primary)' : 'none'};
   color: ${p => p.active ? 'var(--color-surface)' : 'var(--color-primary-soft)'};
@@ -847,6 +1067,11 @@ export const AmPmBtn = styled.button`
   background: ${p => p.active ? '#003366' : 'none'};
   color: ${p => p.active ? '#fff' : '#aec5e7'};
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  border: 2px solid ${p => p.active ? 'var(--color-primary)' : 'var(--color-unselected-border)'};
+  background: ${p => p.active ? 'var(--color-primary)' : 'none'};
+  color: ${p => p.active ? 'var(--color-surface)' : 'var(--color-primary-soft)'};
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   font-family: inherit;
   font-weight: 700;
   font-size: .85rem;
@@ -866,10 +1091,14 @@ export const TabsRow = styled.div`
   gap: 0.5rem;
   margin-bottom: 1.5rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: var(--color-page-bg);
 =======
   background: #f4f4f4;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: var(--color-page-bg);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   border-radius: 10px;
   padding: 4px;
 `;
@@ -885,30 +1114,43 @@ export const Tab = styled.button`
   cursor: pointer;
   transition: all 0.2s;
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: ${p => p.active ? 'var(--color-surface)' : 'transparent'};
   color: ${p => p.active ? 'var(--color-primary)' : 'var(--color-muted)'};
 =======
   background: ${p => p.active ? '#fff' : 'transparent'};
   color: ${p => p.active ? '#003366' : '#888'};
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: ${p => p.active ? 'var(--color-surface)' : 'transparent'};
+  color: ${p => p.active ? 'var(--color-primary)' : 'var(--color-muted)'};
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   box-shadow: ${p => p.active ? '0 1px 4px rgba(0,51,102,0.12)' : 'none'};
 `;
 
 export const CardPreview = styled.div`
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: linear-gradient(135deg, var(--color-primary) 60%, var(--color-accent));
 =======
   background: linear-gradient(135deg, #003366 60%, #2b5ba8);
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: linear-gradient(135deg, var(--color-primary) 60%, var(--color-accent));
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   border-radius: 16px;
   padding: 1.4rem 1.5rem;
   margin-bottom: 1.5rem;
   text-align: left;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-surface);
 =======
   color: white;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-surface);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   position: relative;
   overflow: hidden;
 
@@ -983,15 +1225,20 @@ export const FieldLabel = styled.label`
   font-size: 0.75rem;
   font-weight: 700;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   text-transform: uppercase;
   letter-spacing: 0.05em;
 `;
 
 export const PixBox = styled.div`
+<<<<<<< HEAD
 <<<<<<< HEAD
   background: var(--color-hover-bg);
   border: 2px dashed var(--color-primary-soft);
@@ -999,6 +1246,10 @@ export const PixBox = styled.div`
   background: #f0f8ff;
   border: 2px dashed #aec5e7;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: var(--color-hover-bg);
+  border: 2px dashed var(--color-primary-soft);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   border-radius: 12px;
   padding: 2rem 1.5rem;
   display: flex;
@@ -1011,10 +1262,14 @@ export const QrPlaceholder = styled.div`
   width: 140px;
   height: 140px;
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: var(--color-surface);
 =======
   background: white;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: var(--color-surface);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   border-radius: 10px;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -1026,14 +1281,19 @@ export const QrPlaceholder = styled.div`
 
 export const QrCell = styled.div`
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: ${p => p.filled ? 'var(--color-primary)' : 'transparent'};
 =======
   background: ${p => p.filled ? '#003366' : 'transparent'};
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: ${p => p.filled ? 'var(--color-primary)' : 'transparent'};
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   border-radius: 1px;
 `;
 
 export const PixKey = styled.div`
+<<<<<<< HEAD
 <<<<<<< HEAD
   background: var(--color-surface);
   border: 1px solid var(--color-primary-soft);
@@ -1049,6 +1309,14 @@ export const PixKey = styled.div`
   font-size: 0.85rem;
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: var(--color-surface);
+  border: 1px solid var(--color-primary-soft);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   font-weight: 600;
   width: 100%;
   display: flex;
@@ -1058,10 +1326,14 @@ export const PixKey = styled.div`
   box-sizing: border-box;
   transition: background 0.15s;
 <<<<<<< HEAD
+<<<<<<< HEAD
   &:hover { background: var(--color-hover-bg); }
 =======
   &:hover { background: #f0f8ff; }
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  &:hover { background: var(--color-hover-bg); }
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
 
 export const PixKeyText = styled.span`
@@ -1075,10 +1347,14 @@ export const PixKeyText = styled.span`
 export const CopyBtn = styled.span`
   font-size: 0.72rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary-soft);
 =======
   color: #aec5e7;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary-soft);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1093,22 +1369,31 @@ export const StatusBadge = styled.span`
   text-transform: uppercase;
   letter-spacing: 0.08em;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
   background: var(--color-selected-bg);
 =======
   color: #003366;
   background: #e8f0fd;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+  background: var(--color-selected-bg);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   padding: 3px 10px;
   border-radius: 20px;
 `;
 
 export const BoletoBox = styled.div`
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: var(--color-hover-bg);
 =======
   background: #f0f8ff;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: var(--color-hover-bg);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   border-radius: 12px;
   padding: 1.5rem;
   display: flex;
@@ -1121,10 +1406,14 @@ export const BoletoLine = styled.div`
   background: repeating-linear-gradient(
     90deg,
 <<<<<<< HEAD
+<<<<<<< HEAD
     var(--color-primary) 0px, var(--color-primary) 8px,
 =======
     #003366 0px, #003366 8px,
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+    var(--color-primary) 0px, var(--color-primary) 8px,
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
     transparent 8px, transparent 14px
   );
   border-radius: 2px;
@@ -1135,10 +1424,14 @@ export const BoletoInfo = styled.div`
   justify-content: space-between;
   font-size: 0.82rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-text-secondary);
 =======
   color: #555;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-text-secondary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
 
 export const SecureNote = styled.div`
@@ -1148,10 +1441,14 @@ export const SecureNote = styled.div`
   gap: 0.4rem;
   font-size: 0.75rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-muted);
 =======
   color: #888;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-muted);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   margin-top: 0.75rem;
 `;
 
@@ -1162,10 +1459,14 @@ const scaleIn = keyframes`
 
 export const SuccessModal = styled.div`
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: var(--color-surface);
 =======
   background: white;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: var(--color-surface);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   width: 85%;
   max-width: 340px;
   border-radius: 20px;
@@ -1183,10 +1484,14 @@ export const IconCircle = styled.div`
   height: 80px;
   border-radius: 50%;
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: var(--color-success-soft);
 =======
   background: #e8f5e9;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: var(--color-success-soft);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1195,20 +1500,28 @@ export const IconCircle = styled.div`
 
 export const SuccessTitle = styled.h2`
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   margin: 0;
   font-size: 1.4rem;
 `;
 
 export const SuccessSubtitle = styled.p`
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-text-secondary);
 =======
   color: #666;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-text-secondary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   margin: 0;
   font-size: 0.92rem;
   line-height: 1.5;
@@ -1217,10 +1530,14 @@ export const SuccessSubtitle = styled.p`
 export const UnlockContainer = styled.div`
   width: 90%;
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: var(--color-card-bg);
 =======
   background: #e0ffff;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: var(--color-card-bg);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   padding: 1.2rem;
   border-radius: 10px;
   display: flex;
@@ -1233,10 +1550,14 @@ export const UnlockText = styled.p`
   font-size: 1.1rem;
   font-weight: bold;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-text-strong);
 =======
   color: #333;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-text-strong);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   margin: 0.2rem 0;
   text-align: center;
 `;
@@ -1245,20 +1566,28 @@ export const UnlockCode = styled.p`
   font-size: 1.3rem;
   font-weight: bold;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   margin-top: 0.8rem;
   letter-spacing: 0.15em;
 `;
 
 export const Section = styled.div`
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: var(--color-card-bg);
 =======
   background: #e0ffff;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: var(--color-card-bg);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   padding: 1rem;
   border-radius: 10px;
   width: 90%;
@@ -1270,10 +1599,14 @@ export const SectionTitle = styled.h3`
   font-weight: bold;
   margin: 0 0 0.8rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
 
 export const Row = styled.div`
@@ -1286,10 +1619,14 @@ export const Row = styled.div`
 export const Label = styled.span`
   font-size: 1rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-text-secondary);
 =======
   color: #555;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-text-secondary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
 
 export const Toggle = styled.input.attrs({ type: 'checkbox' })`
@@ -1297,10 +1634,14 @@ export const Toggle = styled.input.attrs({ type: 'checkbox' })`
   height: 22px;
   appearance: none;
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: ${p => p.checked ? 'var(--color-primary)' : 'var(--color-border-soft)'};
 =======
   background: ${p => p.checked ? '#003366' : '#ccc'};
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: ${p => p.checked ? 'var(--color-primary)' : 'var(--color-border-soft)'};
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   border-radius: 20px;
   position: relative;
   cursor: pointer;
@@ -1312,10 +1653,14 @@ export const Toggle = styled.input.attrs({ type: 'checkbox' })`
     width: 18px;
     height: 18px;
 <<<<<<< HEAD
+<<<<<<< HEAD
     background: var(--color-surface);
 =======
     background: white;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+    background: var(--color-surface);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
     border-radius: 50%;
     top: 2px;
     left: ${p => p.checked ? '20px' : '2px'};
@@ -1328,6 +1673,7 @@ export const SmallInput = styled.input`
   height: 36px;
   border: none;
 <<<<<<< HEAD
+<<<<<<< HEAD
   border-bottom: 1px solid var(--color-primary);
   text-align: center;
   background: var(--color-surface);
@@ -1337,13 +1683,20 @@ export const SmallInput = styled.input`
   color: var(--color-primary);
 =======
   border-bottom: 1px solid #003366;
+=======
+  border-bottom: 1px solid var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   text-align: center;
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 5px;
   font-size: 0.95rem;
   font-family: inherit;
+<<<<<<< HEAD
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
 
 export const PageFooter = styled.div`
@@ -1352,10 +1705,14 @@ export const PageFooter = styled.div`
   font-size: 1.1rem;
   font-weight: bold;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
 
 export const TripList = styled.div`
@@ -1369,10 +1726,14 @@ export const TripList = styled.div`
 export const TripCard = styled.div`
   width: 90%;
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: var(--color-card-bg);
 =======
   background: #e0ffff;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: var(--color-card-bg);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   padding: 1rem;
   border-radius: 10px;
   display: flex;
@@ -1399,6 +1760,7 @@ export const TripText = styled.p`
   margin: 0;
   font-size: 0.95rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-text-secondary);
 `;
 
@@ -1411,6 +1773,13 @@ export const ProfileContainer = styled.div`
 export const ProfileContainer = styled.div`
   background: #e0ffff;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-text-secondary);
+`;
+
+export const ProfileContainer = styled.div`
+  background: var(--color-card-bg);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   padding: 1.5rem;
   border-radius: 10px;
   display: flex;
@@ -1431,30 +1800,42 @@ export const ProfileName = styled.h2`
   font-size: 1.25rem;
   font-weight: bold;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   margin: 0 0 0.6rem;
 `;
 
 export const ProfileText = styled.p`
   font-size: 1rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-text-secondary);
 =======
   color: #555;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-text-secondary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   text-align: center;
   margin: 0 0 0.3rem;
 `;
 
 export const ContactContainer = styled.div`
 <<<<<<< HEAD
+<<<<<<< HEAD
   background: var(--color-card-bg);
 =======
   background: #e0ffff;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  background: var(--color-card-bg);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   padding: 1.2rem;
   border-radius: 10px;
   display: flex;
@@ -1468,20 +1849,28 @@ export const ContactTitle = styled.h3`
   font-size: 1.1rem;
   font-weight: bold;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   margin: 0 0 0.5rem;
 `;
 
 export const ContactText = styled.p`
   font-size: 1rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-text-secondary);
 =======
   color: #555;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-text-secondary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   margin: 0;
 `;
 
@@ -1503,6 +1892,7 @@ export const SearchInput = styled.input`
   box-sizing: border-box;
   padding: 0.7rem 2.5rem 0.7rem 0.9rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   border: 1.5px solid var(--color-primary);
   border-radius: 10px;
   font-size: 0.95rem;
@@ -1521,16 +1911,29 @@ export const SearchInput = styled.input`
     border-color: var(--color-primary-soft);
 =======
   border: 1.5px solid #003366;
+=======
+  border: 1.5px solid var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   border-radius: 10px;
   font-size: 0.95rem;
   font-family: inherit;
-  background: #fff;
+  background: var(--color-surface);
+  color: var(--color-text);
   transition: border-color 0.2s, box-shadow 0.2s;
+
+  &::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
+  }
  
   &:focus {
     outline: none;
+<<<<<<< HEAD
     border-color: #aec5e7;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+    border-color: var(--color-primary-soft);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
     box-shadow: 0 0 0 3px rgba(174, 197, 231, 0.3);
   }
 `;
@@ -1543,10 +1946,14 @@ export const SearchIcon = styled.span`
   font-size: 1.1rem;
   pointer-events: none;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 `;
  
 export const FiltersRow = styled.div`
@@ -1559,6 +1966,7 @@ export const FilterSelect = styled.select`
   flex: 1;
   min-width: 120px;
   padding: 0.55rem 0.7rem;
+<<<<<<< HEAD
 <<<<<<< HEAD
   border: 1.5px solid var(--color-primary);
   border-radius: 8px;
@@ -1574,21 +1982,34 @@ export const FilterSelect = styled.select`
   background: #fff;
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  border: 1.5px solid var(--color-primary);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  background: var(--color-surface);
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   cursor: pointer;
  
   &:focus {
     outline: none;
 <<<<<<< HEAD
+<<<<<<< HEAD
     border-color: var(--color-primary-soft);
 =======
     border-color: #aec5e7;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+    border-color: var(--color-primary-soft);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
     box-shadow: 0 0 0 3px rgba(174, 197, 231, 0.3);
   }
 `;
  
 export const FilterToggle = styled.button`
   padding: 0.55rem 0.9rem;
+<<<<<<< HEAD
 <<<<<<< HEAD
   border: 1.5px solid ${(p) => (p.active ? "var(--color-primary)" : "var(--color-border-soft)")};
   border-radius: 8px;
@@ -1604,16 +2025,28 @@ export const FilterToggle = styled.button`
   background: ${(p) => (p.active ? "#003366" : "#fff")};
   color: ${(p) => (p.active ? "#fff" : "#555")};
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  border: 1.5px solid ${(p) => (p.active ? "var(--color-primary)" : "var(--color-border-soft)")};
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  background: ${(p) => (p.active ? "var(--color-primary)" : "var(--color-surface)")};
+  color: ${(p) => (p.active ? "var(--color-surface)" : "var(--color-text-secondary)")};
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   cursor: pointer;
   transition: all 0.18s;
   white-space: nowrap;
  
   &:hover {
 <<<<<<< HEAD
+<<<<<<< HEAD
     border-color: var(--color-primary);
 =======
     border-color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+    border-color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   }
 `;
  
@@ -1621,10 +2054,14 @@ export const ClearButton = styled.button`
   background: none;
   border: none;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-primary);
 =======
   color: #003366;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-primary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   font-size: 0.8rem;
   cursor: pointer;
   text-decoration: underline;
@@ -1633,20 +2070,28 @@ export const ClearButton = styled.button`
  
   &:hover {
 <<<<<<< HEAD
+<<<<<<< HEAD
     color: var(--color-accent-strong);
 =======
     color: #001f4d;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+    color: var(--color-accent-strong);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   }
 `;
  
 export const StatusMessage = styled.p`
   text-align: center;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-text-muted);
 =======
   color: #777;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-text-muted);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   font-size: 0.9rem;
   margin: 2rem 0;
 `;
@@ -1654,9 +2099,13 @@ export const StatusMessage = styled.p`
 export const ResultCount = styled.p`
   font-size: 0.82rem;
 <<<<<<< HEAD
+<<<<<<< HEAD
   color: var(--color-text-secondary);
 =======
   color: #555;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  color: var(--color-text-secondary);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   margin: 0 0 0.5rem;
 `;

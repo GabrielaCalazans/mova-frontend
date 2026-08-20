@@ -3,6 +3,9 @@ import { getAuthSession } from "./authSession";
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
  * Normaliza um veículo do novo modelo da API, onde os dados descritivos
  * ficam em modeloVeiculo (objeto aninhado), mantendo compatibilidade com
  * o restante do front-end que acessa marca, modelo, ano, etc. no nível raiz.
@@ -43,8 +46,11 @@ export function normalizeVeiculo(veiculo) {
 }
 
 /**
+<<<<<<< HEAD
 =======
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
  * Busca veículos públicos com filtros opcionais (sem autenticação obrigatória).
  * Endpoint: GET /veiculo/search
  *
@@ -53,10 +59,14 @@ export function normalizeVeiculo(veiculo) {
  * @param {string} [filters.modelo]
  * @param {number} [filters.ano]
 <<<<<<< HEAD
+<<<<<<< HEAD
  * @param {string} [filters.cambio]       - "Manual" | "Automatico"
 =======
  * @param {string} [filters.cambio]       - "Manual" | "Automático"
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+ * @param {string} [filters.cambio]       - "Manual" | "Automatico"
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
  * @param {number} [filters.capacidade]
  * @param {boolean} [filters.eletrico]
  * @param {boolean} [filters.adaptado]
@@ -76,11 +86,16 @@ export async function searchVeiculos(filters = {}) {
   const query = params.toString() ? `?${params.toString()}` : "";
   const data = await apiRequest(`/veiculo/search${query}`);
 <<<<<<< HEAD
+<<<<<<< HEAD
   const result = data.result ?? [];
   return result.map(normalizeVeiculo);
 =======
   return data.result ?? [];
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  const result = data.result ?? [];
+  return result.map(normalizeVeiculo);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 }
 
 /**
@@ -173,8 +188,13 @@ export async function deleteVeiculo(id) {
 
   const query = params.toString() ? `?${params.toString()}` : "";
   const data = await apiRequest(`/veiculo${query}`, { authToken });
+<<<<<<< HEAD
   return data.result ?? [];
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  const result = data.result ?? [];
+  return result.map(normalizeVeiculo);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 }
 
 /**
@@ -191,9 +211,14 @@ export async function getVeiculoById(id) {
   const data = await apiRequest(`/veiculo/${id}`, { authToken });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   const raw = data.result ?? data;
   return normalizeVeiculo(raw);
 =======
   return data.result ?? data;
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  const raw = data.result ?? data;
+  return normalizeVeiculo(raw);
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 }

@@ -4,8 +4,12 @@ import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 =======
 ﻿import { useEffect } from "react";
+<<<<<<< HEAD
 import { Link } from "react-router-dom";
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+import { useNavigate } from "react-router-dom";
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 import movaLogo from "../assets/mova_logo.png";
 import AuthLayout from "../layout/AuthLayout";
 import FormField from "../components/FormField";
@@ -35,7 +39,11 @@ import { maskCelphone, maskCpf, maskCep } from "../utils/inputMasks";
 import { getPasswordState, validateLocatarioRegisterForm } from "../utils/formValidators";
 
 function Register() {
+<<<<<<< HEAD
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
+=======
+  const navigate = useNavigate();
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
   const {
     values,
     errors,
@@ -235,10 +243,14 @@ function Register() {
         )}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         <Link to="/cadastro-locador" className="auth-button auth-button-callout">
+=======
+        <button type="button" className="auth-button auth-button--green" onClick={() => navigate("/cadastro-locador")}>
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
           SEJA UM LOCADOR
-        </Link>
+        </button>
 
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
         <FormField

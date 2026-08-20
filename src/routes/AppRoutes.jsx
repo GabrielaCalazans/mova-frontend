@@ -5,10 +5,13 @@ import ForgotPassword from "../pages/ForgotPassword";
 import Login from "../pages/Login";
 import Conta from "../pages/Conta";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import CarrosScreen from "../pages/CarrosScreen";
 import TiposDeCarros from "../pages/TiposDeCarros";
 =======
 import TiposDeCarros from "../pages/TiposDeCarros";
+=======
+>>>>>>> 983b85b0d16831b05a20056748c836730f6d9fc2
 import CarrosScreen from "../pages/CarrosScreen";
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 import EscolhaGaragemRetirada from "../pages/EscolhaGaragemRetirada";
@@ -71,7 +74,7 @@ function AppRoutes() {
         <Route path="/carros/lista" element={<ProtectedRoute><CarrosScreen /></ProtectedRoute>} />
 =======
 
-        <Route path="/tipos-carros" element={<ProtectedRoute><TiposDeCarros /></ProtectedRoute>} />
+        <Route path="/tipos-carros" element={<Navigate to="/carros" replace />} />
         <Route path="/carros" element={<ProtectedRoute><CarrosScreen /></ProtectedRoute>} />
 >>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
         <Route path="/escolha-garagem-retirada" element={<ProtectedRoute><EscolhaGaragemRetirada /></ProtectedRoute>} />
