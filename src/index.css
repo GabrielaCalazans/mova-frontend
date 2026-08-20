@@ -1,0 +1,141 @@
+:root {
+  --font-family-base: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+
+  --color-primary: #003366;
+  --color-primary-strong: #00264d;
+  --color-primary-soft: #aec5e7;
+  --color-background-start: #d0e7ff;
+  --color-background-end: #aec5e7;
+  --color-surface: #ffffff;
+  --color-text: #003366;
+  --color-text-inverse: #f2f7ff;
+  --color-border: #003366;
+  --color-focus: #4a90e2;
+  --color-success: #1f7a3f;
+  --color-success-soft: #e8f7ee;
+  --color-warning: #9a6b00;
+  --color-warning-soft: #fff4d9;
+  --color-error: #b3261e;
+  --color-error-soft: #fdecea;
+
+  /* Tokens usados pelos styled-components (authStyle.js) */
+  --color-text-secondary: #555555;
+  --color-text-strong: #333333;
+  --color-text-muted: #777777;
+  --color-muted: #888888;
+  --color-muted-light: #dcdcdc;
+  --color-divider: #eeeeee;
+  --color-border-soft: #cccccc;
+  --color-accent: #2b5ba8;
+  --color-accent-soft: #7da2d6;
+  --color-accent-strong: #001f4d;
+  --color-card-bg: #e0ffff;
+  --color-card-bg-alt: #e0f7fa;
+  --color-hover-bg: #f0f8ff;
+  --color-hover-bg-soft: #f7fbff;
+  --color-hover-bg-strong: #eef5ff;
+  --color-page-bg: #f4f4f4;
+  --color-disabled-bg: #f7fafc;
+  --color-selected-bg: #e8f0fd;
+  --color-unselected-border: #d0dff0;
+  --color-logo-backdrop: transparent;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  --shadow-card: 0 12px 30px rgba(0, 31, 63, 0.15);
+  --transition-fast: 180ms ease;
+
+  /* Cores de preenchimento da marca (headers navy, botoes solidos, badges).
+     Propositalmente CONSTANTES nos dois temas: um fundo navy com texto claro
+     em cima precisa continuar legivel tanto no tema claro quanto no escuro -
+     ao contrario de --color-primary-strong, que e usada como cor de TEXTO
+     sobre a superficie da pagina e por isso precisa inverter por tema. */
+  --color-brand-fill: #00264d;
+  --color-on-brand: #ffffff;
+}
+
+/* Tema escuro - ativado via data-theme="dark" no elemento <html> */
+:root[data-theme="dark"] {
+  --color-primary: #7fb2ff;
+  --color-primary-strong: #ffffff;
+  --color-primary-soft: #3d5a80;
+  --color-background-start: #121212;
+  --color-background-end: #1c1c1c;
+  --color-surface: #1e1e1e;
+  --color-text: #f0f0f0;
+  --color-text-inverse: #121212;
+  --color-border: #4a4a4a;
+  --color-focus: #7fb2ff;
+  --color-success: #5fd383;
+  --color-success-soft: #1c2f21;
+  --color-warning: #e6b84f;
+  --color-warning-soft: #332a12;
+  --color-error: #ef6b62;
+  --color-error-soft: #331b18;
+
+  --color-text-secondary: #c2c2c2;
+  --color-text-strong: #ffffff;
+  --color-text-muted: #a0a0a0;
+  --color-muted: #9a9a9a;
+  --color-muted-light: #5a5a5a;
+  --color-divider: #333333;
+  --color-border-soft: #4a4a4a;
+  --color-accent: #7fb2ff;
+  --color-accent-soft: #5a7ab0;
+  --color-accent-strong: #dceaff;
+  --color-card-bg: #262626;
+  --color-card-bg-alt: #262626;
+  --color-hover-bg: #2c2c2c;
+  --color-hover-bg-soft: #262626;
+  --color-hover-bg-strong: #323232;
+  --color-page-bg: #121212;
+  --color-disabled-bg: #2a2a2a;
+  --color-selected-bg: #2c2c2c;
+  --color-unselected-border: #4a4a4a;
+  --color-logo-backdrop: #eef2f7;
+
+  --shadow-card: 0 12px 30px rgba(0, 0, 0, 0.55);
+
+  /* Mesmos valores do tema claro, de proposito - ver comentario em :root */
+  --color-brand-fill: #00264d;
+  --color-on-brand: #ffffff;
+}
+
+body {
+  font-family: var(--font-family-base);
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-background-start), var(--color-background-end));
+  color: var(--color-text);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}

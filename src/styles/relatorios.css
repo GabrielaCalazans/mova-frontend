@@ -1,0 +1,272 @@
+/* ── Filtro de relatorios ────────────────────────────────────────── */
+.filtro-title {
+  text-align: center;
+  color: var(--color-primary-strong);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0.5rem 0 1.25rem;
+}
+
+.filtro-card {
+  background: var(--color-surface-muted, #f2f2f4);
+  border-radius: 16px;
+  padding: 1rem 1.1rem 1.2rem;
+  margin-bottom: var(--space-md);
+}
+
+.filtro-card__label {
+  text-align: center;
+  color: var(--color-primary-strong);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.filtro-date-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--color-primary-strong);
+  font-size: 1.05rem;
+  font-weight: 700;
+  padding: 0.35rem 0;
+  margin-bottom: 0.6rem;
+}
+
+.filtro-date-divider {
+  width: 1px;
+  height: 1.1rem;
+  background: var(--color-brand-fill);
+}
+
+.filtro-date-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.92rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.filtro-select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 1rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23003366' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 18px;
+}
+
+/* ── Popup de calendario ─────────────────────────────────────────── */
+.filtro-cal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(120, 140, 165, 0.45);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+}
+
+.filtro-cal-popup {
+  background: var(--color-background-start);
+  border-radius: 18px;
+  padding: 1.1rem 1.2rem 1.3rem;
+  max-width: 300px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 16px 32px rgba(0, 31, 63, 0.25);
+}
+
+.filtro-cal-popup__title {
+  margin: 0 0 0.15rem;
+  color: var(--color-primary-strong);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.filtro-cal-popup__month {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 0.15rem 0 0.75rem;
+}
+
+.filtro-cal-popup__month h3 {
+  margin: 0;
+  color: var(--color-primary-strong);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.filtro-cal-nav {
+  background: none;
+  border: none;
+  color: var(--color-primary-strong);
+  font-size: 1.2rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0.15rem 0.4rem;
+}
+
+.filtro-cal-daynames {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 0.25rem;
+}
+
+.filtro-cal-daynames span {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--color-primary-strong);
+}
+
+.filtro-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.filtro-cal-day {
+  border: none;
+  background: none;
+  padding: 0.4rem 0;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.filtro-cal-day:disabled {
+  visibility: hidden;
+}
+
+.filtro-cal-day--weekend {
+  color: var(--color-primary-strong);
+  font-weight: 600;
+}
+
+.filtro-cal-day--selected {
+  background: var(--color-brand-fill);
+  color: var(--color-on-brand);
+  font-weight: 700;
+}
+
+.filtro-cal-holiday {
+  margin: 0.6rem 0 0;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+/* ── Relatorios / graficos ───────────────────────────────────────── */
+.relatorio-card {
+  background: var(--color-surface);
+  border-radius: 16px;
+  padding: 1rem 0.75rem 1.1rem;
+  margin-bottom: var(--space-md);
+  box-shadow: 0 8px 18px rgba(0, 31, 63, 0.08);
+}
+
+.relatorio-card__chart {
+  width: 100%;
+  height: 220px;
+}
+
+.relatorio-card__footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.relatorio-card__footer h3 {
+  margin: 0 0 0.15rem;
+  color: var(--color-primary-strong);
+  font-size: 1rem;
+}
+
+.relatorio-card__footer p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+}
+
+.relatorio-card__actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  padding-top: 0.2rem;
+}
+
+.relatorio-card__actions button {
+  background: none;
+  border: none;
+  color: var(--color-primary-strong);
+  cursor: pointer;
+  padding: 0.2rem;
+  display: flex;
+}
+
+.relatorio-filter-summary {
+  text-align: center;
+  color: var(--color-primary-strong);
+  font-size: 0.82rem;
+  margin: 0 0 1rem;
+}
+
+.relatorio-filter-summary a,
+.relatorio-filter-summary button {
+  background: none;
+  border: none;
+  color: var(--color-primary-strong);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: inherit;
+}
+
+.relatorio-grid {
+  display: grid;
+  gap: var(--space-md);
+}
+
+/* ══ Telas grandes ═════════════════════════════════════════════ */
+@media (min-width: 720px) {
+  /* Formularios (filtro, cadastro) continuam estreitos mesmo dentro
+     de uma .carro-content mais larga - campo de texto largo demais
+     prejudica a leitura. */
+  .filtro-card,
+  .auth-form {
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (min-width: 1000px) {
+  .relatorio-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .relatorio-card__chart {
+    height: 260px;
+  }
+}
