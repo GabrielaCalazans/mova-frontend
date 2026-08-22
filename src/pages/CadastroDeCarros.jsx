@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle2, XCircle } from "lucide-react";
-import TopBar from "../components/TopBar";
 import BottomNav from "../components/BottomNav";
 import { listVeiculos, deleteVeiculo } from "../services/veiculoService";
 import { getAuthSession } from "../services/authSession";
@@ -61,7 +60,6 @@ export default function CadastroDeCarros() {
   return (
     <main className="carro-page">
       <div className="carro-header">
-        <TopBar showLogo iconColor="white" />
         <h1>Cadastro de Carros</h1>
       </div>
 

@@ -24,11 +24,7 @@ const viagens = [
 
 export default function Historico() {
   return (
-<<<<<<< HEAD
-    <AuthenticatedLayout topBarShowLogo={false}>
-=======
     <AuthenticatedLayout>
->>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
       <LogoContainer>
         <img src={movaLogo} alt="Mova Logo" />

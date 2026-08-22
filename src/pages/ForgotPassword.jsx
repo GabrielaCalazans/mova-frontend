@@ -48,11 +48,8 @@ function ForgotPassword() {
       title="Recuperar Senha"
       logoSrc={movaLogo}
       logoAlt="Mova Logo"
-<<<<<<< HEAD
       wordmark="MOVA"
       compactLogo
-=======
->>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
       footerText="Lembrou sua senha?"
       footerLinkTo="/login"
       footerLinkLabel="Entrar"

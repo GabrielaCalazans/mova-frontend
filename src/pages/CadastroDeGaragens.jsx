@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Pencil, XCircle, CheckCircle2 } from "lucide-react";
-import TopBar from "../components/TopBar";
 import BottomNav from "../components/BottomNav";
 import garagemImg from "../assets/garagem.png";
 import { listGaragens, deleteGaragem } from "../services/garagemService";
@@ -60,7 +59,6 @@ export default function CadastroDeGaragens() {
   return (
     <main className="carro-page">
       <div className="carro-header">
-        <TopBar showLogo iconColor="white" />
         <h1>Cadastro de Garagens</h1>
       </div>
 

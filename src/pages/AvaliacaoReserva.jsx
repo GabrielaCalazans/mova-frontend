@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Star } from "lucide-react";
-import TopBar from "../components/TopBar";
 import BottomNav from "../components/BottomNav";
 import { getJourneyStep } from "../utils/journeyStorage";
 import {
@@ -88,7 +87,6 @@ export default function AvaliacaoReserva() {
   return (
     <main className="carro-page">
       <div className="carro-header">
-        <TopBar showLogo iconColor="white" />
         <h1>Avalie sua Experiência</h1>
       </div>
 

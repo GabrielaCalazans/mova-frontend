@@ -385,7 +385,7 @@
   }
 
   .carro-content {
-    max-width: 760px;
+    max-width: 960px;
     padding: 0 var(--space-xl);
   }
 
@@ -396,23 +396,13 @@
 
   .frota-list,
   .fav-list,
-  .carro-list,
   .garage-list {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     align-items: start;
   }
 
-  .frota-header-row {
-    max-width: 760px;
-  }
-}
-
-@media (min-width: 1100px) {
-  .carro-content {
-    max-width: 1040px;
-  }
-
   .carro-list {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    align-items: start;
   }
 }

@@ -1,32 +1,14 @@
-<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import TopBar from "../components/TopBar";
 import BottomNav from "../components/BottomNav";
 import "../styles/carselect.css";
-=======
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import movaLogo from "../assets/mova_logo.png";
-import AuthenticatedLayout from "../layout/AuthenticatedLayout";
-
-import {
-    LogoContainer,
-    PrimaryButton,
-    Title,
-    OptionsGrid,
-    OptionCard,
-    CarImage
-} from "../styles/authStyle";
->>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 
 import economicoImg from "../assets/car-types/manuais.png";
 import executivoImg from "../assets/car-types/automaticos.png";
 import adaptadoImg from "../assets/car-types/adaptados.png";
 import eletricoImg from "../assets/car-types/autonomos.png";
 
-<<<<<<< HEAD
 const TIPOS = [
   { id: "economico", nome: "Carro Econômico", img: economicoImg },
   { id: "executivo", nome: "Carro Executivo", img: executivoImg },
@@ -59,7 +41,6 @@ function TiposDeCarros() {
   return (
     <main className="carro-page">
       <div className="carro-header">
-        <TopBar showLogo iconColor="white" />
         <h1>Escolha o Tipo de Carro</h1>
       </div>
 
@@ -111,47 +92,3 @@ function TiposDeCarros() {
 }
 
 export default TiposDeCarros;
-=======
-function TiposDeCarros() {
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        document.title = "MOVA - Tipos de Carros";
-    }, []);
-
-    const tipos = [
-        { id: 1, nome: "Carro Econômico", img: economicoImg },
-        { id: 2, nome: "Carro Executivo", img: executivoImg },
-        { id: 3, nome: "Carro Adaptado", img: adaptadoImg },
-        { id: 4, nome: "Carro Elétrico", img: eletricoImg },
-    ];
-
-    return (
-        <AuthenticatedLayout>
-
-            <LogoContainer>
-                <img src={movaLogo} alt="Mova Logo" />
-            </LogoContainer>
-
-            <Title>Escolha o Tipo de Carro</Title>
-
-            <OptionsGrid>
-                {tipos.map((carro) => (
-                    <OptionCard key={carro.id} variant="type">
-                        <h3>{carro.nome}</h3>
-                        <CarImage src={carro.img} alt={carro.nome} />
-                        <PrimaryButton
-                            onClick={() => navigate("/carros", { state: { tipo: carro.id } })}
-                            style={{ width: "80%" }}
-                        >
-                            Selecionar
-                        </PrimaryButton>
-                    </OptionCard>
-                ))}
-            </OptionsGrid>
-        </AuthenticatedLayout>
-    );
-}
-
-export default TiposDeCarros;
->>>>>>> 1c95901965c2026bba2162d3f430df8344c59244

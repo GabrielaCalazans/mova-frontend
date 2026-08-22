@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart } from "lucide-react";
-import TopBar from "../components/TopBar";
 import BottomNav from "../components/BottomNav";
 import { listVeiculos } from "../services/veiculoService";
 import { resolveModelDetails } from "../utils/vehicleDisplay";
@@ -60,7 +59,6 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
   return (
     <main className="carro-page">
       <div className="carro-header">
-        <TopBar showLogo iconColor="white" />
         <h1>{title}</h1>
       </div>
 

@@ -73,7 +73,7 @@ export default function CadastroCarroForm() {
   }
 
   return (
-    <AuthenticatedLayout title="Informações" topBarShowLogo align={isNovo ? "left" : "center"}>
+    <AuthenticatedLayout title="Informações" align={isNovo ? "left" : "center"}>
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         {erro && (
           <p className="auth-feedback auth-feedback--error" role="status" aria-live="polite">

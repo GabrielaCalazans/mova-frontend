@@ -13,7 +13,6 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import TopBar from "../components/TopBar";
 import BottomNav from "../components/BottomNav";
 import "../styles/carselect.css";
 import "../styles/relatorios.css";
@@ -85,7 +84,6 @@ export default function RelatoriosVeiculos() {
   return (
     <main className="carro-page">
       <div className="carro-header">
-        <TopBar showLogo iconColor="white" />
         <h1>Relatórios | Veículos</h1>
       </div>
 

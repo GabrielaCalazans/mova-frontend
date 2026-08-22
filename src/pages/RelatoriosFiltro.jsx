@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar } from "lucide-react";
-import TopBar from "../components/TopBar";
 import BottomNav from "../components/BottomNav";
 import "../styles/carselect.css";
 import "../styles/auth.css";
@@ -94,7 +93,6 @@ export default function RelatoriosFiltro() {
   return (
     <main className="carro-page">
       <div className="carro-header">
-        <TopBar showLogo iconColor="white" />
         <h1>Relatórios | Veículos</h1>
       </div>
 

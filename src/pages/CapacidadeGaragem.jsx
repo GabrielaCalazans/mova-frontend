@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Car } from "lucide-react";
-import TopBar from "../components/TopBar";
 import BottomNav from "../components/BottomNav";
 import { getGaragemById, listVeiculosDaGaragem } from "../services/garagemService";
 import "../styles/carselect.css";
@@ -72,7 +71,6 @@ export default function CapacidadeGaragem() {
   return (
     <main className="carro-page">
       <div className="carro-header">
-        <TopBar showLogo iconColor="white" />
         <h1>Capacidade Atual</h1>
       </div>
 

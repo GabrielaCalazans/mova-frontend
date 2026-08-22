@@ -2,7 +2,6 @@
   return value.replace(/\D/g, "");
 }
 
-<<<<<<< HEAD
 export function isCpfValido(cpf) {
   const digits = onlyDigits(cpf || "");
 
@@ -50,8 +49,6 @@ export function isCnpjValido(cnpj) {
   return digits.slice(12) === digito1cnpj + digito2cnpj;
 }
 
-=======
->>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
@@ -132,7 +129,6 @@ export function validateRegisterForm(values) {
   return nextErrors;
 }
 
-<<<<<<< HEAD
 export function validateCadastroContaForm(values) {
   const nextErrors = {};
 
@@ -216,8 +212,6 @@ export function validateCadastroDetalhesForm(values) {
   return nextErrors;
 }
 
-=======
->>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
 export function validateLocatarioRegisterForm(values) {
   const nextErrors = {};
 
@@ -285,13 +279,8 @@ export function validateLocadorRegisterForm(values) {
     nextErrors.empresa = "Informe a empresa.";
   }
 
-<<<<<<< HEAD
   if (!isCnpjValido(values.cnpj)) {
     nextErrors.cnpj = "CNPJ invalido. Confira os numeros digitados.";
-=======
-  if (!/^[0-9]{14}$/.test(onlyDigits(values.cnpj))) {
-    nextErrors.cnpj = "CNPJ deve conter 14 digitos.";
->>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   }
 
   if (!values.address?.trim()) {
@@ -304,14 +293,9 @@ export function validateLocadorRegisterForm(values) {
 
   if (!values.password.trim()) {
     nextErrors.password = "Informe sua senha.";
-<<<<<<< HEAD
   } else if (!isSenhaForte(values.password)) {
     nextErrors.password =
       "Senha deve ter 8+ caracteres, com maiuscula, minuscula, numero e caractere especial.";
-=======
-  } else if (values.password.length < 8) {
-    nextErrors.password = "Senha deve ter pelo menos 8 caracteres.";
->>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   }
 
   if (!values.confirmPassword?.trim()) {
@@ -365,13 +349,8 @@ export function validateProfileForm(values) {
     nextErrors.celphone = "Informe celular com DDD (10 ou 11 digitos).";
   }
 
-<<<<<<< HEAD
   if (!isCpfValido(values.cpf)) {
     nextErrors.cpf = "CPF invalido. Confira os numeros digitados.";
-=======
-  if (!/^[0-9]{11}$/.test(onlyDigits(values.cpf || ""))) {
-    nextErrors.cpf = "CPF deve conter 11 digitos.";
->>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   }
 
   if (!/^[0-9]{11}$/.test(onlyDigits(values.cnh || ""))) {
@@ -389,7 +368,6 @@ export function validateProfileForm(values) {
   return nextErrors;
 }
 
-<<<<<<< HEAD
 const SENHA_FORTE_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 
 export function isSenhaForte(password) {
@@ -399,10 +377,5 @@ export function isSenhaForte(password) {
 export function getPasswordState(password) {
   if (password.length === 0) return "default";
   if (!isSenhaForte(password)) return "warning";
-=======
-export function getPasswordState(password) {
-  if (password.length === 0) return "default";
-  if (password.length < 8) return "warning";
->>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
   return "success";
 }

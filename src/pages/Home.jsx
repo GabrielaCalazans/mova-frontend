@@ -1,9 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin } from "lucide-react";
-import movaLogo from "../assets/mova_logo.png";
 import { getAuthSession } from "../services/authSession";
-import TopBar from "../components/TopBar";
 import BottomNav from "../components/BottomNav";
 import "../styles/home.css";
 
@@ -59,14 +57,6 @@ function Home() {
 
   return (
     <main className="home-page">
-      <div style={{ padding: "0.75rem 1.1rem 0" }}>
-        <TopBar />
-      </div>
-
-      <div className="home-topbar">
-        <img src={movaLogo} alt="Mova Logo" className="home-logo" />
-      </div>
-
       <h1 className="home-sr-only">Página Inicial</h1>
 
       <div className="home-content">

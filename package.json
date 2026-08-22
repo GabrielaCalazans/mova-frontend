@@ -16,10 +16,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.1",
-<<<<<<< HEAD
     "recharts": "^3.10.1",
-=======
->>>>>>> 1c95901965c2026bba2162d3f430df8344c59244
     "styled-components": "^6.4.0"
   },
   "devDependencies": {
