@@ -1,5 +1,6 @@
-﻿import { useEffect } from "react";
-import { Link } from "react-router-dom";
+﻿import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { CheckCircle } from "lucide-react";
 import movaLogo from "../assets/mova_logo.png";
 import AuthLayout from "../layout/AuthLayout";
 import FormField from "../components/FormField";
@@ -8,8 +9,17 @@ import { useFormSubmit } from "../hooks/useFormSubmit";
 import { registerLocador } from "../services/authService";
 import { maskCelphone, maskCnpj, maskCep } from "../utils/inputMasks";
 import { validateLocadorRegisterForm } from "../utils/formValidators";
+import {
+  ModalOverlay,
+  SuccessModal,
+  IconCircle,
+  SuccessTitle,
+  SuccessSubtitle,
+} from "../styles/authStyle";
 
 function CadastroLocador() {
+  const navigate = useNavigate();
+  const [cadastroConcluido, setCadastroConcluido] = useState(false);
   const {
     values,
     errors,
@@ -42,15 +52,16 @@ function CadastroLocador() {
       type: "error",
       message: "Existem campos invalidos. Revise os avisos abaixo.",
     }),
-    getValidFeedback: (_validValues, submitResult) => ({
-      type: "success",
-      message: submitResult.message,
-    }),
     getSubmitErrorFeedback: (error) => ({
       type: "error",
       message: error.message,
     }),
-    onSubmit: registerLocador,
+    onSubmit: async (submitValues) => {
+      const result = await registerLocador(submitValues);
+      setCadastroConcluido(true);
+      setTimeout(() => navigate("/login", { replace: true }), 2200);
+      return result;
+    },
   });
 
   return (
@@ -196,6 +207,20 @@ function CadastroLocador() {
           Já tem conta? <Link to="/login">Entrar</Link>
         </p>
       </form>
+
+      {cadastroConcluido && (
+        <ModalOverlay>
+          <SuccessModal>
+            <IconCircle>
+              <CheckCircle size={48} color="#2e7d32" strokeWidth={1.5} />
+            </IconCircle>
+            <SuccessTitle>Cadastro concluído!</SuccessTitle>
+            <SuccessSubtitle>
+              Sua conta de locador foi criada com sucesso. Você será redirecionado para o login.
+            </SuccessSubtitle>
+          </SuccessModal>
+        </ModalOverlay>
+      )}
     </AuthLayout>
   );
 }

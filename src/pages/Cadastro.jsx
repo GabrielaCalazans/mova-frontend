@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, CheckCircle } from "lucide-react";
 import movaLogo from "../assets/mova_logo.png";
 import AuthLayout from "../layout/AuthLayout";
 import FormField from "../components/FormField";
@@ -14,10 +14,19 @@ import {
   validateCadastroContaForm,
   validateCadastroDetalhesForm,
 } from "../utils/formValidators";
+import {
+  ModalOverlay,
+  SuccessModal,
+  IconCircle,
+  SuccessTitle,
+  SuccessSubtitle,
+} from "../styles/authStyle";
 import "../styles/relatorios.css";
 
 function Register() {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [cadastroConcluido, setCadastroConcluido] = useState(false);
   const [deficiencias, setDeficiencias] = useState([]);
 
   useEffect(() => {
@@ -83,15 +92,16 @@ function Register() {
       type: "error",
       message: "Existem campos invalidos. Revise os avisos abaixo.",
     }),
-    getValidFeedback: (_validValues, submitResult) => ({
-      type: "success",
-      message: submitResult.message,
-    }),
     getSubmitErrorFeedback: (error) => ({
       type: "error",
       message: error.message,
     }),
-    onSubmit: registerLocatario,
+    onSubmit: async (submitValues) => {
+      const result = await registerLocatario(submitValues);
+      setCadastroConcluido(true);
+      setTimeout(() => navigate("/login", { replace: true }), 2200);
+      return result;
+    },
   });
 
   if (step === 1) {
@@ -354,6 +364,20 @@ function Register() {
           {isRegistering ? "Cadastrando..." : "Finalizar Cadastro"}
         </button>
       </form>
+
+      {cadastroConcluido && (
+        <ModalOverlay>
+          <SuccessModal>
+            <IconCircle>
+              <CheckCircle size={48} color="#2e7d32" strokeWidth={1.5} />
+            </IconCircle>
+            <SuccessTitle>Cadastro concluído!</SuccessTitle>
+            <SuccessSubtitle>
+              Sua conta foi criada com sucesso. Você será redirecionado para o login.
+            </SuccessSubtitle>
+          </SuccessModal>
+        </ModalOverlay>
+      )}
     </AuthLayout>
   );
 }
