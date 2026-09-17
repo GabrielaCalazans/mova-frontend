@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home as HomeIcon, Car, History, Receipt, User, Clock, HeadphonesIcon, Settings, LogOut, Sun, Moon } from "lucide-react";
+import { User, Clock, HeadphonesIcon, Settings, LogOut, Sun, Moon } from "lucide-react";
+import { Icone01, Icone02, Icone03, Icone04, Icone05 } from "./icons";
 import { ModalOverlay, ModalContent, MenuItem } from "../styles/authStyle";
 import { clearAuthSession } from "../services/authSession";
 import { useTheme } from "../context/ThemeContext";
 import "../styles/home.css";
 
 const NAV_ITEMS = [
-  { key: "home", icon: HomeIcon, route: "/home", label: "Início" },
-  { key: "carros", icon: Car, route: "/carros", label: "Carros" },
-  { key: "historico", icon: History, route: "/historico", label: "Histórico" },
-  { key: "recibos", icon: Receipt, route: "/historico", label: "Recibos" },
+  { key: "home", icon: Icone01, route: "/home", label: "Início" },
+  { key: "carros", icon: Icone02, route: "/carros", label: "Carros" },
+  { key: "historico", icon: Icone03, route: "/historico", label: "Histórico" },
+  { key: "relatorios", icon: Icone04, route: "/relatorios/avaliacoes-filtro", label: "Relatórios" },
 ];
 
 const MENU_ITEMS = [
@@ -55,7 +56,7 @@ export default function BottomNav() {
               aria-label={label}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon size={22} strokeWidth={isActive ? 2.25 : 1.75} />
+              <Icon size={24} />
             </button>
           );
         })}
@@ -68,7 +69,7 @@ export default function BottomNav() {
           aria-haspopup="true"
           aria-expanded={menuVisible}
         >
-          <User size={22} strokeWidth={location.pathname === "/conta" ? 2.25 : 1.75} />
+          <Icone05 size={24} />
         </button>
       </nav>
 

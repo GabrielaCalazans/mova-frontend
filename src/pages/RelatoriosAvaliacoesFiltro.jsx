@@ -6,26 +6,26 @@ import "../styles/carselect.css";
 import "../styles/auth.css";
 import "../styles/relatorios.css";
 
-export default function RelatoriosFiltro() {
+export default function RelatoriosAvaliacoesFiltro() {
   const navigate = useNavigate();
 
   const [dataSelecionada, setDataSelecionada] = useState(null);
-  const [garagem, setGaragem] = useState("");
   const [veiculo, setVeiculo] = useState("");
-  const [status, setStatus] = useState("Confirmada");
+  const [tipo, setTipo] = useState("Automático");
+  const [avaliacao, setAvaliacao] = useState("4");
 
   useEffect(() => {
-    document.title = "MOVA - Filtro de Relatórios";
+    document.title = "MOVA - Filtro de Relatórios de Avaliações";
   }, []);
 
   function handleAplicar(event) {
     event.preventDefault();
-    navigate("/relatorios/veiculos", {
+    navigate("/relatorios/avaliacoes", {
       state: {
         data: formatarDataBR(dataSelecionada),
-        garagem,
         veiculo,
-        status,
+        tipo,
+        avaliacao,
       },
     });
   }
@@ -33,7 +33,7 @@ export default function RelatoriosFiltro() {
   return (
     <main className="carro-page">
       <div className="carro-header">
-        <h1>Relatórios | Veículos</h1>
+        <h1>Relatórios | Avaliações</h1>
       </div>
 
       <div className="carro-content">
@@ -44,18 +44,7 @@ export default function RelatoriosFiltro() {
 
           <div className="filtro-card">
             <div className="auth-field">
-              <label htmlFor="garagem">Garagem*</label>
-              <input
-                id="garagem"
-                type="text"
-                placeholder="Garagem"
-                value={garagem}
-                onChange={(e) => setGaragem(e.target.value)}
-              />
-            </div>
-
-            <div className="auth-field">
-              <label htmlFor="veiculo">Veículo*</label>
+              <label htmlFor="veiculo">Veículo</label>
               <input
                 id="veiculo"
                 type="text"
@@ -66,17 +55,32 @@ export default function RelatoriosFiltro() {
             </div>
 
             <div className="auth-field">
-              <label htmlFor="status">Status de Reserva*</label>
+              <label htmlFor="tipo">Tipo</label>
               <select
-                id="status"
+                id="tipo"
                 className="filtro-select"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
+                value={tipo}
+                onChange={(e) => setTipo(e.target.value)}
               >
-                <option value="Confirmada">Confirmada</option>
-                <option value="Pendente">Pendente</option>
-                <option value="Cancelada">Cancelada</option>
-                <option value="Concluída">Concluída</option>
+                <option value="Automático">Automático</option>
+                <option value="Manual">Manual</option>
+                <option value="Semi-automático">Semi-automático</option>
+              </select>
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="avaliacao">Avaliação</label>
+              <select
+                id="avaliacao"
+                className="filtro-select"
+                value={avaliacao}
+                onChange={(e) => setAvaliacao(e.target.value)}
+              >
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
               </select>
             </div>
           </div>

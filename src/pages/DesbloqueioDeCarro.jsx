@@ -34,6 +34,11 @@ export default function TelaDeDesbloqueio() {
             {codigo || "Código indisponível"}
           </p>
         </div>
+
+        <p style={{ marginTop: "1.25rem", color: "var(--color-text-secondary)", fontSize: "0.85rem" }}>
+          Depois de devolver o veículo, você pode avaliar sua experiência a
+          qualquer momento pela tela de Histórico.
+        </p>
       </div>
           <BottomNav />
     </main>

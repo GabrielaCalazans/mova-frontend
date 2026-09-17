@@ -79,6 +79,12 @@ export async function apiRequest(path, options = {}) {
     const parsedMessage = parseApiErrorMessage(payload);
     const message = parsedMessage || `Erro ao comunicar com a API (HTTP ${response.status}).`;
 
+    // eslint-disable-next-line no-console
+    console.error(
+      `[apiRequest] ${requestOptions.method || "GET"} ${path} -> HTTP ${response.status}`,
+      { contentType, hasJson, payload }
+    );
+
     throw new Error(message);
   }
 

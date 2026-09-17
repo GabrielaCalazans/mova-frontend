@@ -32,19 +32,19 @@ function CarrosScreen() {
     setErro(null);
 
     try {
-      const filters = {};
-      if (tipoFiltro === "eletrico") filters.eletrico = true;
-      if (tipoFiltro === "adaptado") filters.adaptado = true;
-      if (tipoFiltro === "executivo") filters.cambio = "Automatico";
-
-      const resultado = await listVeiculos(filters);
+      // Filtragem feita no cliente (nao no servidor): evita depender de o
+      // backend aceitar exatamente os mesmos nomes/valores de filtro que
+      // usamos aqui (ex.: diferenca de maiusculas/minusculas em "cambio").
+      const resultado = await listVeiculos();
+      // eslint-disable-next-line no-console
+      console.log("[CarrosScreen] veiculos recebidos da API:", resultado);
       setVeiculos(resultado);
     } catch (e) {
       setErro(e.message || "Não foi possível carregar os veículos.");
     } finally {
       setLoading(false);
     }
-  }, [tipoFiltro]);
+  }, []);
 
   useEffect(() => {
     document.title = "MOVA - Escolha seu Carro";
@@ -52,7 +52,14 @@ function CarrosScreen() {
   }, [buscar]);
 
   const veiculosFiltrados = veiculos.filter((v) => {
-    if (tipoFiltro === "economico") return !v.eletrico && !v.adaptado;
+    const eletrico = v.eletrico === true || v.eletrico === "true";
+    const adaptado = v.adaptado === true || v.adaptado === "true";
+    const cambio = String(v.cambio ?? v.modeloVeiculo?.cambio ?? "").toLowerCase();
+
+    if (tipoFiltro === "eletrico") return eletrico;
+    if (tipoFiltro === "adaptado") return adaptado;
+    if (tipoFiltro === "executivo") return cambio.includes("automat");
+    if (tipoFiltro === "economico") return !eletrico && !adaptado;
     return true;
   });
 
@@ -103,7 +110,21 @@ function CarrosScreen() {
 
         {!loading && !erro && veiculosFiltrados.length === 0 && (
           <p className="carro-empty-state">
-            Nenhum veículo encontrado com os filtros selecionados.
+            {veiculos.length === 0
+              ? "Nenhum veículo cadastrado no momento. Volte mais tarde."
+              : "Nenhum veículo desse tipo disponível no momento."}
+            {veiculos.length > 0 && tipoFiltro && (
+              <>
+                {" "}
+                <button
+                  type="button"
+                  onClick={() => navigate("/carros/lista")}
+                  style={{ background: "none", border: "none", color: "var(--color-primary-strong)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}
+                >
+                  Ver todos os veículos
+                </button>
+              </>
+            )}
           </p>
         )}
 

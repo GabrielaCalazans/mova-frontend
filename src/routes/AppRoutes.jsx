@@ -22,6 +22,8 @@ import CadastroDeGaragens from "../pages/CadastroDeGaragens";
 import CadastroGaragemForm from "../pages/CadastroGaragemForm";
 import CapacidadeGaragem from "../pages/CapacidadeGaragem";
 import Historico from "../pages/Historico";
+import RelatoriosAvaliacoesFiltro from "../pages/RelatoriosAvaliacoesFiltro";
+import RelatoriosAvaliacoes from "../pages/RelatoriosAvaliacoes";
 import Suporte from "../pages/Suporte";
 import Configuracoes from "../pages/Configuracoes";
 import Home from "../pages/Home";
@@ -74,6 +76,8 @@ function AppRoutes() {
         <Route path="/cadastro-garagens/:id" element={<ProtectedRoute><CadastroGaragemForm /></ProtectedRoute>} />
 
         <Route path="/historico" element={<ProtectedRoute><Historico /></ProtectedRoute>} />
+        <Route path="/relatorios/avaliacoes-filtro" element={<ProtectedRoute><RelatoriosAvaliacoesFiltro /></ProtectedRoute>} />
+        <Route path="/relatorios/avaliacoes" element={<ProtectedRoute><RelatoriosAvaliacoes /></ProtectedRoute>} />
         <Route path="/suporte" element={<ProtectedRoute><Suporte /></ProtectedRoute>} />
         <Route path="/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
 
