@@ -7,7 +7,10 @@ import { createAvaliacao, getAvaliacaoDaReserva } from "../services/avaliacaoSer
 
 vi.mock("react-router-dom", () => ({ useLocation: () => ({ state: { reservaId: "11111111-2222-4333-8444-555555555555" } }) }));
 vi.mock("../components/BottomNav", () => ({ default: () => null }));
-vi.mock("../utils/journeyStorage", () => ({ getJourneyStep: () => null }));
+const { getJourneyStep } = vi.hoisted(() => ({
+  getJourneyStep: vi.fn(() => null),
+}));
+vi.mock("../utils/journeyStorage", () => ({ getJourneyStep }));
 vi.mock("../services/reservaService", () => ({ getReservaById: vi.fn() }));
 vi.mock("../services/avaliacaoService", () => ({ createAvaliacao: vi.fn(), getAvaliacaoDaReserva: vi.fn() }));
 
@@ -34,6 +37,29 @@ describe("AvaliacaoReserva", () => {
     expect(createAvaliacao).toHaveBeenCalledWith({ idReserva: reservaRealizada.id, nota: 4, comentario: "Ótimo carro" });
     expect(await screen.findByRole("status")).toHaveTextContent("Você já avaliou esta reserva com nota 4.");
     expect(screen.getByText("“Ótimo carro”")).toBeInTheDocument();
+  });
+
+  it("exibe a forma de pagamento persistida, mesmo se a jornada estiver desatualizada", async () => {
+    getJourneyStep.mockImplementation((step) => (
+      step === "pagamento" ? { metodoPagamento: "PIX" } : null
+    ));
+    getReservaById.mockResolvedValue({ ...reservaRealizada, metodoPagamento: "CARTAO_CREDITO" });
+
+    render(<AvaliacaoReserva />);
+
+    expect(await screen.findByText(/Forma de Pagamento:/)).toHaveTextContent("Cartão de Crédito");
+    expect(screen.queryByText(/Forma de Pagamento: Pix/)).toBeNull();
+  });
+
+  it("mostra ausência honesta quando a reserva não possui método persistido", async () => {
+    getJourneyStep.mockImplementation((step) => (
+      step === "pagamento" ? { metodoPagamento: "CARTAO_CREDITO" } : null
+    ));
+    getReservaById.mockResolvedValue({ ...reservaRealizada, metodoPagamento: null });
+
+    render(<AvaliacaoReserva />);
+
+    expect(await screen.findByText(/Forma de Pagamento:/)).toHaveTextContent("Forma de Pagamento: —");
   });
 
   it("não oferece envio antes de a reserva ser realizada", async () => {

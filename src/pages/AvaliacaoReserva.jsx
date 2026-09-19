@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Star } from "lucide-react";
 import BottomNav from "../components/BottomNav";
 import { getJourneyStep } from "../utils/journeyStorage";
-import { METODO_PAGAMENTO_LABELS, STATUS_RESERVA } from "../services/apiEnums";
+import { METODO_PAGAMENTO_LABELS, rotulo, STATUS_RESERVA } from "../services/apiEnums";
 import { formatMoneyBRL } from "../utils/reservationMath";
 import { getReservaById } from "../services/reservaService";
 import { createAvaliacao, getAvaliacaoDaReserva } from "../services/avaliacaoService";
@@ -42,7 +42,6 @@ export default function AvaliacaoReserva() {
   // (2) clicando numa reserva concluida no Historico (recebe o id via
   // location.state). Nos dois casos, o id real da reserva manda.
   const veiculoJourney = getJourneyStep("veiculo");
-  const pagamentoJourney = getJourneyStep("pagamento");
   const reservaId = location.state?.reservaId || getJourneyStep("reserva")?.id;
   const semReservaId = !reservaId;
 
@@ -151,7 +150,7 @@ export default function AvaliacaoReserva() {
                 <br />
                 Forma de Pagamento:{" "}
                 {resolveField(
-                  METODO_PAGAMENTO_LABELS[pagamentoJourney?.metodoPagamento],
+                  rotulo(METODO_PAGAMENTO_LABELS, reserva?.metodoPagamento),
                 )}
               </p>
 
