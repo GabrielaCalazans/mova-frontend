@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Heart } from "lucide-react";
 import BottomNav from "../components/BottomNav";
 import { listVeiculos } from "../services/veiculoService";
+import { normalizeVeiculo } from "../services/veiculoService";
 import { resolveModelDetails } from "../utils/vehicleDisplay";
-import { getFavoriteIds, toggleFavorite } from "../utils/favoritesStore";
+import { desfavoritar, favoritar, listarFavoritos } from "../services/favoritoService";
+import { cancelarInteresse, listarInteresses, registrarInteresse } from "../services/interesseService";
 import { formatMoneyBRL } from "../utils/reservationMath";
 import "../styles/carselect.css";
 import "../styles/home.css";
@@ -21,7 +23,8 @@ function resolveVeiculoField(veiculo, modeloVeiculo, field) {
 export default function FavoritableCarList({ title, onlyFavorites, emptyMessage, documentTitle }) {
   const navigate = useNavigate();
   const [veiculos, setVeiculos] = useState([]);
-  const [favoritos, setFavoritos] = useState(() => new Set(getFavoriteIds()));
+  const [favoritos, setFavoritos] = useState(new Set());
+  const [interesses, setInteresses] = useState(new Set());
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState(null);
 
@@ -33,8 +36,14 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
     setErro(null);
 
     try {
-      const resultado = await listVeiculos();
-      setVeiculos(resultado);
+      const [favoritosApi, interessesApi, resultado] = await Promise.all([
+        listarFavoritos(),
+        listarInteresses(),
+        onlyFavorites ? Promise.resolve([]) : listVeiculos(),
+      ]);
+      setFavoritos(new Set(favoritosApi.map((item) => String(item.idVeiculo))));
+      setInteresses(new Set(interessesApi.map((item) => String(item.idVeiculo))));
+      setVeiculos(onlyFavorites ? favoritosApi.map((item) => normalizeVeiculo(item.veiculo)) : resultado);
     } catch (e) {
       setErro(e.message || "Não foi possível carregar os veículos.");
     } finally {
@@ -47,10 +56,36 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
     carregar();
   }, [carregar, documentTitle]);
 
-  function handleToggleFavorito(event, id) {
+  async function handleToggleFavorito(event, id) {
     event.stopPropagation();
-    const nextIds = toggleFavorite(id);
-    setFavoritos(new Set(nextIds));
+    try {
+      if (favoritos.has(String(id))) await desfavoritar(id);
+      else await favoritar(id);
+      setFavoritos((atual) => {
+        const proximo = new Set(atual);
+        if (proximo.has(String(id))) proximo.delete(String(id));
+        else proximo.add(String(id));
+        return proximo;
+      });
+    } catch (e) {
+      setErro(e.message || "Não foi possível atualizar o favorito.");
+    }
+  }
+
+  async function handleToggleInteresse(event, id) {
+    event.stopPropagation();
+    try {
+      if (interesses.has(String(id))) await cancelarInteresse(id);
+      else await registrarInteresse(id);
+      setInteresses((atual) => {
+        const proximo = new Set(atual);
+        if (proximo.has(String(id))) proximo.delete(String(id));
+        else proximo.add(String(id));
+        return proximo;
+      });
+    } catch (e) {
+      setErro(e.message || "Não foi possível atualizar o aviso de disponibilidade.");
+    }
   }
 
   const listaExibida = veiculos.filter((veiculo) =>
@@ -101,6 +136,14 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
                     onClick={(event) => handleToggleFavorito(event, veiculo.id)}
                   >
                     <Heart size={24} fill={isFav ? "currentColor" : "none"} />
+                  </button>
+                  <button
+                    type="button"
+                    className="carro-button"
+                    aria-pressed={interesses.has(String(veiculo.id))}
+                    onClick={(event) => handleToggleInteresse(event, veiculo.id)}
+                  >
+                    {interesses.has(String(veiculo.id)) ? "Cancelar aviso" : "Avisar quando disponível"}
                   </button>
                 </div>
               );
