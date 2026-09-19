@@ -41,8 +41,10 @@ const TILES = [
   {
     key: "garagens",
     title: "Garagens",
-    description: "Saiba nossas localizações disponíveis",
-    route: "/escolha-garagem-retirada",
+    // A garagem depende do veículo (retirada = onde ele está alocado), então
+    // este atalho leva para a escolha do carro, não para o meio da jornada.
+    description: "Escolha um carro e veja onde retirar e devolver",
+    route: "/carros",
   },
 ];
 

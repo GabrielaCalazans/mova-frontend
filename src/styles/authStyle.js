@@ -831,32 +831,6 @@ export const StatusBadge = styled.span`
   border-radius: 20px;
 `;
 
-export const BoletoBox = styled.div`
-  background: var(--color-hover-bg);
-  border-radius: 12px;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-export const BoletoLine = styled.div`
-  height: 3px;
-  background: repeating-linear-gradient(
-    90deg,
-    var(--color-primary) 0px, var(--color-primary) 8px,
-    transparent 8px, transparent 14px
-  );
-  border-radius: 2px;
-`;
-
-export const BoletoInfo = styled.div`
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.82rem;
-  color: var(--color-text-secondary);
-`;
-
 export const SecureNote = styled.div`
   display: flex;
   align-items: center;

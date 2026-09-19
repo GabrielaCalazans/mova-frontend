@@ -1,4 +1,4 @@
-import { apiRequest } from "./apiClient";
+import { apiRequest, apiRequestPaginado } from "./apiClient";
 import { getAuthSession } from "./authSession";
 
 /**
@@ -35,41 +35,14 @@ export function normalizeVeiculo(veiculo) {
     capacidade: mv.capacidade ?? veiculo.capacidade,
     eletrico: mv.eletrico ?? veiculo.eletrico,
     adaptado: mv.adaptado ?? veiculo.adaptado,
+    categoria: mv.categoria ?? veiculo.categoria,
+    // Preco da diaria: vive no modelo e e a base do calculo do valor da
+    // reserva no backend. Ver auditoria/PAGAMENTO.md.
+    valorDiaria: mv.valorDiaria ?? veiculo.valorDiaria,
 
     // Mantém o objeto aninhado para acesso direto quando necessário
     modeloVeiculo: mv,
   };
-}
-
-/**
- * Busca veículos públicos com filtros opcionais (sem autenticação obrigatória).
- * Endpoint: GET /veiculo/search
- *
- * @param {Object} filters
- * @param {string} [filters.marca]
- * @param {string} [filters.modelo]
- * @param {number} [filters.ano]
- * @param {string} [filters.cambio]       - "Manual" | "Automatico"
- * @param {number} [filters.capacidade]
- * @param {boolean} [filters.eletrico]
- * @param {boolean} [filters.adaptado]
- * @returns {Promise<Array>}
- */
-export async function searchVeiculos(filters = {}) {
-  const params = new URLSearchParams();
-
-  if (filters.marca)      params.set("marca", filters.marca);
-  if (filters.modelo)     params.set("modelo", filters.modelo);
-  if (filters.ano)        params.set("ano", String(filters.ano));
-  if (filters.cambio)     params.set("cambio", filters.cambio);
-  if (filters.capacidade) params.set("capacidade", String(filters.capacidade));
-  if (filters.eletrico !== undefined) params.set("eletrico", String(filters.eletrico));
-  if (filters.adaptado  !== undefined) params.set("adaptado",  String(filters.adaptado));
-
-  const query = params.toString() ? `?${params.toString()}` : "";
-  const data = await apiRequest(`/veiculo/search${query}`);
-  const result = data.result ?? [];
-  return result.map(normalizeVeiculo);
 }
 
 /**
@@ -93,15 +66,15 @@ export async function listVeiculos(filters = {}) {
   if (filters.garagemId)  params.set("garagemId", filters.garagemId);
 
   const query = params.toString() ? `?${params.toString()}` : "";
-  const data = await apiRequest(`/veiculo${query}`, { authToken });
-  const result = data.result ?? [];
-  return result.map(normalizeVeiculo);
+  const itens = await apiRequestPaginado(`/veiculo${query}`, { authToken });
+  return itens.map(normalizeVeiculo);
 }
 
 /**
  * Cria um veículo novo (uso do locador). Endpoint: POST /veiculo
  * Campos esperados (createVeiculoSchema no backend): idLocador, placa, marca,
- * modelo, ano, cambio, capacidade, status?, eletrico, adaptado.
+ * modelo, ano, cambio, capacidade, valorDiaria, status?, eletrico, adaptado,
+ * categoria?.
  */
 export async function createVeiculo(payload) {
   const session = getAuthSession();

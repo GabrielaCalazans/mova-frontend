@@ -5,9 +5,9 @@ import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import movaLogo from "../assets/mova_logo.png";
 import { getJourneyStep, updateJourneyStep } from "../utils/journeyStorage";
 import {
-  calculateReservationDays,
   formatMoneyBRL,
   parseJourneyDateTime,
+  validarPeriodoReserva,
 } from "../utils/reservationMath";
 import { getVeiculoById } from "../services/veiculoService";
 import { getReservationPricing } from "../services/reservationPricing";
@@ -332,9 +332,10 @@ export default function CheckoutReserva() {
     veiculo: getJourneyStep("veiculo"),
     retirada: getJourneyStep("retirada"),
     devolucao: getJourneyStep("devolucao"),
+    servicos: getJourneyStep("servicos"),
   }));
 
-  const { veiculo: veiculoSalvo, retirada, devolucao } = journey;
+  const { veiculo: veiculoSalvo, retirada, devolucao, servicos } = journey;
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -355,23 +356,51 @@ export default function CheckoutReserva() {
       setConfirmError("Selecione um veículo para continuar.");
       return;
     }
-    if (!pickupDateTime || !dropoffDateTime) {
-      setConfirmError("Selecione data e horário de retirada e devolução.");
+    // Espelha RN05 antes do POST: mesma mensagem que o backend devolveria,
+    // sem gastar um round-trip. O servidor revalida de qualquer forma.
+    const erroPeriodo = validarPeriodoReserva(pickupDateTime, dropoffDateTime);
+    if (erroPeriodo) {
+      setConfirmError(erroPeriodo);
+      return;
+    }
+    // A retirada é derivada do veículo (pode não existir, se ele não estiver
+    // alocado em nenhuma garagem). A devolução é escolha do usuário.
+    if (!devolucao?.garageId) {
+      setConfirmError("Selecione a garagem de devolução.");
       return;
     }
 
     setConfirmando(true);
     try {
+      const sessionUser = getAuthSession()?.user;
+      const servicosIds = servicos?.ids ?? [];
+
+      // Payload completo do contrato POST /api/reserva. status e statusPagamento
+      // NÃO entram: são do domínio. Ver auditoria/CONTRATO-FRONTEND-BACKEND.md.
       const reserva = await createReserva({
         idVeiculo: veiculoSalvo.id,
         idLocatario,
         dataHoraInicio: pickupDateTime.toISOString(),
         dataHoraFim: dropoffDateTime.toISOString(),
-        valorTotal: pricing?.total ?? 0,
+        // Garagens reais escolhidas na jornada (UUIDs vindos de GET /api/garagem).
+        ...(retirada?.garageId ? { idGaragemRetirada: retirada.garageId } : {}),
+        ...(devolucao?.garageId ? { idGaragemDevolucao: devolucao.garageId } : {}),
+        // RN01: só é necessário quando o veículo é adaptado/PCD e o locatário
+        // ainda não tem deficiência cadastrada no perfil.
+        ...(sessionUser?.deficienciaId
+          ? { deficienciaId: sessionUser.deficienciaId }
+          : {}),
+        ...(servicosIds.length > 0 ? { servicosIds } : {}),
       });
 
-      updateJourneyStep("reserva", { id: reserva.id, codigoDesbloqueio: reserva.codigoDesbloqueio || "" });
-      navigate("/pagamento");
+      // valorTotal vem calculado pelo backend (fonte de verdade); o que o
+      // checkout mostrou era só estimativa.
+      updateJourneyStep("reserva", {
+        id: reserva.id,
+        valorTotal: reserva.valorTotal,
+        codigoDesbloqueio: reserva.codigoDesbloqueio || "",
+      });
+      navigate("/condutores-adicionais");
     } catch (caughtError) {
       setConfirmError(caughtError?.message || "Não foi possível confirmar a reserva.");
     } finally {
@@ -404,15 +433,19 @@ export default function CheckoutReserva() {
           throw new Error("Selecione um veículo para continuar.");
         }
 
-        const totalDiarias = calculateReservationDays(
-          pickupDateTime,
-          dropoffDateTime,
-        );
+        const sessionUser = getAuthSession()?.user;
+        if (!sessionUser?.id) throw new Error("Sessão inválida. Faça login novamente.");
         const [vehicleDetails, pricingDetails] = await Promise.all([
           getVeiculoById(veiculoSalvo.id),
           getReservationPricing({
-            days: totalDiarias,
-            vehicle: veiculoSalvo,
+            idVeiculo: veiculoSalvo.id,
+            idLocatario: sessionUser.id,
+            dataHoraInicio: pickupDateTime.toISOString(),
+            dataHoraFim: dropoffDateTime.toISOString(),
+            ...(retirada?.garageId ? { idGaragemRetirada: retirada.garageId } : {}),
+            ...(devolucao?.garageId ? { idGaragemDevolucao: devolucao.garageId } : {}),
+            ...(sessionUser.deficienciaId ? { deficienciaId: sessionUser.deficienciaId } : {}),
+            ...(servicos?.ids?.length ? { servicosIds: servicos.ids } : {}),
           }),
         ]);
 
@@ -421,7 +454,7 @@ export default function CheckoutReserva() {
         }
 
         setVehicle(vehicleDetails);
-        setPricing({ ...pricingDetails, totalDiarias });
+        setPricing(pricingDetails);
       } catch (caughtError) {
         if (!active) {
           return;
@@ -489,7 +522,7 @@ export default function CheckoutReserva() {
   const vehicleImage = resolveVehicleImage(vehicle);
   const totalDiarias = pricing?.totalDiarias ?? 1;
   const diariaValue = pricing?.dailyRate ?? 0;
-  const feeValue = pricing?.fees ?? 0;
+  const servicesValue = pricing?.servicesTotal ?? 0;
   const totalValue = pricing?.total ?? 0;
   // Novo modelo: campos descritivos vêm de modeloVeiculo mas já normalizados
   // por normalizeVeiculo() no serviço. Fallback para veiculoSalvo (journey storage).
@@ -661,10 +694,12 @@ export default function CheckoutReserva() {
               <PriceLabel>Valor da diária</PriceLabel>
               <PriceValue>{formatMoneyBRL(diariaValue)}</PriceValue>
             </PriceRow>
-            <PriceRow>
-              <PriceLabel>Taxas</PriceLabel>
-              <PriceValue>{formatMoneyBRL(feeValue)}</PriceValue>
-            </PriceRow>
+            {servicesValue > 0 && (
+              <PriceRow>
+                <PriceLabel>Serviços adicionais</PriceLabel>
+                <PriceValue>{formatMoneyBRL(servicesValue)}</PriceValue>
+              </PriceRow>
+            )}
             <Divider />
             <PriceRow>
               <PriceLabel>Total</PriceLabel>

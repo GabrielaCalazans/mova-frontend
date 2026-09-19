@@ -312,6 +312,8 @@ function normalizeCurrentUserFromMe(payload) {
     cnpj: roleData.cnpj || "",
     cpf: roleData.cpf || "",
     cnh: roleData.cnh || "",
+    // RN01: usado no POST /reserva quando o veículo é adaptado/PCD.
+    deficienciaId: roleData.deficienciaId || "",
     address:
       conta.endereco ||
       conta.address ||

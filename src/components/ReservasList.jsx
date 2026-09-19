@@ -2,29 +2,26 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import { getAuthSession } from "../services/authSession";
-import { listReservasDoLocatario } from "../services/reservaService";
+import { getReservasDoLocatarioPage } from "../services/reservaService";
 import { formatMoneyBRL } from "../utils/reservationMath";
+import { updateJourneyStep } from "../utils/journeyStorage";
+import {
+  STATUS_PAGAMENTO,
+  STATUS_RESERVA,
+  STATUS_RESERVA_LABELS,
+  rotulo,
+} from "../services/apiEnums";
 import "../styles/carselect.css";
 
-const STATUS_LABELS = {
-  AGUARDANDO_PAGAMENTO: "Aguardando pagamento",
-  CONFIRMADA: "Confirmada",
-  EM_ANDAMENTO: "Em andamento",
-  CONCLUIDA: "Concluída",
-  CANCELADA: "Cancelada",
-};
-
+// A resposta da reserva agora traz o veículo aninhado (veiculo.modeloVeiculo),
+// no mesmo formato de GET /api/veiculo/:id.
 function resolveVeiculoNome(reserva) {
-  const veiculo = reserva.veiculo ?? reserva.Veiculo ?? {};
-  const modeloVeiculo = veiculo.modeloVeiculo ?? {};
-  const marca = veiculo.marca ?? modeloVeiculo.marca;
-  const modelo = veiculo.modelo ?? modeloVeiculo.modelo;
+  const modeloVeiculo = reserva.veiculo?.modeloVeiculo ?? {};
+  const marca = modeloVeiculo.marca ?? "";
+  const modelo = modeloVeiculo.modelo ?? "";
+  const nome = `${marca} ${modelo}`.trim();
 
-  if (marca || modelo) {
-    return `${marca ?? ""} ${modelo ?? ""}`.trim();
-  }
-
-  return "Veículo";
+  return nome || "Veículo";
 }
 
 function formatarData(valor) {
@@ -39,6 +36,29 @@ function formatarHora(valor) {
   const data = new Date(valor);
   if (Number.isNaN(data.getTime())) return "";
   return data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function nomeGaragem(garagem, fallback) {
+  return garagem?.nome || fallback || "Não informada";
+}
+
+// Reserva paga e ainda nao desbloqueada leva para o desbloqueio; as demais,
+// para a avaliacao. O id vai no state — a tela de destino confirma o estado
+// real com o backend.
+function acaoDaReserva(reserva) {
+  if (reserva.status === STATUS_RESERVA.AGUARDANDO_PAGAMENTO) {
+    return { rota: "/pagamento", rotulo: "Pagar" };
+  }
+  if (reserva.status === STATUS_RESERVA.CONFIRMADA && reserva.statusPagamento === STATUS_PAGAMENTO.SUCESSO) {
+    return { rota: "/desbloqueio", rotulo: "Desbloquear veículo" };
+  }
+  if (reserva.status === STATUS_RESERVA.EM_ANDAMENTO) {
+    return { rota: "/devolucao", rotulo: "Devolver veículo" };
+  }
+  if (reserva.status === STATUS_RESERVA.REALIZADA) {
+    return { rota: "/avaliacao", rotulo: "Avaliar" };
+  }
+  return null;
 }
 
 function agruparPorData(reservas) {
@@ -58,35 +78,33 @@ function agruparPorData(reservas) {
 /**
  * Lista de reservas do locatario, agrupada por data. Usada tanto pelo
  * "Historico" (todas as reservas) quanto por "Corridas Realizadas"
- * (somente as com status CONCLUIDA), via a prop somenteConcluidas.
+ * (somente as com status REALIZADA), via a prop somenteConcluidas.
  */
 export default function ReservasList({ title, documentTitle, somenteConcluidas = false, emptyMessage }) {
   const navigate = useNavigate();
   const idLocatario = getAuthSession()?.user?.id;
 
   const [reservas, setReservas] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [pagina, setPagina] = useState(1);
+  const [paginacao, setPaginacao] = useState({ page: 1, limit: 10, total: 0, totalPages: 0 });
+  const [loading, setLoading] = useState(() => Boolean(idLocatario));
   const [erro, setErro] = useState(null);
 
   useEffect(() => {
     document.title = documentTitle;
 
-    if (!idLocatario) {
-      setErro("Sessão inválida. Faça login novamente.");
-      return;
-    }
+    if (!idLocatario) return;
 
     let active = true;
-    setLoading(true);
-    setErro(null);
 
-    listReservasDoLocatario(idLocatario)
+    getReservasDoLocatarioPage(idLocatario, { page: pagina })
       .then((resultado) => {
         if (!active) return;
-        const ordenadas = [...resultado].sort(
+        const ordenadas = [...resultado.reservas].sort(
           (a, b) => new Date(b.dataHoraInicio) - new Date(a.dataHoraInicio)
         );
         setReservas(ordenadas);
+        setPaginacao(resultado.pagination);
       })
       .catch((error) => {
         if (!active) return;
@@ -99,26 +117,30 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
     return () => {
       active = false;
     };
-  }, [idLocatario, documentTitle]);
+  }, [idLocatario, documentTitle, pagina]);
 
   const reservasExibidas = useMemo(
-    () => (somenteConcluidas ? reservas.filter((r) => r.status === "CONCLUIDA") : reservas),
+    () =>
+      somenteConcluidas
+        ? reservas.filter((r) => r.status === STATUS_RESERVA.REALIZADA)
+        : reservas,
     [reservas, somenteConcluidas]
   );
 
   const gruposPorData = useMemo(() => agruparPorData(reservasExibidas), [reservasExibidas]);
+  const erroExibido = !idLocatario ? "Sessão inválida. Faça login novamente." : erro;
 
   return (
     <AuthenticatedLayout title={title} align="left">
       <div style={{ textAlign: "left" }}>
         {loading && <p className="carro-status">Carregando…</p>}
-        {!loading && erro && <p className="carro-status">{erro}</p>}
+        {!loading && erroExibido && <p className="carro-status">{erroExibido}</p>}
 
-        {!loading && !erro && reservasExibidas.length === 0 && (
+        {!loading && !erroExibido && reservasExibidas.length === 0 && (
           <p className="carro-empty-state">{emptyMessage}</p>
         )}
 
-        {!loading && !erro && gruposPorData.map(([data, reservasDoDia]) => (
+        {!loading && !erroExibido && gruposPorData.map(([data, reservasDoDia]) => (
           <div key={data} style={{ marginBottom: "1.5rem" }}>
             <p style={{ color: "var(--color-primary-strong)", fontWeight: 700, margin: "0 0 0.6rem" }}>
               {data}
@@ -126,27 +148,71 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
 
             <div className="frota-list">
               {reservasDoDia.map((reserva) => (
+                (() => {
+                  const acao = acaoDaReserva(reserva);
+                  const abrir = () => {
+                    if (!acao) return;
+                    updateJourneyStep("reserva", {
+                      id: reserva.id,
+                      valorTotal: reserva.valorTotal,
+                      codigoDesbloqueio: reserva.codigoDesbloqueio || "",
+                    });
+                    navigate(acao.rota, { state: { reservaId: reserva.id } });
+                  };
+                  return (
                 <div
                   className="frota-card"
                   key={reserva.id}
-                  onClick={() => navigate(`/avaliacao`, { state: { reservaId: reserva.id } })}
-                  style={{ cursor: "pointer" }}
+                  onClick={abrir}
+                  style={{ cursor: acao ? "pointer" : "default" }}
                 >
                   <div className="frota-card__info">
                     <h3>{resolveVeiculoNome(reserva)}</h3>
                     <p>
                       {formatarHora(reserva.dataHoraInicio)} — {formatarHora(reserva.dataHoraFim)}
                     </p>
-                    <p>{STATUS_LABELS[reserva.status] ?? reserva.status}</p>
+                    <p>{rotulo(STATUS_RESERVA_LABELS, reserva.status)}</p>
+                    <p>Retirada: {nomeGaragem(reserva.garagemRetirada, reserva.idGaragemRetirada)}</p>
+                    <p>Devolução: {nomeGaragem(reserva.garagemDevolucao, reserva.idGaragemDevolucao)}</p>
+                    <p>Pagamento: {reserva.statusPagamento}</p>
                     <p>
                       {reserva.valorTotal != null ? formatMoneyBRL(reserva.valorTotal) : "Valor não informado"}
                     </p>
+                    {(reserva.status === STATUS_RESERVA.AGUARDANDO_PAGAMENTO || reserva.status === STATUS_RESERVA.CONFIRMADA) && (
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          navigate("/cancelamento", { state: { reservaId: reserva.id } });
+                        }}
+                      >
+                        Cancelar reserva
+                      </button>
+                    )}
+                    {acao && (
+                      <button type="button" onClick={(event) => { event.stopPropagation(); abrir(); }}>
+                        {acao.rotulo}
+                      </button>
+                    )}
                   </div>
                 </div>
+                  );
+                })()
               ))}
             </div>
           </div>
         ))}
+        {!loading && !erroExibido && paginacao.totalPages > 1 && (
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginTop: "1rem" }}>
+            <button type="button" disabled={pagina <= 1} onClick={() => setPagina((atual) => atual - 1)}>
+              Anterior
+            </button>
+            <span>Página {paginacao.page} de {paginacao.totalPages} ({paginacao.total})</span>
+            <button type="button" disabled={pagina >= paginacao.totalPages} onClick={() => setPagina((atual) => atual + 1)}>
+              Próxima
+            </button>
+          </div>
+        )}
       </div>
     </AuthenticatedLayout>
   );

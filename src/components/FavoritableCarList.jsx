@@ -5,6 +5,7 @@ import BottomNav from "../components/BottomNav";
 import { listVeiculos } from "../services/veiculoService";
 import { resolveModelDetails } from "../utils/vehicleDisplay";
 import { getFavoriteIds, toggleFavorite } from "../utils/favoritesStore";
+import { formatMoneyBRL } from "../utils/reservationMath";
 import "../styles/carselect.css";
 import "../styles/home.css";
 import "../styles/relatorios.css";
@@ -90,7 +91,7 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
                     <h3>{modelo}</h3>
                     <p>{marca}</p>
                     <p>{details.cor}</p>
-                    <p>{details.precoDia ? `R$${details.precoDia},00 /dia` : "Consulte o preço"}</p>
+                    <p>{veiculo.valorDiaria != null ? `${formatMoneyBRL(veiculo.valorDiaria)} /dia` : "Consulte o preço"}</p>
                   </div>
                   <button
                     type="button"

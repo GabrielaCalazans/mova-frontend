@@ -4,6 +4,7 @@ import BottomNav from "../components/BottomNav";
 import { listVeiculos } from "../services/veiculoService";
 import { updateJourneyStep } from "../utils/journeyStorage";
 import { resolveModelDetails } from "../utils/vehicleDisplay";
+import { formatMoneyBRL } from "../utils/reservationMath";
 import "../styles/carselect.css";
 
 function resolveModeloVeiculo(veiculo) {
@@ -159,7 +160,7 @@ function CarrosScreen() {
                     Local: {details.garagem}
                   </p>
                   <p className="carro-list-card__price">
-                    {details.precoDia ? `Preço: R$${details.precoDia},00/dia` : "Consulte o preço"}
+                    {veiculo.valorDiaria != null ? `Preço: ${formatMoneyBRL(veiculo.valorDiaria)}/dia` : "Consulte o preço"}
                   </p>
                   <button
                     type="button"

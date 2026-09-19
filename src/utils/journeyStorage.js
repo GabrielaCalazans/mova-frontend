@@ -25,12 +25,19 @@ const EMPTY_VEHICLE = {
 };
 
 const EMPTY_PAYMENT = {
-  metodo: "",
+  // Código do enum MetodoPagamento do backend (ex.: "PIX"), nunca um rótulo.
+  metodoPagamento: "",
 };
 
 const EMPTY_RESERVA = {
   id: "",
   codigoDesbloqueio: "",
+};
+
+// IDs dos serviços opcionais escolhidos. A tela de seleção ainda não existe;
+// a estrutura fica pronta para o POST /reserva já enviar servicosIds.
+const EMPTY_SERVICOS = {
+  ids: [],
 };
 
 const EMPTY_JOURNEY = {
@@ -39,6 +46,7 @@ const EMPTY_JOURNEY = {
   devolucao: { ...EMPTY_STEP },
   pagamento: { ...EMPTY_PAYMENT },
   reserva: { ...EMPTY_RESERVA },
+  servicos: { ...EMPTY_SERVICOS },
 };
 
 function readRawJourney() {
@@ -58,6 +66,7 @@ function readRawJourney() {
       retirada: { ...EMPTY_STEP, ...(parsed?.retirada ?? {}) },
       devolucao: { ...EMPTY_STEP, ...(parsed?.devolucao ?? {}) },
       pagamento: { ...EMPTY_PAYMENT, ...(parsed?.pagamento ?? {}) },
+      servicos: { ...EMPTY_SERVICOS, ...(parsed?.servicos ?? {}) },
       reserva: { ...EMPTY_RESERVA, ...(parsed?.reserva ?? {}) },
     };
   } catch {

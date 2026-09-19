@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Star } from "lucide-react";
 import BottomNav from "../components/BottomNav";
 import { getJourneyStep } from "../utils/journeyStorage";
+import { METODO_PAGAMENTO_LABELS, STATUS_RESERVA } from "../services/apiEnums";
 import { formatMoneyBRL } from "../utils/reservationMath";
 import { getReservaById } from "../services/reservaService";
 import { createAvaliacao, getAvaliacaoDaReserva } from "../services/avaliacaoService";
@@ -34,7 +35,6 @@ function formatarDataHora(valor) {
 }
 
 export default function AvaliacaoReserva() {
-  const navigate = useNavigate();
   const location = useLocation();
 
   // A tela e alcancada de duas formas: (1) logo apos o desbloqueio, no
@@ -44,6 +44,7 @@ export default function AvaliacaoReserva() {
   const veiculoJourney = getJourneyStep("veiculo");
   const pagamentoJourney = getJourneyStep("pagamento");
   const reservaId = location.state?.reservaId || getJourneyStep("reserva")?.id;
+  const semReservaId = !reservaId;
 
   const [reserva, setReserva] = useState(null);
   const [avaliacaoExistente, setAvaliacaoExistente] = useState(null);
@@ -52,7 +53,7 @@ export default function AvaliacaoReserva() {
 
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
-  const [enviado, setEnviado] = useState(false);
+  const [comentario, setComentario] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [erroAvaliacao, setErroAvaliacao] = useState("");
 
@@ -62,24 +63,26 @@ export default function AvaliacaoReserva() {
 
   useEffect(() => {
     if (!reservaId) {
-      setCarregando(false);
-      setErroCarregamento("Não encontramos a reserva a ser avaliada.");
       return;
     }
 
     let active = true;
-    setCarregando(true);
-    setErroCarregamento("");
 
     Promise.all([
-      getReservaById(reservaId).catch(() => null),
+      getReservaById(reservaId).catch((error) => ({ erro: error })),
       getAvaliacaoDaReserva(reservaId).catch(() => null),
     ]).then(([reservaResult, avaliacaoResult]) => {
       if (!active) return;
+      if (reservaResult?.erro) {
+        setErroCarregamento(reservaResult.erro.message || "Não foi possível carregar a reserva.");
+        setCarregando(false);
+        return;
+      }
       setReserva(reservaResult);
       if (avaliacaoResult) {
         setAvaliacaoExistente(avaliacaoResult);
         setRating(Math.round(avaliacaoResult.nota) || 5);
+        setComentario(avaliacaoResult.comentario || "");
       }
       setCarregando(false);
     });
@@ -91,21 +94,28 @@ export default function AvaliacaoReserva() {
 
   const nomeVeiculo = resolveVeiculoNome(reserva, veiculoJourney);
   const jaAvaliada = Boolean(avaliacaoExistente);
+  const podeAvaliar = reserva?.status === STATUS_RESERVA.REALIZADA;
+  const mensagemCarregamento = semReservaId
+    ? "Não encontramos a reserva a ser avaliada."
+    : erroCarregamento;
 
   function handleEnviarAvaliacao(event) {
     event.preventDefault();
     setErroAvaliacao("");
 
-    if (!reservaId) {
-      setErroAvaliacao("Não encontramos a reserva associada a esta viagem.");
+    if (!reservaId || !podeAvaliar) {
+      setErroAvaliacao("A avaliação fica disponível após a devolução da reserva.");
       return;
     }
 
     setEnviando(true);
-    createAvaliacao({ idReserva: reservaId, nota: rating })
-      .then(() => {
-        setEnviado(true);
-        setTimeout(() => navigate("/historico"), 1400);
+    createAvaliacao({
+      idReserva: reservaId,
+      nota: rating,
+      ...(comentario.trim() ? { comentario: comentario.trim() } : {}),
+    })
+      .then((avaliacao) => {
+        setAvaliacaoExistente(avaliacao);
       })
       .catch((error) => {
         setErroAvaliacao(error?.message || "Não foi possível enviar sua avaliação.");
@@ -120,10 +130,10 @@ export default function AvaliacaoReserva() {
       </div>
 
       <div className="carro-content">
-        {carregando && <p className="carro-status">Carregando dados da reserva…</p>}
+        {!semReservaId && carregando && <p className="carro-status">Carregando dados da reserva…</p>}
 
-        {!carregando && erroCarregamento && !reserva && (
-          <p className="carro-status">{erroCarregamento}</p>
+        {((semReservaId || !carregando) && mensagemCarregamento && !reserva) && (
+          <p className="carro-status" role="alert">{mensagemCarregamento}</p>
         )}
 
         {!carregando && (reserva || veiculoJourney) && (
@@ -139,7 +149,10 @@ export default function AvaliacaoReserva() {
                 <br />
                 Preço: {reserva?.valorTotal != null ? formatMoneyBRL(reserva.valorTotal) : "—"}
                 <br />
-                Forma de Pagamento: {resolveField(pagamentoJourney?.metodo)}
+                Forma de Pagamento:{" "}
+                {resolveField(
+                  METODO_PAGAMENTO_LABELS[pagamentoJourney?.metodoPagamento],
+                )}
               </p>
 
               <h2 style={{ color: "var(--color-primary-strong)", fontSize: "1.05rem", margin: "0 0 0.6rem" }}>
@@ -151,9 +164,10 @@ export default function AvaliacaoReserva() {
             </div>
 
             {jaAvaliada && (
-              <p style={{ color: "var(--color-primary-strong)", fontWeight: 600, marginBottom: "0.5rem" }}>
-                Você já avaliou esta reserva.
-              </p>
+              <div role="status" style={{ color: "var(--color-primary-strong)", fontWeight: 600, marginBottom: "0.8rem" }}>
+                <p>Você já avaliou esta reserva com nota {avaliacaoExistente.nota}.</p>
+                {avaliacaoExistente.comentario && <p style={{ fontWeight: 400 }}>“{avaliacaoExistente.comentario}”</p>}
+              </div>
             )}
 
             <div
@@ -186,16 +200,29 @@ export default function AvaliacaoReserva() {
             </div>
 
             {erroAvaliacao && (
-              <p className="auth-feedback auth-feedback--error" role="status" aria-live="polite">
+              <p className="auth-feedback auth-feedback--error" role="alert">
                 {erroAvaliacao}
               </p>
             )}
 
-            {!jaAvaliada && (
-              <button type="button" className="carro-button" onClick={handleEnviarAvaliacao} disabled={enviado || enviando}>
-                {enviado ? "Avaliação enviada ✓" : enviando ? "Enviando..." : "Enviar Avaliação"}
+            {!jaAvaliada && !podeAvaliar && <p>A avaliação fica disponível após a devolução da reserva.</p>}
+
+            {!jaAvaliada && podeAvaliar && <>
+              <label htmlFor="comentario-avaliacao" style={{ display: "block", textAlign: "left", marginBottom: "0.35rem" }}>Comentário (opcional)</label>
+              <textarea
+                id="comentario-avaliacao"
+                value={comentario}
+                onChange={(event) => setComentario(event.target.value)}
+                maxLength={255}
+                rows={4}
+                placeholder="Conte como foi sua experiência"
+                style={{ width: "100%", boxSizing: "border-box", marginBottom: "0.25rem" }}
+              />
+              <p style={{ marginTop: 0, textAlign: "right", fontSize: "0.8rem" }}>{comentario.length}/255</p>
+              <button type="button" className="carro-button" onClick={handleEnviarAvaliacao} disabled={enviando}>
+                {enviando ? "Enviando..." : "Enviar Avaliação"}
               </button>
-            )}
+            </>}
           </div>
         )}
       </div>

@@ -6,14 +6,13 @@ import fiatArgoImg from "../assets/fiat-argo-drive.png";
 import hb20Img from "../assets/hiunday-hb20-plus.png";
 import onixImg from "../assets/chevrolet-onix-flex.png";
 
-// Detalhes ilustrativos (imagem, cor, preco, autonomia e garagem) para os
-// modelos mais comuns do catalogo. Modelos fora desta lista usam um icone
-// generico do tipo e valores de preco/autonomia indisponiveis.
+// Detalhes ilustrativos de imagem, cor, autonomia e garagem. O preço sempre
+// vem de valorDiaria retornado pela API, nunca deste catálogo visual.
 const MODEL_DETAILS = {
-  "fiat argo": { image: fiatArgoImg, cor: "Branco", autonomia: "455km", precoDia: 95, garagem: "Garagem Norte" },
-  "hyundai hb20": { image: hb20Img, cor: "Cinza", autonomia: "255km", precoDia: 90, garagem: "Garagem Sul" },
-  "chevrolet onix": { image: onixImg, cor: "Branco", autonomia: "380km", precoDia: 80, garagem: "Garagem Centro" },
-  "honda civic": { image: null, cor: "Branco", autonomia: "480km", precoDia: 99, garagem: "Garagem Centro" },
+  "fiat argo": { image: fiatArgoImg, cor: "Branco", autonomia: "455km", garagem: "Garagem Norte" },
+  "hyundai hb20": { image: hb20Img, cor: "Cinza", autonomia: "255km", garagem: "Garagem Sul" },
+  "chevrolet onix": { image: onixImg, cor: "Branco", autonomia: "380km", garagem: "Garagem Centro" },
+  "honda civic": { image: null, cor: "Branco", autonomia: "480km", garagem: "Garagem Centro" },
 };
 
 export function resolveTipoIcon(tipoFiltro) {
@@ -31,7 +30,6 @@ export function resolveModelDetails(marca, modelo, tipoFiltro) {
     image: details?.image || resolveTipoIcon(tipoFiltro),
     cor: details?.cor || "—",
     autonomia: details?.autonomia || "—",
-    precoDia: details?.precoDia ?? null,
     garagem: details?.garagem || "—",
   };
 }

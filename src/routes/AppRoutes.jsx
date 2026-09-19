@@ -11,7 +11,11 @@ import EscolhaGaragemDevolucao from "../pages/EscolhaGaragemDevolucao";
 import CheckoutReserva from "../pages/CheckoutReserva";
 import Pagamento from "../pages/Pagamento";
 import DesbloqueioDeCarro from "../pages/DesbloqueioDeCarro";
+import DevolucaoReserva from "../pages/DevolucaoReserva";
 import AvaliacaoReserva from "../pages/AvaliacaoReserva";
+import ServicosOpcionais from "../pages/ServicosOpcionais";
+import CondutoresAdicionais from "../pages/CondutoresAdicionais";
+import CancelamentoReserva from "../pages/CancelamentoReserva";
 import RelatoriosFiltro from "../pages/RelatoriosFiltro";
 import RelatoriosVeiculos from "../pages/RelatoriosVeiculos";
 import CarrosDisponiveis from "../pages/CarrosDisponiveis";
@@ -61,9 +65,13 @@ function AppRoutes() {
         <Route path="/carros/lista" element={<ProtectedRoute><CarrosScreen /></ProtectedRoute>} />
         <Route path="/escolha-garagem-retirada" element={<ProtectedRoute><EscolhaGaragemRetirada /></ProtectedRoute>} />
         <Route path="/escolha-garagem-devolucao" element={<ProtectedRoute><EscolhaGaragemDevolucao /></ProtectedRoute>} />
+        <Route path="/servicos-opcionais" element={<ProtectedRoute><ServicosOpcionais /></ProtectedRoute>} />
         <Route path="/checkout-reserva" element={<ProtectedRoute><CheckoutReserva /></ProtectedRoute>} />
+        <Route path="/condutores-adicionais" element={<ProtectedRoute><CondutoresAdicionais /></ProtectedRoute>} />
         <Route path="/pagamento" element={<ProtectedRoute><Pagamento /></ProtectedRoute>} />
         <Route path="/desbloqueio" element={<ProtectedRoute><DesbloqueioDeCarro /></ProtectedRoute>} />
+        <Route path="/devolucao" element={<ProtectedRoute><DevolucaoReserva /></ProtectedRoute>} />
+        <Route path="/cancelamento" element={<ProtectedRoute><CancelamentoReserva /></ProtectedRoute>} />
         <Route path="/avaliacao" element={<ProtectedRoute><AvaliacaoReserva /></ProtectedRoute>} />
         <Route path="/relatorios" element={<ProtectedRoute><RelatoriosFiltro /></ProtectedRoute>} />
         <Route path="/relatorios/veiculos" element={<ProtectedRoute><RelatoriosVeiculos /></ProtectedRoute>} />

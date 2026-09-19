@@ -1,4 +1,4 @@
-import { apiRequest } from "./apiClient";
+import { apiRequest, apiRequestPaginado } from "./apiClient";
 import { getAuthSession } from "./authSession";
 
 function authHeaders() {
@@ -23,8 +23,7 @@ export async function listGaragens(filters = {}) {
   }
 
   const query = params.toString() ? `?${params.toString()}` : "";
-  const data = await apiRequest(`/garagem${query}`, authHeaders());
-  return data.result ?? [];
+  return apiRequestPaginado(`/garagem${query}`, authHeaders());
 }
 
 /** Endpoint: GET /garagem/:id */
@@ -69,8 +68,7 @@ export async function deleteGaragem(id) {
 export async function listVeiculosDaGaragem(garagemId, status) {
   if (!garagemId) throw new Error("ID da garagem não informado.");
   const query = status ? `?status=${encodeURIComponent(status)}` : "";
-  const data = await apiRequest(`/garagem/${garagemId}/veiculos${query}`, authHeaders());
-  return data.result ?? [];
+  return apiRequestPaginado(`/garagem/${garagemId}/veiculos${query}`, authHeaders());
 }
 
 /** Endpoint: POST /garagem/:garagemId/veiculos/:veiculoId */

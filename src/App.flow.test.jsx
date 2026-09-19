@@ -20,6 +20,44 @@ vi.mock("./services/veiculoService", () => ({
   listVeiculos: vi.fn().mockResolvedValue([]),
 }));
 
+// As garagens deixaram de ser uma lista fixa no componente e passaram a vir de
+// GET /api/garagem. Os ids são UUIDs, como no backend.
+const LOCADOR_ID = "9a8b7c6d-5555-4e3f-2a1b-000000000099";
+
+const GARAGENS_MOCK = [
+  {
+    id: "3f1d2c4e-1111-4a2b-9c3d-000000000001",
+    nome: "Garagem Centro",
+    endereco: "Av. Pompeia, 150",
+    capacidade: 30,
+    veiculosAlocados: 4,
+    acessibilidade: true,
+    status: "ATIVA",
+  },
+  {
+    id: "3f1d2c4e-2222-4a2b-9c3d-000000000002",
+    nome: "Garagem Sul",
+    endereco: "Rua Jabuti, 172",
+    capacidade: 20,
+    veiculosAlocados: 2,
+    acessibilidade: false,
+    status: "ATIVA",
+  },
+];
+
+vi.mock("./services/garagemService", () => ({
+  listGaragens: vi.fn(() => Promise.resolve(GARAGENS_MOCK)),
+  getGaragemById: vi.fn((id) =>
+    Promise.resolve(GARAGENS_MOCK.find((g) => g.id === id) ?? null),
+  ),
+  createGaragem: vi.fn(),
+  updateGaragem: vi.fn(),
+  deleteGaragem: vi.fn(),
+  listVeiculosDaGaragem: vi.fn().mockResolvedValue([]),
+  alocarVeiculoNaGaragem: vi.fn(),
+  desalocarVeiculoDaGaragem: vi.fn(),
+}));
+
 vi.mock("./services/reservationPricing", () => ({
   getReservationPricing: vi.fn().mockResolvedValue({
     dailyRate: 250,
@@ -28,6 +66,7 @@ vi.mock("./services/reservationPricing", () => ({
   }),
 }));
 
+import { getGaragemById, listGaragens } from "./services/garagemService";
 import { requestPasswordReset } from "./services/authService";
 import { loginUser } from "./services/authService";
 import { saveAuthSession } from "./services/authSession";
@@ -184,45 +223,87 @@ describe("Fluxo de autenticacao", () => {
     expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
   });
 
-  it("mostra a nova tela de retirada e bloqueia o avanço ate selecionar data e hora", async () => {
-    const user = userEvent.setup();
-
-    saveAuthSession({
-      token: "token-fake",
-      user: authenticatedUser,
-    });
+  // A retirada NÃO é escolha do usuário: o backend exige que
+  // idGaragemRetirada seja exatamente a garagem onde o veículo está alocado
+  // (ReservaService.resolverGaragemRetirada). A tela apenas mostra qual é.
+  it("retirada usa a garagem do veículo, sem oferecer escolha", async () => {
+    saveAuthSession({ token: "token-fake", user: authenticatedUser });
+    window.sessionStorage.setItem(
+      "mova_journey_flow",
+      JSON.stringify({
+        veiculo: {
+          id: "veic-1",
+          idLocador: LOCADOR_ID,
+          garagemId: GARAGENS_MOCK[0].id,
+          marca: "Fiat",
+          modelo: "Argo",
+        },
+      }),
+    );
 
     window.history.pushState({}, "", "/escolha-garagem-retirada");
-
     render(<App />);
 
     expect(
       await screen.findByRole("heading", { name: /escolha a garagem para retirada/i })
     ).toBeInTheDocument();
 
-    const continueButton = screen.getByRole("button", { name: /ir para devolução/i });
-    const dateInput = screen.getByPlaceholderText(/digite a data/i);
-    const timeInput = screen.getByPlaceholderText(/digite o horário/i);
+    // Buscou a garagem do veículo por id, não a lista inteira.
+    expect(getGaragemById).toHaveBeenCalledWith(GARAGENS_MOCK[0].id);
+    expect(await screen.findByText(/garagem centro/i)).toBeInTheDocument();
 
-    expect(continueButton).toBeDisabled();
-    expect(dateInput).toBeDisabled();
-    expect(timeInput).toBeDisabled();
+    // Sem "Trocar garagem": não há escolha a fazer nesta etapa.
+    expect(
+      screen.queryByRole("button", { name: /trocar garagem/i })
+    ).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /garagem centro/i }));
+    // Data e hora ficam liberadas; só elas bloqueiam o avanço.
+    expect(screen.getByPlaceholderText(/digite a data/i)).not.toBeDisabled();
+    expect(screen.getByPlaceholderText(/digite o horário/i)).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: /ir para devolução/i })).toBeDisabled();
+  });
 
-    expect(screen.getByText(/garagem centro/i)).toBeInTheDocument();
-    expect(screen.queryByText(/garagem sul/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/garagem norte/i)).not.toBeInTheDocument();
-    expect(dateInput).not.toBeDisabled();
-    expect(timeInput).not.toBeDisabled();
-    expect(continueButton).toBeDisabled();
+  // A devolução é escolha do usuário, mas restrita: o backend exige que a
+  // garagem pertença ao locador dono do veículo (assertGaragemDevolucao).
+  it("devolução lista apenas garagens do locador dono do veículo", async () => {
+    saveAuthSession({ token: "token-fake", user: authenticatedUser });
+    window.sessionStorage.setItem(
+      "mova_journey_flow",
+      JSON.stringify({
+        veiculo: {
+          id: "veic-1",
+          idLocador: LOCADOR_ID,
+          garagemId: GARAGENS_MOCK[0].id,
+        },
+      }),
+    );
+
+    window.history.pushState({}, "", "/escolha-garagem-devolucao");
+    render(<App />);
+
+    expect(
+      await screen.findByRole("heading", { name: /escolha a garagem para devolução/i })
+    ).toBeInTheDocument();
+
+    // Filtro por idLocador vai na query — é o backend que restringe a ATIVA.
+    expect(listGaragens).toHaveBeenCalledWith({ idLocador: LOCADOR_ID });
+    expect(await screen.findByRole("button", { name: /garagem centro/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /garagem sul/i })).toBeInTheDocument();
   });
 
   it("redireciona a rota legada de agendamento para a nova retirada", async () => {
-    saveAuthSession({
-      token: "token-fake",
-      user: authenticatedUser,
-    });
+    saveAuthSession({ token: "token-fake", user: authenticatedUser });
+    // A etapa de garagem exige um veículo escolhido (jornada veículo-primeiro).
+    window.sessionStorage.setItem(
+      "mova_journey_flow",
+      JSON.stringify({
+        veiculo: {
+          id: "veic-1",
+          idLocador: LOCADOR_ID,
+          garagemId: GARAGENS_MOCK[0].id,
+        },
+      }),
+    );
 
     window.history.pushState({}, "", "/agendamento");
 
@@ -231,6 +312,24 @@ describe("Fluxo de autenticacao", () => {
     expect(
       await screen.findByRole("heading", { name: /escolha a garagem para retirada/i })
     ).toBeInTheDocument();
+  });
+
+  // A jornada é veículo-primeiro: o local de retirada sai do veículo, então
+  // entrar direto na etapa de garagem não faz sentido.
+  it("sem veículo escolhido, a etapa de garagem volta para a escolha do carro", async () => {
+    saveAuthSession({ token: "token-fake", user: authenticatedUser });
+    window.sessionStorage.clear();
+
+    window.history.pushState({}, "", "/escolha-garagem-retirada");
+
+    render(<App />);
+
+    expect(
+      await screen.findByRole("heading", { name: /escolha o tipo de carro/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: /escolha a garagem para retirada/i })
+    ).not.toBeInTheDocument();
   });
 
   it("mostra o checkout da reserva com dados persistidos", async () => {

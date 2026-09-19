@@ -25,6 +25,7 @@ export default function CadastroCarroForm() {
     ano: veiculoOriginal?.ano ? String(veiculoOriginal.ano) : "",
     cambio: veiculoOriginal?.cambio || "",
     capacidade: veiculoOriginal?.capacidade ? String(veiculoOriginal.capacidade) : "",
+    valorDiaria: veiculoOriginal?.valorDiaria ? String(veiculoOriginal.valorDiaria) : "",
     status: veiculoOriginal?.status || "DISPONIVEL",
     eletrico: veiculoOriginal?.eletrico || false,
     adaptado: veiculoOriginal?.adaptado || false,
@@ -51,6 +52,9 @@ export default function CadastroCarroForm() {
       ano: Number(values.ano),
       cambio: values.cambio,
       capacidade: Number(values.capacidade),
+      // Fonte de verdade do preco da reserva: o backend multiplica esta diaria
+      // pelo numero de diarias. Ver auditoria/PAGAMENTO.md.
+      valorDiaria: Number(values.valorDiaria),
       status: values.status,
       eletrico: Boolean(values.eletrico),
       adaptado: Boolean(values.adaptado),
@@ -161,6 +165,24 @@ export default function CadastroCarroForm() {
             required
             value={values.capacidade}
             onChange={(e) => handleChange("capacidade", e.target.value.replace(/\D/g, ""))}
+          />
+        </div>
+
+        <div className="auth-field">
+          {isNovo && <label htmlFor="valorDiaria">Valor da diária*</label>}
+          <input
+            id="valorDiaria"
+            type="text"
+            inputMode="decimal"
+            placeholder="Valor da diária* (R$)"
+            required
+            value={values.valorDiaria}
+            onChange={(e) =>
+              handleChange(
+                "valorDiaria",
+                e.target.value.replace(",", ".").replace(/[^0-9.]/g, ""),
+              )
+            }
           />
         </div>
 
