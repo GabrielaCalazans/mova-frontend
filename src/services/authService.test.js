@@ -118,6 +118,7 @@ describe("authService profile flow via /conta/auth/me", () => {
       .mockResolvedValueOnce({
         result: {
           id: "conta-locador-1",
+          token: "token-cadastro-locador",
           nome: "Maria Silva",
           email: "maria@empresa.com",
         },
@@ -153,6 +154,7 @@ describe("authService profile flow via /conta/auth/me", () => {
     });
     expect(apiRequestMock).toHaveBeenNthCalledWith(2, "/locador", {
       method: "POST",
+      authToken: "token-cadastro-locador",
       body: JSON.stringify({
         id: "conta-locador-1",
         empresa: "Empresa Silva LTDA",

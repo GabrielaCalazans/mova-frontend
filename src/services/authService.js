@@ -562,13 +562,19 @@ export async function registerLocador(values) {
 
     const conta = normalizeApiUser(contaResult, values.email);
     const contaId = conta.id || contaResult?.id || contaResult?.result?.id;
+    const token = contaResult?.result?.token;
 
     if (!contaId) {
       throw new Error("Nao foi possivel identificar a conta do locador.");
     }
 
+    if (!token) {
+      throw new Error("Nao foi possivel autenticar o cadastro do locador.");
+    }
+
     const result = await apiRequest("/locador", {
       method: "POST",
+      authToken: token,
       body: JSON.stringify({
         id: contaId,
         empresa: values.empresa,
