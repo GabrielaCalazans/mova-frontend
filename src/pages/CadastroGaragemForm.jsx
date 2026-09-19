@@ -5,6 +5,8 @@ import { createGaragem, updateGaragem } from "../services/garagemService";
 import { getAuthSession } from "../services/authSession";
 import "../styles/relatorios.css";
 
+const STATUS_OPCOES = ["ATIVA", "INATIVA", "MANUTENCAO"];
+
 export default function CadastroGaragemForm() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -19,6 +21,7 @@ export default function CadastroGaragemForm() {
     endereco: garagemOriginal?.endereco || "",
     capacidade: garagemOriginal?.capacidade ? String(garagemOriginal.capacidade) : "",
     acessibilidade: garagemOriginal?.acessibilidade ?? true,
+    status: garagemOriginal?.status || "ATIVA",
   });
   const [erro, setErro] = useState(null);
   const [salvando, setSalvando] = useState(false);
@@ -40,6 +43,7 @@ export default function CadastroGaragemForm() {
       endereco: values.endereco,
       capacidade: Number(values.capacidade),
       acessibilidade: Boolean(values.acessibilidade),
+      ...(isNovo ? {} : { status: values.status }),
     };
 
     setSalvando(true);
@@ -114,6 +118,22 @@ export default function CadastroGaragemForm() {
             Garagem acessível (vagas para veículos adaptados)
           </label>
         </div>
+
+        {!isNovo && (
+          <div className="auth-field">
+            <label htmlFor="status">Status</label>
+            <select
+              id="status"
+              className="filtro-select"
+              value={values.status}
+              onChange={(e) => handleChange("status", e.target.value)}
+            >
+              {STATUS_OPCOES.map((status) => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {isNovo && <p className="auth-required-note">Todos os campos com * são obrigatórios</p>}
 

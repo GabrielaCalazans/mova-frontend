@@ -7,7 +7,8 @@ import "../styles/relatorios.css";
 
 const ANOS = Array.from({ length: 12 }, (_, i) => String(2026 - i));
 const CAMBIOS = ["Manual", "Automatico"];
-const STATUS_OPCOES = ["DISPONIVEL", "RESERVADO", "MANUTENCAO", "INATIVO"];
+const STATUS_OPCOES = ["DISPONIVEL", "MANUTENCAO", "INATIVO"];
+const CATEGORIAS = ["ECONOMICO", "ESPACOSO", "EXECUTIVO", "PCD"];
 
 export default function CadastroCarroForm() {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ export default function CadastroCarroForm() {
     status: veiculoOriginal?.status || "DISPONIVEL",
     eletrico: veiculoOriginal?.eletrico || false,
     adaptado: veiculoOriginal?.adaptado || false,
+    categoria: veiculoOriginal?.categoria || "",
   });
   const [erro, setErro] = useState(null);
   const [salvando, setSalvando] = useState(false);
@@ -58,6 +60,7 @@ export default function CadastroCarroForm() {
       status: values.status,
       eletrico: Boolean(values.eletrico),
       adaptado: Boolean(values.adaptado),
+      categoria: values.categoria || undefined,
     };
 
     setSalvando(true);
@@ -187,7 +190,22 @@ export default function CadastroCarroForm() {
         </div>
 
         <div className="auth-field">
-          {isNovo && <label htmlFor="status">Status*</label>}
+          <label htmlFor="categoria">Categoria</label>
+          <select
+            id="categoria"
+            className="filtro-select"
+            value={values.categoria}
+            onChange={(e) => handleChange("categoria", e.target.value)}
+          >
+            <option value="">Sem categoria</option>
+            {CATEGORIAS.map((categoria) => (
+              <option key={categoria} value={categoria}>{categoria}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="auth-field">
+          <label htmlFor="status">Status{isNovo ? "*" : ""}</label>
           <select
             id="status"
             className="filtro-select"

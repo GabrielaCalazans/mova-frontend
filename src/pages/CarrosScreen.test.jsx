@@ -4,9 +4,10 @@ import CarrosScreen from "./CarrosScreen";
 import { listVeiculos } from "../services/veiculoService";
 
 const navigateMock = vi.hoisted(() => vi.fn());
+let tipoFiltro = null;
 
 vi.mock("react-router-dom", () => ({
-  useLocation: () => ({ state: null }),
+  useLocation: () => ({ state: tipoFiltro ? { tipo: tipoFiltro } : null }),
   useNavigate: () => navigateMock,
 }));
 vi.mock("../components/BottomNav", () => ({ default: () => null }));
@@ -28,7 +29,30 @@ const veiculo = (id, garagem, status = "DISPONIVEL") => ({
 });
 
 describe("CarrosScreen", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    tipoFiltro = null;
+  });
+
+  it("envia categoria oficial ao catálogo para tipo econômico", async () => {
+    tipoFiltro = "economico";
+    listVeiculos.mockResolvedValue([]);
+
+    render(<CarrosScreen />);
+
+    await screen.findByText(/Nenhum veículo cadastrado/);
+    expect(listVeiculos).toHaveBeenCalledWith({ categoria: "ECONOMICO" });
+  });
+
+  it("envia filtro elétrico ao catálogo antes de receber a página", async () => {
+    tipoFiltro = "eletrico";
+    listVeiculos.mockResolvedValue([]);
+
+    render(<CarrosScreen />);
+
+    await screen.findByText(/Nenhum veículo cadastrado/);
+    expect(listVeiculos).toHaveBeenCalledWith({ eletrico: true });
+  });
 
   it("permite selecao de veiculo DISPONIVEL em garagem ATIVA", async () => {
     listVeiculos.mockResolvedValue([

@@ -39,36 +39,27 @@ function CarrosScreen() {
     setErro(null);
 
     try {
-      // Filtragem feita no cliente (nao no servidor): evita depender de o
-      // backend aceitar exatamente os mesmos nomes/valores de filtro que
-      // usamos aqui (ex.: diferenca de maiusculas/minusculas em "cambio").
-      const resultado = await listVeiculos();
-      // eslint-disable-next-line no-console
-      console.log("[CarrosScreen] veiculos recebidos da API:", resultado);
+      const filtrosPorTipo = {
+        economico: { categoria: "ECONOMICO" },
+        executivo: { categoria: "EXECUTIVO" },
+        adaptado: { adaptado: true },
+        eletrico: { eletrico: true },
+      };
+      const resultado = await listVeiculos(filtrosPorTipo[tipoFiltro] ?? {});
       setVeiculos(resultado);
     } catch (e) {
       setErro(e.message || "Não foi possível carregar os veículos.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tipoFiltro]);
 
   useEffect(() => {
     document.title = "MOVA - Escolha seu Carro";
     buscar();
   }, [buscar]);
 
-  const veiculosFiltrados = veiculos.filter((v) => {
-    const eletrico = v.eletrico === true || v.eletrico === "true";
-    const adaptado = v.adaptado === true || v.adaptado === "true";
-    const cambio = String(v.cambio ?? v.modeloVeiculo?.cambio ?? "").toLowerCase();
-
-    if (tipoFiltro === "eletrico") return eletrico;
-    if (tipoFiltro === "adaptado") return adaptado;
-    if (tipoFiltro === "executivo") return cambio.includes("automat");
-    if (tipoFiltro === "economico") return !eletrico && !adaptado;
-    return true;
-  });
+  const veiculosFiltrados = veiculos;
 
   function selecionarVeiculo(veiculo) {
     if (!veiculoSelecionavel(veiculo)) return;
@@ -84,7 +75,7 @@ function CarrosScreen() {
         `${resolveVeiculoField(veiculo, modeloVeiculo, "marca")} ${resolveVeiculoField(veiculo, modeloVeiculo, "modelo")}`.trim(),
       marca: resolveVeiculoField(veiculo, modeloVeiculo, "marca"),
       modelo: resolveVeiculoField(veiculo, modeloVeiculo, "modelo"),
-      categoria: veiculo.categoria ?? veiculo.tipo ?? "",
+      categoria: resolveVeiculoField(veiculo, modeloVeiculo, "categoria"),
       imagem: veiculo.imagem ?? veiculo.image ?? veiculo.foto ?? "",
       capacidade: resolveVeiculoField(veiculo, modeloVeiculo, "capacidade"),
       caracteristicas: veiculo.caracteristicas ?? [],

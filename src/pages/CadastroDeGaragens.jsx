@@ -101,6 +101,7 @@ export default function CadastroDeGaragens() {
                     <p>
                       Capacidade: {disponivel}/{garagem.capacidade} Carros
                     </p>
+                    <p>Status: {garagem.status}</p>
                   </div>
                   <div className="frota-card__actions">
                     <button

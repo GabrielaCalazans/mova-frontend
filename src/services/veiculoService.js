@@ -64,6 +64,7 @@ export async function listVeiculos(filters = {}) {
   if (filters.capacidade) params.set("capacidade", String(filters.capacidade));
   if (filters.eletrico !== undefined) params.set("eletrico", String(filters.eletrico));
   if (filters.adaptado  !== undefined) params.set("adaptado",  String(filters.adaptado));
+  if (filters.categoria) params.set("categoria", filters.categoria);
   if (filters.idLocador)  params.set("idLocador", filters.idLocador);
   if (filters.garagemId)  params.set("garagemId", filters.garagemId);
 
