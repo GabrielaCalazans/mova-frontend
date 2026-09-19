@@ -167,6 +167,10 @@ describe("DesbloqueioDeCarro", () => {
     ],
     ["já utilizado", "Código de desbloqueio já utilizado."],
     ["fora do local", "Fora do local permitido para desbloqueio."],
+    [
+      "sem referência do veículo",
+      "Localização de referência do veículo indisponível para desbloqueio.",
+    ],
   ])("recusa do backend (%s) aparece na tela", async (_caso, mensagem) => {
     desbloquearReserva.mockRejectedValue(erroApi(mensagem, 409));
 

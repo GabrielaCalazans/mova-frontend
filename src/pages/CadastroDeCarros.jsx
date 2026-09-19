@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle2, XCircle } from "lucide-react";
 import BottomNav from "../components/BottomNav";
+import FrotaMonitoramento from "../components/FrotaMonitoramento";
 import { listVeiculos, deleteVeiculo } from "../services/veiculoService";
 import { getAuthSession } from "../services/authSession";
 import { resolveModelDetails } from "../utils/vehicleDisplay";
@@ -64,6 +65,7 @@ export default function CadastroDeCarros() {
       </div>
 
       <div className="carro-content">
+        <FrotaMonitoramento />
         <div className="frota-header-row">
           <h2>Veículos</h2>
           <button
