@@ -1,92 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav";
-import FiltroDataPicker, { formatarDataBR } from "../components/FiltroDataPicker";
 import "../styles/carselect.css";
-import "../styles/auth.css";
 import "../styles/relatorios.css";
 
 export default function RelatoriosFiltro() {
   const navigate = useNavigate();
 
-  const [dataSelecionada, setDataSelecionada] = useState(null);
-  const [garagem, setGaragem] = useState("");
-  const [veiculo, setVeiculo] = useState("");
-  const [status, setStatus] = useState("Confirmada");
-
   useEffect(() => {
     document.title = "MOVA - Filtro de Relatórios";
   }, []);
 
-  function handleAplicar(event) {
-    event.preventDefault();
-    navigate("/relatorios/veiculos", {
-      state: {
-        data: formatarDataBR(dataSelecionada),
-        garagem,
-        veiculo,
-        status,
-      },
-    });
-  }
-
   return (
     <main className="carro-page">
-      <div className="carro-header">
-        <h1>Relatórios | Veículos</h1>
-      </div>
-
+      <div className="carro-header"><h1>Relatórios | Veículos</h1></div>
       <div className="carro-content">
-        <h2 className="filtro-title">Filtro</h2>
-
-        <form onSubmit={handleAplicar}>
-          <FiltroDataPicker dataSelecionada={dataSelecionada} onChange={setDataSelecionada} />
-
-          <div className="filtro-card">
-            <div className="auth-field">
-              <label htmlFor="garagem">Garagem*</label>
-              <input
-                id="garagem"
-                type="text"
-                placeholder="Garagem"
-                value={garagem}
-                onChange={(e) => setGaragem(e.target.value)}
-              />
-            </div>
-
-            <div className="auth-field">
-              <label htmlFor="veiculo">Veículo*</label>
-              <input
-                id="veiculo"
-                type="text"
-                placeholder="Veículo"
-                value={veiculo}
-                onChange={(e) => setVeiculo(e.target.value)}
-              />
-            </div>
-
-            <div className="auth-field">
-              <label htmlFor="status">Status de Reserva*</label>
-              <select
-                id="status"
-                className="filtro-select"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <option value="Confirmada">Confirmada</option>
-                <option value="Pendente">Pendente</option>
-                <option value="Cancelada">Cancelada</option>
-                <option value="Concluída">Concluída</option>
-              </select>
-            </div>
-          </div>
-
-          <button type="submit" className="carro-button">
-            Aplicar
-          </button>
-        </form>
+        <h2 className="filtro-title">Relatório agregado</h2>
+        <p className="relatorio-filter-summary">A fonte atual de relatórios de veículos não oferece filtros por período, garagem, veículo ou status.</p>
+        <button type="button" className="carro-button" onClick={() => navigate("/relatorios/veiculos")}>Ver relatório</button>
       </div>
-
       <BottomNav />
     </main>
   );

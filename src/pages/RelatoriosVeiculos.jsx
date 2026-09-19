@@ -1,198 +1,90 @@
-import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Download, Share2 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from "recharts";
+import { useEffect, useState } from "react";
+import { Download } from "lucide-react";
 import BottomNav from "../components/BottomNav";
+import { getFinanceiro, getUtilizacao } from "../services/dashboardService";
 import "../styles/carselect.css";
 import "../styles/relatorios.css";
 
-const CORES = { HB20: "#4f7cff", Sedan: "#b39ddb", SUV: "#f0ad4e", Gol: "#f4d35e" };
+const csvValue = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
 
-const QUILOMETRAGEM_DATA = [
-  { ano: "2021", HB20: 2100, Sedan: 2400, SUV: 3100, Gol: 3450 },
-  { ano: "2022", HB20: 2450, Sedan: 1500, SUV: 1700, Gol: 3050 },
-  { ano: "2023", HB20: 1750, Sedan: 3350, SUV: 1200, Gol: 1650 },
-  { ano: "2024", HB20: 1350, Sedan: 1150, SUV: 1050, Gol: 2350 },
-  { ano: "2025", HB20: 1950, Sedan: 1700, SUV: 1450, Gol: 900 },
-  { ano: "2026", HB20: 1500, Sedan: 1050, SUV: 2000, Gol: 3350 },
-];
-
-const ALUGUEL_DATA = [
-  { ano: "2021", HB20: 1200, Sedan: 2000, SUV: 2050, Gol: 2750 },
-  { ano: "2022", HB20: 2000, Sedan: 1250, SUV: 2200, Gol: 1750 },
-  { ano: "2023", HB20: 2100, Sedan: 1900, SUV: 2200, Gol: 1200 },
-  { ano: "2024", HB20: 1300, Sedan: 3000, SUV: 1200, Gol: 1200 },
-  { ano: "2025", HB20: 2200, Sedan: 1250, SUV: 1000, Gol: 1700 },
-  { ano: "2026", HB20: 1600, Sedan: 1250, SUV: 3200, Gol: 1250 },
-];
-
-function toCsv(data) {
-  const header = ["Ano", "HB20", "Sedan", "SUV", "Gol"];
-  const rows = data.map((row) => [row.ano, row.HB20, row.Sedan, row.SUV, row.Gol]);
-  return [header, ...rows].map((row) => row.join(";")).join("\n");
+function csvFinanceiro(porVeiculo) {
+  return [["Veículo", "Faturamento"], ...porVeiculo.map(({ placa, total }) => [placa, total])]
+    .map((row) => row.map(csvValue).join(";"))
+    .join("\n");
 }
 
-function downloadCsv(filename, data) {
-  const blob = new Blob([toCsv(data)], { type: "text/csv;charset=utf-8;" });
+function downloadCsv(porVeiculo) {
+  const blob = new Blob([`\uFEFF${csvFinanceiro(porVeiculo)}`], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = filename;
+  link.download = "relatorio-financeiro-veiculos.csv";
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
+  link.remove();
   URL.revokeObjectURL(url);
 }
 
-async function shareReport(title, data) {
-  const text = `${title}\n\n${toCsv(data)}`;
-
-  if (navigator.share) {
-    try {
-      await navigator.share({ title, text });
-      return;
-    } catch {
-      // usuário cancelou o compartilhamento — segue para o fallback
-    }
-  }
-
-  await navigator.clipboard?.writeText(text);
-}
+const moeda = (valor) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(valor || 0));
 
 export default function RelatoriosVeiculos() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const filtro = location.state;
+  const [relatorios, setRelatorios] = useState(null);
+  const [erro, setErro] = useState("");
 
   useEffect(() => {
     document.title = "MOVA - Relatórios de Veículos";
+    let ativo = true;
+    Promise.all([getFinanceiro(), getUtilizacao()])
+      .then(([financeiro, utilizacao]) => ativo && setRelatorios({ financeiro, utilizacao }))
+      .catch(() => ativo && setErro("Não foi possível carregar os relatórios."));
+    return () => { ativo = false; };
   }, []);
 
-  const filtroAtivo = Boolean(filtro?.data || filtro?.garagem || filtro?.veiculo);
+  const porVeiculo = relatorios?.financeiro?.porVeiculo || [];
+  const maisUtilizados = relatorios?.utilizacao?.maisUtilizados || [];
 
   return (
     <main className="carro-page">
-      <div className="carro-header">
-        <h1>Relatórios | Veículos</h1>
-      </div>
-
+      <div className="carro-header"><h1>Relatórios | Veículos</h1></div>
       <div className="carro-content">
-        {filtroAtivo && (
-          <p className="relatorio-filter-summary">
-            Filtro: {[filtro?.data, filtro?.garagem, filtro?.veiculo, filtro?.status].filter(Boolean).join(" • ")}{" "}
-            <button type="button" onClick={() => navigate("/relatorios")}>
-              Editar
-            </button>
-          </p>
+        <p className="relatorio-filter-summary">Filtros para este relatório ainda não estão disponíveis na fonte de dados.</p>
+        {!relatorios && !erro && <p className="carro-status">Carregando relatórios…</p>}
+        {erro && <p className="carro-status" role="alert">{erro}</p>}
+        {relatorios && (
+          <div className="relatorio-grid">
+            <section className="relatorio-card">
+              <div className="relatorio-card__chart">
+                <h2>Financeiro</h2>
+                <p><strong>{moeda(relatorios.financeiro?.faturamentoBruto)}</strong> de faturamento bruto</p>
+                {porVeiculo.length ? (
+                  <ul>{porVeiculo.map(({ idVeiculo, placa, total }) => <li key={idVeiculo}>{placa}: {moeda(total)}</li>)}</ul>
+                ) : <p>Nenhum faturamento encontrado.</p>}
+              </div>
+              <div className="relatorio-card__footer">
+                <div><h3>Relatório financeiro por veículo</h3><p>Dados reais de pagamentos concluídos.</p></div>
+                <div className="relatorio-card__actions">
+                  <button type="button" aria-label="Baixar relatório financeiro" disabled={!porVeiculo.length} onClick={() => downloadCsv(porVeiculo)}><Download size={20} /></button>
+                </div>
+              </div>
+            </section>
+            <section className="relatorio-card">
+              <div className="relatorio-card__chart">
+                <h2>Utilização</h2>
+                <p>{relatorios.utilizacao?.taxaOcupacao ?? 0}% de ocupação · {relatorios.utilizacao?.tempoMedioReservadoHoras ?? 0}h em média</p>
+                {maisUtilizados.length ? (
+                  <ul>{maisUtilizados.map(({ idVeiculo, placa, reservas, horasReservadas }) => <li key={idVeiculo}>{placa}: {reservas} reservas, {horasReservadas}h</li>)}</ul>
+                ) : <p>Nenhuma utilização encontrada.</p>}
+              </div>
+              <div className="relatorio-card__footer"><div><h3>Uso dos veículos</h3><p>Dados reais de reservas.</p></div></div>
+            </section>
+            <section className="relatorio-card">
+              <div className="relatorio-card__chart"><h2>Quilometragem</h2><p>Dados de quilometragem indisponíveis.</p></div>
+              <div className="relatorio-card__footer"><div><h3>Quilometragem</h3><p>O sistema não possui uma fonte persistida confiável para este indicador.</p></div></div>
+            </section>
+          </div>
         )}
-
-        <div className="relatorio-grid">
-        <div className="relatorio-card">
-          <ChartLegend />
-          <div className="relatorio-card__chart">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={QUILOMETRAGEM_DATA} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="ano" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Line type="monotone" dataKey="HB20" stroke={CORES.HB20} strokeWidth={2} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="Sedan" stroke={CORES.Sedan} strokeWidth={2} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="SUV" stroke={CORES.SUV} strokeWidth={2} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="Gol" stroke={CORES.Gol} strokeWidth={2} dot={{ r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="relatorio-card__footer">
-            <div>
-              <h3>Relatório 1 - Quilometragem</h3>
-              <p>Baixe ou compartilhe seu relatório</p>
-            </div>
-            <div className="relatorio-card__actions">
-              <button
-                type="button"
-                aria-label="Baixar relatório de quilometragem"
-                onClick={() => downloadCsv("relatorio-quilometragem.csv", QUILOMETRAGEM_DATA)}
-              >
-                <Download size={20} />
-              </button>
-              <button
-                type="button"
-                aria-label="Compartilhar relatório de quilometragem"
-                onClick={() => shareReport("Relatório 1 - Quilometragem", QUILOMETRAGEM_DATA)}
-              >
-                <Share2 size={20} />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="relatorio-card">
-          <ChartLegend />
-          <div className="relatorio-card__chart">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={ALUGUEL_DATA} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="ano" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Bar dataKey="HB20" stackId="a" fill={CORES.HB20} />
-                <Bar dataKey="Sedan" stackId="a" fill={CORES.Sedan} />
-                <Bar dataKey="SUV" stackId="a" fill={CORES.SUV} />
-                <Bar dataKey="Gol" stackId="a" fill={CORES.Gol} radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="relatorio-card__footer">
-            <div>
-              <h3>Relatório 2 - Aluguel</h3>
-              <p>Baixar ou compartilhe seu relatório</p>
-            </div>
-            <div className="relatorio-card__actions">
-              <button
-                type="button"
-                aria-label="Baixar relatório de aluguel"
-                onClick={() => downloadCsv("relatorio-aluguel.csv", ALUGUEL_DATA)}
-              >
-                <Download size={20} />
-              </button>
-              <button
-                type="button"
-                aria-label="Compartilhar relatório de aluguel"
-                onClick={() => shareReport("Relatório 2 - Aluguel", ALUGUEL_DATA)}
-              >
-                <Share2 size={20} />
-              </button>
-            </div>
-          </div>
-        </div>
-        </div>
       </div>
-          <BottomNav />
+      <BottomNav />
     </main>
-  );
-}
-
-function ChartLegend() {
-  return (
-    <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginBottom: "0.25rem", flexWrap: "wrap" }}>
-      {Object.entries(CORES).map(([label, cor]) => (
-        <span key={label} style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.78rem", color: "var(--color-text)" }}>
-          <span style={{ width: 9, height: 9, borderRadius: "50%", background: cor, display: "inline-block" }} />
-          {label}
-        </span>
-      ))}
-    </div>
   );
 }
