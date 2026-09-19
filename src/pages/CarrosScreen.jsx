@@ -19,6 +19,12 @@ function formatCambio(cambio) {
   return cambio || "—";
 }
 
+function veiculoSelecionavel(veiculo) {
+  if (veiculo?.status !== "DISPONIVEL") return false;
+  if (!veiculo.garagem) return true;
+  return veiculo.garagem.status === "ATIVA";
+}
+
 function CarrosScreen() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -65,6 +71,8 @@ function CarrosScreen() {
   });
 
   function selecionarVeiculo(veiculo) {
+    if (!veiculoSelecionavel(veiculo)) return;
+
     const modeloVeiculo = resolveModeloVeiculo(veiculo);
 
     updateJourneyStep("veiculo", {
@@ -138,6 +146,11 @@ function CarrosScreen() {
               const ano = resolveVeiculoField(veiculo, modeloVeiculo, "ano");
               const cambio = resolveVeiculoField(veiculo, modeloVeiculo, "cambio");
               const disponivel = veiculo.status === "DISPONIVEL";
+              const selecionavel = veiculoSelecionavel(veiculo);
+              const garagemIndisponivel =
+                disponivel &&
+                Boolean(veiculo.garagem) &&
+                veiculo.garagem.status !== "ATIVA";
               const details = resolveModelDetails(marca, modelo, tipoFiltro);
               const local = veiculo.garagem?.nome ?? veiculo.garagemNome ?? "Local não informado";
 
@@ -163,13 +176,18 @@ function CarrosScreen() {
                   <p className="carro-list-card__price">
                     {veiculo.valorDiaria != null ? `Preço: ${formatMoneyBRL(veiculo.valorDiaria)}/dia` : "Consulte o preço"}
                   </p>
+                  {garagemIndisponivel && (
+                    <p className="carro-list-card__availability">
+                      Local indisponível para reserva.
+                    </p>
+                  )}
                   <button
                     type="button"
                     className="carro-button"
-                    disabled={!disponivel}
+                    disabled={!selecionavel}
                     onClick={() => selecionarVeiculo(veiculo)}
                   >
-                    {disponivel ? "Selecionar" : "Indisponível"}
+                    {selecionavel ? "Selecionar" : "Indisponível"}
                   </button>
                 </div>
               );
