@@ -139,6 +139,7 @@ function CarrosScreen() {
               const cambio = resolveVeiculoField(veiculo, modeloVeiculo, "cambio");
               const disponivel = veiculo.status === "DISPONIVEL";
               const details = resolveModelDetails(marca, modelo, tipoFiltro);
+              const local = veiculo.garagem?.nome ?? veiculo.garagemNome ?? "Local não informado";
 
               return (
                 <div className="carro-list-card" key={veiculo.id}>
@@ -157,7 +158,7 @@ function CarrosScreen() {
                     <br />
                     Autonomia: {details.autonomia}
                     <br />
-                    Local: {details.garagem}
+                    Local: {local}
                   </p>
                   <p className="carro-list-card__price">
                     {veiculo.valorDiaria != null ? `Preço: ${formatMoneyBRL(veiculo.valorDiaria)}/dia` : "Consulte o preço"}

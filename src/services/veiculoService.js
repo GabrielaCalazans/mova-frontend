@@ -23,6 +23,8 @@ export function normalizeVeiculo(veiculo) {
     idLocador: veiculo.idLocador,
     idModeloVeiculo: veiculo.idModeloVeiculo,
     garagemId: veiculo.garagemId,
+    garagem: veiculo.garagem ?? null,
+    garagemNome: veiculo.garagem?.nome ?? veiculo.garagemNome,
     placa: veiculo.placa,
     status: veiculo.status,
     criadoEm: veiculo.criadoEm,
