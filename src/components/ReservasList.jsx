@@ -178,6 +178,18 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
                     <p>
                       {reserva.valorTotal != null ? formatMoneyBRL(reserva.valorTotal) : "Valor não informado"}
                     </p>
+                    {reserva.servicos?.length > 0 && (
+                      <div aria-label="Serviços contratados">
+                        <p>Serviços contratados:</p>
+                        <ul>
+                          {reserva.servicos.map((servico) => (
+                            <li key={servico.idServico}>
+                              {servico.nome} — {formatMoneyBRL(servico.valor)}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                     {(reserva.status === STATUS_RESERVA.AGUARDANDO_PAGAMENTO || reserva.status === STATUS_RESERVA.CONFIRMADA) && (
                       <button
                         type="button"

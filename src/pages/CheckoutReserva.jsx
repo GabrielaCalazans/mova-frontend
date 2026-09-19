@@ -524,6 +524,10 @@ export default function CheckoutReserva() {
   const diariaValue = pricing?.dailyRate ?? 0;
   const servicesValue = pricing?.servicesTotal ?? 0;
   const totalValue = pricing?.total ?? 0;
+  const servicosContratados = (servicos?.selecionados ?? []).map((servico) => ({
+    ...servico,
+    valor: pricing?.servicos?.find((item) => item.idServico === servico.id)?.valor ?? servico.valor,
+  }));
   // Novo modelo: campos descritivos vêm de modeloVeiculo mas já normalizados
   // por normalizeVeiculo() no serviço. Fallback para veiculoSalvo (journey storage).
   const vehicleCategory = resolveVehicleField(
@@ -682,6 +686,20 @@ export default function CheckoutReserva() {
             value={`${devolucao.garageName || "Garagem não informada"}\n${dropoffAddress}\n${formatDisplayDate(devolucao.date)} • ${formatDisplayTime(devolucao.time)}`}
           />
         </SummaryGrid>
+
+        {servicosContratados.length > 0 && (
+          <SectionCard>
+            <SectionTitle>Serviços contratados</SectionTitle>
+            <KeyValueGrid>
+              {servicosContratados.map((servico) => (
+                <KeyValueItem key={servico.id}>
+                  <KeyValueLabel>{servico.nome}</KeyValueLabel>
+                  <KeyValueValue>{formatMoneyBRL(servico.valor)}</KeyValueValue>
+                </KeyValueItem>
+              ))}
+            </KeyValueGrid>
+          </SectionCard>
+        )}
 
         <JourneySummaryCard>
           <JourneySummaryLabel>Resumo financeiro</JourneySummaryLabel>
