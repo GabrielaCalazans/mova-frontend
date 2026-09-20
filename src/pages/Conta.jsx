@@ -168,7 +168,10 @@ function Conta() {
 
         if (/sessao expirada|faca login novamente/i.test(message)) {
           clearAuthSession();
-          setSession(null);
+          if (isMounted) {
+            navigate("/login", { replace: true });
+          }
+          return;
         }
 
         if (isMounted) {
@@ -186,7 +189,7 @@ function Conta() {
     return () => {
       isMounted = false;
     };
-  }, [authToken, setValues]);
+  }, [authToken, navigate, setValues]);
 
   function applyMask(field, value) {
     if (field === "celphone") return maskCelphone(value);
