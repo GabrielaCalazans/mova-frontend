@@ -74,6 +74,19 @@ export async function listVeiculos(filters = {}) {
 }
 
 /**
+ * Lista frota privada do locador autenticado, incluindo todos os status.
+ * O backend deriva o proprietário do JWT; não enviar idLocador do cliente.
+ * Endpoint: GET /veiculo/meus
+ */
+export async function listFrota() {
+  const session = getAuthSession();
+  const itens = await apiRequestPaginado("/veiculo/meus", {
+    authToken: session?.token,
+  });
+  return itens.map(normalizeVeiculo);
+}
+
+/**
  * Cria um veículo novo (uso do locador). Endpoint: POST /veiculo
  * Campos esperados (createVeiculoSchema no backend): idLocador, placa, marca,
  * modelo, ano, cambio, capacidade, valorDiaria, status?, eletrico, adaptado,

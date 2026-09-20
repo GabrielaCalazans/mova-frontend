@@ -68,4 +68,23 @@ describe("CadastroCarroForm", () => {
     expect(await screen.findByText("Falha ao atualizar status")).toBeInTheDocument();
     expect(navigateMock).not.toHaveBeenCalled();
   });
+
+  it.each(["MANUTENCAO", "INATIVO"])(
+    "envia DISPONIVEL para %s pelo seletor de gestão",
+    async (novoStatus) => {
+      veiculo = { ...veiculo, status: "DISPONIVEL" };
+      updateVeiculo.mockResolvedValue({ ...veiculo, status: novoStatus });
+
+      render(<CadastroCarroForm />);
+      fireEvent.change(screen.getByLabelText("Status"), {
+        target: { value: novoStatus },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Editar" }));
+
+      await waitFor(() => expect(updateVeiculo).toHaveBeenCalledWith(
+        "veiculo-1",
+        expect.objectContaining({ status: novoStatus }),
+      ));
+    },
+  );
 });

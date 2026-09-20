@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { CheckCircle2, XCircle } from "lucide-react";
 import BottomNav from "../components/BottomNav";
 import FrotaMonitoramento from "../components/FrotaMonitoramento";
-import { listVeiculos, deleteVeiculo } from "../services/veiculoService";
+import { listFrota, deleteVeiculo } from "../services/veiculoService";
 import { getAuthSession } from "../services/authSession";
 import { resolveModelDetails } from "../utils/vehicleDisplay";
 import "../styles/carselect.css";
@@ -28,7 +28,7 @@ export default function CadastroDeCarros() {
     setErro(null);
 
     try {
-      const resultado = await listVeiculos({ idLocador });
+      const resultado = await listFrota();
       setVeiculos(resultado);
     } catch (e) {
       setErro(e.message || "Não foi possível carregar os veículos.");
