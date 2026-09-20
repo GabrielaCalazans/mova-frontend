@@ -4,6 +4,7 @@ import { getAuthSession, saveAuthSession } from "./authSession";
 import {
   fetchCurrentUserProfile,
   loginUser,
+  registerLocatario,
   registerLocador,
   updateUserProfile,
 } from "./authService";
@@ -162,6 +163,48 @@ describe("authService profile flow via /conta/auth/me", () => {
       }),
     });
     expect(result.message).toBe("Cadastro de locador realizado com sucesso.");
+  });
+
+  it("cadastra locatario com token da conta e sem ID controlado pelo cliente", async () => {
+    apiRequestMock
+      .mockResolvedValueOnce({
+        result: {
+          conta: { id: "conta-locatario-1" },
+          token: "token-cadastro-locatario",
+        },
+      })
+      .mockResolvedValueOnce({ result: { id: "conta-locatario-1" } });
+
+    await registerLocatario({
+      name: "Ana Silva",
+      email: "ana@example.com",
+      celphone: "(11) 99999-8888",
+      address: "Rua A, 1",
+      cep: "01001-000",
+      password: "Senha12345",
+      cpf: "123.456.789-09",
+      cnh: "12345678909",
+      rg: "12.345.678-9",
+      dataNascimento: "1990-05-15",
+    });
+
+    expect(apiRequestMock).toHaveBeenNthCalledWith(2, "/locatario/", {
+      method: "POST",
+      authToken: "token-cadastro-locatario",
+      body: JSON.stringify({
+        cpf: "12345678909",
+        cnh: "12345678909",
+        rg: "123456789",
+        dataNascimento: "1990-05-15",
+      }),
+    });
+
+    const [, request] = apiRequestMock.mock.calls[1];
+    const body = JSON.parse(request.body);
+    expect(body).not.toHaveProperty("id");
+    expect(body).not.toHaveProperty("idConta");
+    expect(body).not.toHaveProperty("cargo");
+    expect(body).not.toHaveProperty("propriedade");
   });
 });
 

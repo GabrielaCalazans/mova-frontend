@@ -513,17 +513,15 @@ export async function registerLocatario(values) {
       }),
     });
 
-    const conta = normalizeApiUser(contaResult, values.email);
-    const contaId = conta.id || contaResult?.id || contaResult?.result?.id;
-
-    if (!contaId) {
-      throw new Error("Nao foi possivel identificar a conta do locatario.");
+    const token = extractToken(contaResult);
+    if (!token) {
+      throw new Error("Nao foi possivel autenticar o cadastro do locatario.");
     }
 
     const locatarioResult = await apiRequest("/locatario/", {
       method: "POST",
+      authToken: token,
       body: JSON.stringify({
-        id: contaId,
         cpf: values.cpf.replace(/\D/g, ""),
         cnh: values.cnh.replace(/\D/g, ""),
         rg: values.rg.replace(/[.\-\s]/g, "").toUpperCase(),
