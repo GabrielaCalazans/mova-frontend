@@ -11,6 +11,7 @@ import EscolhaGaragemDevolucao from "../pages/EscolhaGaragemDevolucao";
 import CheckoutReserva from "../pages/CheckoutReserva";
 import Pagamento from "../pages/Pagamento";
 import DesbloqueioDeCarro from "../pages/DesbloqueioDeCarro";
+import RastreamentoReserva from "../pages/RastreamentoReserva";
 import DevolucaoReserva from "../pages/DevolucaoReserva";
 import AvaliacaoReserva from "../pages/AvaliacaoReserva";
 import ServicosOpcionais from "../pages/ServicosOpcionais";
@@ -70,6 +71,7 @@ function AppRoutes() {
         <Route path="/condutores-adicionais" element={<ProtectedRoute><CondutoresAdicionais /></ProtectedRoute>} />
         <Route path="/pagamento" element={<ProtectedRoute><Pagamento /></ProtectedRoute>} />
         <Route path="/desbloqueio" element={<ProtectedRoute><DesbloqueioDeCarro /></ProtectedRoute>} />
+        <Route path="/reserva/:id/localizacao" element={<ProtectedRoute><RastreamentoReserva /></ProtectedRoute>} />
         <Route path="/devolucao" element={<ProtectedRoute><DevolucaoReserva /></ProtectedRoute>} />
         <Route path="/cancelamento" element={<ProtectedRoute><CancelamentoReserva /></ProtectedRoute>} />
         <Route path="/avaliacao" element={<ProtectedRoute><AvaliacaoReserva /></ProtectedRoute>} />

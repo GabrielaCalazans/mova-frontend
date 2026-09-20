@@ -61,6 +61,20 @@ function acaoDaReserva(reserva) {
   return null;
 }
 
+// Conveniência visual. O backend continua validando posse, estado e período
+// ao atender GET /reserva/:id/localizacao.
+function podeExibirRastreamento(reserva, agora = new Date()) {
+  if (
+    reserva.status !== STATUS_RESERVA.CONFIRMADA &&
+    reserva.status !== STATUS_RESERVA.EM_ANDAMENTO
+  ) return false;
+
+  const inicio = new Date(reserva.dataHoraInicio).getTime();
+  const fim = new Date(reserva.dataHoraFim).getTime();
+  const instante = agora.getTime();
+  return Number.isFinite(inicio) && Number.isFinite(fim) && inicio <= instante && instante <= fim;
+}
+
 function agruparPorData(reservas) {
   const grupos = new Map();
 
@@ -204,6 +218,17 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
                     {acao && (
                       <button type="button" onClick={(event) => { event.stopPropagation(); abrir(); }}>
                         {acao.rotulo}
+                      </button>
+                    )}
+                    {podeExibirRastreamento(reserva) && (
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          navigate(`/reserva/${reserva.id}/localizacao`);
+                        }}
+                      >
+                        Acompanhar veículo
                       </button>
                     )}
                   </div>

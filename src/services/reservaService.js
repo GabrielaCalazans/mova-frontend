@@ -135,6 +135,13 @@ export async function getReservaById(id) {
   return data.result ?? data;
 }
 
+/** Endpoint: GET /reserva/:id/localizacao — última posição autorizada pela reserva. */
+export async function getRastreamentoReserva(id) {
+  if (!id) throw new Error("ID da reserva não informado.");
+  const data = await apiRequest(`/reserva/${id}/localizacao`, authHeaders());
+  return data.result ?? data;
+}
+
 /** Registra a devolução. O servidor define o instante e a cobrança de atraso. */
 export async function devolverReserva(id) {
   if (!id) throw new Error("ID da reserva não informado.");
