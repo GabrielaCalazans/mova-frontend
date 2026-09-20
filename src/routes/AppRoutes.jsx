@@ -32,6 +32,7 @@ import RelatoriosAvaliacoesFiltro from "../pages/RelatoriosAvaliacoesFiltro";
 import RelatoriosAvaliacoes from "../pages/RelatoriosAvaliacoes";
 import Suporte from "../pages/Suporte";
 import Configuracoes from "../pages/Configuracoes";
+import InteressesDisponibilidade from "../pages/InteressesDisponibilidade";
 import Home from "../pages/Home";
 import { getAuthSession } from "../services/authSession";
 
@@ -92,6 +93,7 @@ function AppRoutes() {
         <Route path="/relatorios/avaliacoes" element={<ProtectedRoute><RelatoriosAvaliacoes /></ProtectedRoute>} />
         <Route path="/suporte" element={<ProtectedRoute><Suporte /></ProtectedRoute>} />
         <Route path="/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
+        <Route path="/interesses" element={<ProtectedRoute><InteressesDisponibilidade /></ProtectedRoute>} />
 
         <Route path="/carros-screens" element={<Navigate to="/carros" replace />} />
         <Route path="/escolha-garagem" element={<Navigate to="/escolha-garagem-retirada" replace />} />

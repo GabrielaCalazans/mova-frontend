@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav";
-import FiltroDataPicker, { formatarDataBR } from "../components/FiltroDataPicker";
+import FiltroDataPicker from "../components/FiltroDataPicker";
 import "../styles/carselect.css";
 import "../styles/auth.css";
 import "../styles/relatorios.css";
@@ -11,7 +11,6 @@ export default function RelatoriosAvaliacoesFiltro() {
 
   const [dataSelecionada, setDataSelecionada] = useState(null);
   const [veiculo, setVeiculo] = useState("");
-  const [tipo, setTipo] = useState("Automático");
   const [avaliacao, setAvaliacao] = useState("4");
 
   useEffect(() => {
@@ -20,14 +19,18 @@ export default function RelatoriosAvaliacoesFiltro() {
 
   function handleAplicar(event) {
     event.preventDefault();
-    navigate("/relatorios/avaliacoes", {
-      state: {
-        data: formatarDataBR(dataSelecionada),
-        veiculo,
-        tipo,
-        avaliacao,
-      },
-    });
+    const params = new URLSearchParams();
+    if (dataSelecionada) {
+      const ano = dataSelecionada.getFullYear();
+      const mes = String(dataSelecionada.getMonth() + 1).padStart(2, "0");
+      const dia = String(dataSelecionada.getDate()).padStart(2, "0");
+      const data = `${ano}-${mes}-${dia}`;
+      params.set("dataInicio", data);
+      params.set("dataFim", data);
+    }
+    if (veiculo) params.set("idVeiculo", veiculo);
+    if (avaliacao) params.set("notaMin", avaliacao);
+    navigate(`/relatorios/avaliacoes${params.toString() ? `?${params}` : ""}`);
   }
 
   return (
@@ -52,20 +55,6 @@ export default function RelatoriosAvaliacoesFiltro() {
                 value={veiculo}
                 onChange={(e) => setVeiculo(e.target.value)}
               />
-            </div>
-
-            <div className="auth-field">
-              <label htmlFor="tipo">Tipo</label>
-              <select
-                id="tipo"
-                className="filtro-select"
-                value={tipo}
-                onChange={(e) => setTipo(e.target.value)}
-              >
-                <option value="Automático">Automático</option>
-                <option value="Manual">Manual</option>
-                <option value="Semi-automático">Semi-automático</option>
-              </select>
             </div>
 
             <div className="auth-field">

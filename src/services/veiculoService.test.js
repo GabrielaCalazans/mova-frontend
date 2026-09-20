@@ -8,7 +8,7 @@ vi.mock("./authSession", () => ({ getAuthSession: vi.fn() }));
 
 import { apiRequestPaginado } from "./apiClient";
 import { getAuthSession } from "./authSession";
-import { listFrota } from "./veiculoService";
+import { listFrota, listVeiculos } from "./veiculoService";
 
 describe("listFrota", () => {
   beforeEach(() => {
@@ -32,6 +32,32 @@ describe("listFrota", () => {
     expect(apiRequestPaginado).toHaveBeenCalledWith(
       "/veiculo/meus",
       { authToken: "jwt-locador" },
+    );
+  });
+});
+
+describe("listVeiculos — filtros do catálogo", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    getAuthSession.mockReturnValue({ token: "jwt-locatario" });
+    apiRequestPaginado.mockResolvedValue([]);
+  });
+
+  it.each([
+    [{ categoria: "ECONOMICO" }, "/veiculo?categoria=ECONOMICO"],
+    [{ categoria: "ESPACOSO" }, "/veiculo?categoria=ESPACOSO"],
+    [{ categoria: "EXECUTIVO" }, "/veiculo?categoria=EXECUTIVO"],
+    [{ adaptado: true }, "/veiculo?adaptado=true"],
+  ])("mapeia o filtro %o para o contrato real", async (filtros, endpoint) => {
+    await listVeiculos(filtros);
+    expect(apiRequestPaginado).toHaveBeenCalledWith(endpoint, { authToken: "jwt-locatario" });
+  });
+
+  it("mantém combinação de filtros por interseção", async () => {
+    await listVeiculos({ categoria: "EXECUTIVO", cambio: "Automatico", eletrico: true, capacidade: 5 });
+    expect(apiRequestPaginado).toHaveBeenCalledWith(
+      "/veiculo?cambio=Automatico&capacidade=5&eletrico=true&categoria=EXECUTIVO",
+      { authToken: "jwt-locatario" },
     );
   });
 });

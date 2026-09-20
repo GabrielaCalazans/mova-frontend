@@ -39,12 +39,20 @@ export default function ServicosOpcionais() {
     {!carregando && !erro && servicos.length === 0 && <p>Nenhum serviço adicional está disponível.</p>}
     {servicos.map((servico) => {
       const marcado = selecionados.some((item) => item.id === servico.id);
-      return <label key={servico.id} className="payment-method-card" style={{ display: "block", cursor: "pointer", marginBottom: "0.75rem" }}>
-        <input type="checkbox" checked={marcado} onChange={() => alternar(servico)} />
-        <strong style={{ marginLeft: "0.5rem" }}>{servico.nome}</strong>
-        <p>{servico.descricao}</p>
-        <p>{formatMoneyBRL(servico.valor)}</p>
-      </label>;
+      return <div key={servico.id} style={{ marginBottom: "0.75rem" }}>
+        <label className="payment-method-card" style={{ display: "block", cursor: "pointer" }}>
+          <input type="checkbox" checked={marcado} onChange={() => alternar(servico)} />
+          <strong style={{ marginLeft: "0.5rem" }}>{servico.nome}</strong>
+          <p>{servico.descricao}</p>
+          <p>{formatMoneyBRL(servico.valor)}</p>
+        </label>
+        {servico.detalhesCobertura && (
+          <details style={{ marginTop: "0.35rem" }}>
+            <summary>Ver detalhes da cobertura</summary>
+            <p>{servico.detalhesCobertura}</p>
+          </details>
+        )}
+      </div>;
     })}
     <p data-testid="estimativa-servicos">Estimativa dos serviços: {formatMoneyBRL(estimativa)}</p>
     <button type="button" className="carro-button" onClick={continuar}>Continuar para checkout</button>

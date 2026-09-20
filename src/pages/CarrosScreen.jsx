@@ -19,6 +19,13 @@ function formatCambio(cambio) {
   return cambio || "—";
 }
 
+const FILTROS_CATEGORIA = [
+  { id: "economico", label: "Econômicos" },
+  { id: "espacoso", label: "Espaçosos" },
+  { id: "executivo", label: "Executivos" },
+  { id: "adaptado", label: "Adaptados PCD" },
+];
+
 function veiculoSelecionavel(veiculo) {
   if (veiculo?.status !== "DISPONIVEL") return false;
   if (!veiculo.garagem) return true;
@@ -28,7 +35,7 @@ function veiculoSelecionavel(veiculo) {
 function CarrosScreen() {
   const navigate = useNavigate();
   const location = useLocation();
-  const tipoFiltro = location.state?.tipo ?? null;
+  const [tipoFiltro, setTipoFiltro] = useState(location.state?.tipo ?? null);
 
   const [veiculos, setVeiculos] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -41,6 +48,7 @@ function CarrosScreen() {
     try {
       const filtrosPorTipo = {
         economico: { categoria: "ECONOMICO" },
+        espacoso: { categoria: "ESPACOSO" },
         executivo: { categoria: "EXECUTIVO" },
         adaptado: { adaptado: true },
         eletrico: { eletrico: true },
@@ -104,6 +112,29 @@ function CarrosScreen() {
       </div>
 
       <div className="carro-content">
+        <fieldset className="carro-filters" aria-label="Filtros de categoria">
+          <legend>Filtrar por categoria</legend>
+          {FILTROS_CATEGORIA.map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              className="carro-button"
+              aria-pressed={tipoFiltro === id}
+              onClick={() => setTipoFiltro((atual) => atual === id ? null : id)}
+            >
+              {label}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="carro-button"
+            aria-label="Limpar filtros"
+            onClick={() => setTipoFiltro(null)}
+          >
+            Limpar filtros
+          </button>
+        </fieldset>
+
         {loading && <p className="carro-status">Carregando veículos…</p>}
 
         {!loading && erro && <p className="carro-status">{erro}</p>}

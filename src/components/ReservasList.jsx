@@ -199,6 +199,13 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
                           {reserva.servicos.map((servico) => (
                             <li key={servico.idServico}>
                               {servico.nome} — {formatMoneyBRL(servico.valor)}
+                              {servico.descricao && <p>{servico.descricao}</p>}
+                              {servico.detalhesCobertura && (
+                                <details>
+                                  <summary>Ver detalhes da cobertura</summary>
+                                  <p>{servico.detalhesCobertura}</p>
+                                </details>
+                              )}
                             </li>
                           ))}
                         </ul>

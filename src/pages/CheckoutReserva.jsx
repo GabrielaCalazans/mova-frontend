@@ -526,6 +526,7 @@ export default function CheckoutReserva() {
   const totalValue = pricing?.total ?? 0;
   const servicosContratados = (servicos?.selecionados ?? []).map((servico) => ({
     ...servico,
+    ...(pricing?.servicos?.find((item) => item.idServico === servico.id) ?? {}),
     valor: pricing?.servicos?.find((item) => item.idServico === servico.id)?.valor ?? servico.valor,
   }));
   // Novo modelo: campos descritivos vêm de modeloVeiculo mas já normalizados
@@ -695,6 +696,13 @@ export default function CheckoutReserva() {
                 <KeyValueItem key={servico.id}>
                   <KeyValueLabel>{servico.nome}</KeyValueLabel>
                   <KeyValueValue>{formatMoneyBRL(servico.valor)}</KeyValueValue>
+                  {servico.descricao && <p>{servico.descricao}</p>}
+                  {servico.detalhesCobertura && (
+                    <details>
+                      <summary>Ver detalhes da cobertura</summary>
+                      <p>{servico.detalhesCobertura}</p>
+                    </details>
+                  )}
                 </KeyValueItem>
               ))}
             </KeyValueGrid>

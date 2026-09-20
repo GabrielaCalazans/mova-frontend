@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import RelatoriosAvaliacoes from "./RelatoriosAvaliacoes";
 import { getAvaliacaoDashboard } from "../services/dashboardService";
@@ -17,7 +18,7 @@ describe("RelatoriosAvaliacoes", () => {
 
   it("mostra carregamento e dados reais", async () => {
     getAvaliacaoDashboard.mockResolvedValue(resposta);
-    render(<RelatoriosAvaliacoes />);
+    render(<MemoryRouter><RelatoriosAvaliacoes /></MemoryRouter>);
     expect(screen.getByText(/Carregando relatórios/)).toBeInTheDocument();
     expect(await screen.findByText(/2 avaliações · média 4.5/)).toBeInTheDocument();
     expect(screen.getByText(/ABC-1234: 4.5/)).toBeInTheDocument();
@@ -25,7 +26,7 @@ describe("RelatoriosAvaliacoes", () => {
 
   it("envia filtros suportados para a API", async () => {
     getAvaliacaoDashboard.mockResolvedValue(resposta);
-    render(<RelatoriosAvaliacoes />);
+    render(<MemoryRouter><RelatoriosAvaliacoes /></MemoryRouter>);
     await screen.findByRole("button", { name: "Baixar relatório de avaliações" });
     fireEvent.change(screen.getByLabelText("Data inicial"), { target: { value: "2026-01-01" } });
     fireEvent.change(screen.getByLabelText("Data final"), { target: { value: "2026-01-31" } });
@@ -37,11 +38,23 @@ describe("RelatoriosAvaliacoes", () => {
 
   it("mostra vazio e erro", async () => {
     getAvaliacaoDashboard.mockResolvedValue({ resumo: { total: 0, media: 0 }, ranking: [], mediaPorVeiculo: [] });
-    const { unmount } = render(<RelatoriosAvaliacoes />);
+    const { unmount } = render(<MemoryRouter><RelatoriosAvaliacoes /></MemoryRouter>);
     expect(await screen.findByText(/Nenhuma avaliação encontrada/)).toBeInTheDocument();
     unmount();
     getAvaliacaoDashboard.mockRejectedValue(new Error("falha"));
-    render(<RelatoriosAvaliacoes />);
+    render(<MemoryRouter><RelatoriosAvaliacoes /></MemoryRouter>);
     expect(await screen.findByRole("alert")).toHaveTextContent("Não foi possível carregar o relatório de avaliações.");
+  });
+
+  it("aplica os filtros recebidos pela navegação via URL", async () => {
+    getAvaliacaoDashboard.mockResolvedValue(resposta);
+    render(
+      <MemoryRouter initialEntries={["/relatorios/avaliacoes?dataInicio=2026-01-01&dataFim=2026-01-31&idVeiculo=v1&notaMin=4"]}>
+        <RelatoriosAvaliacoes />
+      </MemoryRouter>,
+    );
+
+    await screen.findByText(/2 avaliações · média 4.5/);
+    expect(getAvaliacaoDashboard).toHaveBeenCalledWith({ dataInicio: "2026-01-01", dataFim: "2026-01-31", idVeiculo: "v1", notaMin: "4" });
   });
 });

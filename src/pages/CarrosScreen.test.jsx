@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import CarrosScreen from "./CarrosScreen";
 import { listVeiculos } from "../services/veiculoService";
@@ -42,6 +42,49 @@ describe("CarrosScreen", () => {
 
     await screen.findByText(/Nenhum veículo cadastrado/);
     expect(listVeiculos).toHaveBeenCalledWith({ categoria: "ECONOMICO" });
+  });
+
+  it("envia categoria ESPACOSO ao catálogo", async () => {
+    tipoFiltro = "espacoso";
+    listVeiculos.mockResolvedValue([]);
+
+    render(<CarrosScreen />);
+
+    await screen.findByText(/Nenhum veículo cadastrado/);
+    expect(listVeiculos).toHaveBeenCalledWith({ categoria: "ESPACOSO" });
+  });
+
+  it("envia adaptado=true ao catálogo para Adaptados PCD", async () => {
+    tipoFiltro = "adaptado";
+    listVeiculos.mockResolvedValue([]);
+
+    render(<CarrosScreen />);
+
+    await screen.findByText(/Nenhum veículo cadastrado/);
+    expect(listVeiculos).toHaveBeenCalledWith({ adaptado: true });
+  });
+
+  it("exibe filtros semânticos e permite selecionar/remover/limpar", async () => {
+    listVeiculos.mockResolvedValue([]);
+    render(<CarrosScreen />);
+
+    expect(screen.getByRole("group", { name: "Filtros de categoria" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Econômicos" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Espaçosos" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Executivos" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Adaptados PCD" })).toBeInTheDocument();
+
+    await screen.findByText(/Nenhum veículo cadastrado/);
+    fireEvent.click(screen.getByRole("button", { name: "Espaçosos" }));
+    await waitFor(() => expect(listVeiculos).toHaveBeenLastCalledWith({ categoria: "ESPACOSO" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Espaçosos" }));
+    await waitFor(() => expect(listVeiculos).toHaveBeenLastCalledWith({}));
+
+    fireEvent.click(screen.getByRole("button", { name: "Executivos" }));
+    await waitFor(() => expect(listVeiculos).toHaveBeenLastCalledWith({ categoria: "EXECUTIVO" }));
+    fireEvent.click(screen.getByRole("button", { name: "Limpar filtros" }));
+    await waitFor(() => expect(listVeiculos).toHaveBeenLastCalledWith({}));
   });
 
   it("envia filtro elétrico ao catálogo antes de receber a página", async () => {

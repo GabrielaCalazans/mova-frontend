@@ -35,6 +35,28 @@ describe("ReservasList", () => {
     expect(screen.getByLabelText("Serviços contratados")).toBeInTheDocument();
   });
 
+  it("exibe a cobertura persistida no histórico", async () => {
+    const cobertura = "Cobertura contratada: danos ao veículo e assistência prevista.";
+    getReservasDoLocatarioPage.mockResolvedValueOnce({
+      reservas: [{
+        id: "reserva-cobertura",
+        dataHoraInicio: "2026-01-01T10:00:00.000Z",
+        dataHoraFim: "2026-01-02T10:00:00.000Z",
+        status: "CONFIRMADA",
+        statusPagamento: "SUCESSO",
+        valorTotal: 169.9,
+        veiculo: { modeloVeiculo: { marca: "Fiat", modelo: "Argo" } },
+        servicos: [{ idServico: "seguro-1", nome: "Seguro adicional", valor: 49.9, detalhesCobertura: cobertura }],
+      }],
+      pagination: { page: 1, limit: 10, total: 1, totalPages: 1 },
+    });
+    render(<ReservasList title="Histórico" documentTitle="Histórico" />);
+    expect(await screen.findByText("Ver detalhes da cobertura")).toBeInTheDocument();
+    const { default: userEvent } = await import("@testing-library/user-event");
+    await userEvent.click(screen.getByText("Ver detalhes da cobertura"));
+    expect(screen.getByText(cobertura)).toBeVisible();
+  });
+
   it("mostra acesso ao rastreamento apenas para reserva na janela válida", async () => {
     const agora = Date.now();
     getReservasDoLocatarioPage.mockResolvedValue({

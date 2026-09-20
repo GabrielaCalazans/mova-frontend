@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Download } from "lucide-react";
 import BottomNav from "../components/BottomNav";
 import { getAvaliacaoDashboard } from "../services/dashboardService";
@@ -26,7 +27,13 @@ function downloadCsv(rows) {
 }
 
 export default function RelatoriosAvaliacoes() {
-  const [filtros, setFiltros] = useState({ dataInicio: "", dataFim: "", idVeiculo: "", notaMin: "" });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filtros, setFiltros] = useState(() => ({
+    dataInicio: searchParams.get("dataInicio") || "",
+    dataFim: searchParams.get("dataFim") || "",
+    idVeiculo: searchParams.get("idVeiculo") || "",
+    notaMin: searchParams.get("notaMin") || "",
+  }));
   const [relatorio, setRelatorio] = useState(null);
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(true);
@@ -54,12 +61,22 @@ export default function RelatoriosAvaliacoes() {
   const linhas = relatorio?.mediaPorVeiculo || [];
   const veiculos = relatorio?.ranking || [];
   const atualizarFiltro = (campo, valor) => setFiltros((atual) => ({ ...atual, [campo]: valor }));
+  const aplicarFiltros = (event) => {
+    event.preventDefault();
+    const proximos = { ...filtros };
+    const params = new URLSearchParams();
+    Object.entries(proximos).forEach(([chave, valor]) => {
+      if (valor) params.set(chave, valor);
+    });
+    setSearchParams(params);
+    carregar(proximos);
+  };
 
   return (
     <main className="carro-page">
       <div className="carro-header"><h1>Relatórios | Avaliações</h1></div>
       <div className="carro-content">
-        <form className="filtro-card" onSubmit={(event) => { event.preventDefault(); carregar(); }}>
+        <form className="filtro-card" onSubmit={aplicarFiltros}>
           <div className="auth-field"><label htmlFor="dataInicio">Data inicial</label><input id="dataInicio" type="date" value={filtros.dataInicio} onChange={(e) => atualizarFiltro("dataInicio", e.target.value)} /></div>
           <div className="auth-field"><label htmlFor="dataFim">Data final</label><input id="dataFim" type="date" value={filtros.dataFim} onChange={(e) => atualizarFiltro("dataFim", e.target.value)} /></div>
           <div className="auth-field"><label htmlFor="idVeiculo">Veículo</label><select id="idVeiculo" value={filtros.idVeiculo} onChange={(e) => atualizarFiltro("idVeiculo", e.target.value)}><option value="">Todos</option>{veiculos.map(({ veiculo }) => <option key={veiculo.id} value={veiculo.id}>{veiculo.placa} — {veiculo.marca} {veiculo.modelo}</option>)}</select></div>

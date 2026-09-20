@@ -17,6 +17,7 @@ const MODEL_DETAILS = {
 
 export function resolveTipoIcon(tipoFiltro) {
   if (tipoFiltro === "executivo") return executivoImg;
+  if (tipoFiltro === "espacoso") return executivoImg;
   if (tipoFiltro === "adaptado") return adaptadoImg;
   if (tipoFiltro === "eletrico") return eletricoImg;
   return economicoImg;

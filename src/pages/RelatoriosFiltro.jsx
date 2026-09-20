@@ -16,8 +16,9 @@ export default function RelatoriosFiltro() {
       <div className="carro-header"><h1>Relatórios | Veículos</h1></div>
       <div className="carro-content">
         <h2 className="filtro-title">Relatório agregado</h2>
-        <p className="relatorio-filter-summary">A fonte atual de relatórios de veículos não oferece filtros por período, garagem, veículo ou status.</p>
-        <button type="button" className="carro-button" onClick={() => navigate("/relatorios/veiculos")}>Ver relatório</button>
+        <p className="relatorio-filter-summary">Consulte reservas, utilização, receita e avaliações da sua frota.</p>
+        <button type="button" className="carro-button" onClick={() => navigate("/relatorios/veiculos")}>Ver relatório completo</button>
+        <button type="button" className="carro-button" onClick={() => navigate("/relatorios/avaliacoes-filtro")}>Filtrar avaliações</button>
       </div>
       <BottomNav />
     </main>

@@ -36,4 +36,50 @@ describe("ServicosOpcionais", () => {
     await userEvent.click(screen.getByRole("button", { name: "Continuar para checkout" }));
     expect(updateJourneyStep).toHaveBeenCalledWith("servicos", expect.objectContaining({ ids: [] }));
   });
+
+  it("permite desmarcar o seguro e manter nenhum serviço selecionado", async () => {
+    render(<ServicosOpcionais />);
+    await screen.findByText("Seguro");
+    const seguro = screen.getByLabelText(/Seguro/);
+    await userEvent.click(seguro);
+    expect(screen.getByTestId("estimativa-servicos")).toHaveTextContent("R$ 25,00");
+    await userEvent.click(seguro);
+    expect(screen.getByTestId("estimativa-servicos")).toHaveTextContent("R$ 0,00");
+  });
+
+  it("informa quando a lista de serviços está vazia", async () => {
+    listServicos.mockResolvedValueOnce([]);
+    render(<ServicosOpcionais />);
+    expect(await screen.findByText("Nenhum serviço adicional está disponível.")).toBeInTheDocument();
+  });
+
+  it("exibe detalhes de cobertura em controle semântico", async () => {
+    const cobertura = "Cobertura simulada: danos ao veículo e furto/roubo.";
+    listServicos.mockResolvedValueOnce([
+      { ...catalogo[0], detalhesCobertura: cobertura },
+      catalogo[1],
+    ]);
+
+    render(<ServicosOpcionais />);
+    await screen.findByText("Seguro");
+
+    const summary = screen.getByText("Ver detalhes da cobertura");
+    expect(summary.tagName).toBe("SUMMARY");
+    await userEvent.click(summary);
+    expect(screen.getByText(cobertura)).toBeVisible();
+  });
+
+  it("mostra loading enquanto carrega as opções", async () => {
+    let resolve;
+    listServicos.mockReturnValueOnce(new Promise((res) => { resolve = res; }));
+    render(<ServicosOpcionais />);
+    expect(screen.getByText(/carregando servi/i)).toBeInTheDocument();
+    resolve([]);
+  });
+
+  it("mostra erro quando o catálogo não carrega", async () => {
+    listServicos.mockRejectedValueOnce(new Error("falha do catálogo"));
+    render(<ServicosOpcionais />);
+    expect(await screen.findByRole("alert")).toHaveTextContent("falha do catálogo");
+  });
 });

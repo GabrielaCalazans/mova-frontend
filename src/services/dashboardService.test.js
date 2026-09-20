@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getAvaliacaoDashboard, getFinanceiro, getFrota, getUtilizacao } from "./dashboardService";
+import { getAvaliacaoDashboard, getFinanceiro, getFrota, getReservas, getUtilizacao } from "./dashboardService";
 import { apiRequest } from "./apiClient";
 
 vi.mock("./apiClient", () => ({ apiRequest: vi.fn() }));
@@ -15,9 +15,11 @@ describe("dashboardService", () => {
     await getFinanceiro();
     await getUtilizacao();
     await getFrota();
+    await getReservas({ status: "CONFIRMADA", page: 2, limit: 10 });
     expect(apiRequest).toHaveBeenNthCalledWith(1, "/dashboard/financeiro", { authToken: "token-teste" });
     expect(apiRequest).toHaveBeenNthCalledWith(2, "/dashboard/utilizacao", { authToken: "token-teste" });
     expect(apiRequest).toHaveBeenNthCalledWith(3, "/dashboard/frota", { authToken: "token-teste" });
+    expect(apiRequest).toHaveBeenNthCalledWith(4, "/dashboard/reservas?status=CONFIRMADA&page=2&limit=10", { authToken: "token-teste" });
   });
 
   it("envia apenas filtros de avaliação preenchidos", async () => {

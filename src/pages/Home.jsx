@@ -14,6 +14,12 @@ const TILES = [
     span: "full",
   },
   {
+    key: "interesses",
+    title: "Avisos de disponibilidade",
+    description: "Receba um aviso quando um veículo voltar a ficar disponível",
+    route: "/interesses",
+  },
+  {
     key: "relatorios",
     title: "Relatórios",
     description: "Gráficos sobre quilometragem, alugueis e categorias",

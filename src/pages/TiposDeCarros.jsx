@@ -11,8 +11,10 @@ import eletricoImg from "../assets/car-types/autonomos.png";
 
 const TIPOS = [
   { id: "economico", nome: "Carro Econômico", img: economicoImg },
+  // A ilustração é decorativa; a categoria real vem do filtro enviado à API.
+  { id: "espacoso", nome: "Carro Espaçoso", img: executivoImg },
   { id: "executivo", nome: "Carro Executivo", img: executivoImg },
-  { id: "adaptado", nome: "Carro Adaptado", img: adaptadoImg },
+  { id: "adaptado", nome: "Carro Adaptado PCD", img: adaptadoImg },
   { id: "eletrico", nome: "Carro Elétrico", img: eletricoImg },
 ];
 
