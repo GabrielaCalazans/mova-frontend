@@ -17,11 +17,11 @@ const EMPTY_VEHICLE = {
   categoria: "",
   imagem: "",
   capacidade: "",
-  caracteristicas: [],
   acessibilidade: "",
   cambio: "",
-  autonomia: "",
-  combustivel: "",
+  ano: "",
+  eletrico: false,
+  adaptado: false,
 };
 
 const EMPTY_PAYMENT = {

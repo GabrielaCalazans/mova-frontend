@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav";
 import { listVeiculos } from "../services/veiculoService";
 import { updateJourneyStep } from "../utils/journeyStorage";
-import { resolveModelDetails } from "../utils/vehicleDisplay";
+import { getVehicleCharacteristics, resolveModelDetails } from "../utils/vehicleDisplay";
 import { formatMoneyBRL } from "../utils/reservationMath";
 import "../styles/carselect.css";
 
@@ -13,10 +13,6 @@ function resolveModeloVeiculo(veiculo) {
 
 function resolveVeiculoField(veiculo, modeloVeiculo, field) {
   return veiculo?.[field] ?? modeloVeiculo?.[field] ?? "";
-}
-
-function formatCambio(cambio) {
-  return cambio || "—";
 }
 
 const FILTROS_CATEGORIA = [
@@ -86,7 +82,6 @@ function CarrosScreen() {
       categoria: resolveVeiculoField(veiculo, modeloVeiculo, "categoria"),
       imagem: veiculo.imagem ?? veiculo.image ?? veiculo.foto ?? "",
       capacidade: resolveVeiculoField(veiculo, modeloVeiculo, "capacidade"),
-      caracteristicas: veiculo.caracteristicas ?? [],
       acessibilidade: resolveVeiculoField(veiculo, modeloVeiculo, "adaptado"),
       adaptado: veiculo.adaptado ?? false,
       eletrico: veiculo.eletrico ?? false,
@@ -94,8 +89,6 @@ function CarrosScreen() {
         resolveVeiculoField(veiculo, modeloVeiculo, "cambio") ||
         veiculo.transmissao ||
         "",
-      autonomia: veiculo.autonomia ?? "",
-      combustivel: veiculo.combustivel ?? veiculo.energia ?? "",
       ano: resolveVeiculoField(veiculo, modeloVeiculo, "ano"),
       placa: veiculo.placa ?? "",
       status: veiculo.status ?? "",
@@ -166,7 +159,7 @@ function CarrosScreen() {
               const marca = resolveVeiculoField(veiculo, modeloVeiculo, "marca");
               const modelo = resolveVeiculoField(veiculo, modeloVeiculo, "modelo");
               const ano = resolveVeiculoField(veiculo, modeloVeiculo, "ano");
-              const cambio = resolveVeiculoField(veiculo, modeloVeiculo, "cambio");
+              const caracteristicas = getVehicleCharacteristics(veiculo);
               const disponivel = veiculo.status === "DISPONIVEL";
               const selecionavel = veiculoSelecionavel(veiculo);
               const garagemIndisponivel =
@@ -189,9 +182,13 @@ function CarrosScreen() {
                   <p className="carro-list-card__specs">
                     {marca} - {modelo}
                     <br />
-                    {ano} - {formatCambio(cambio)}
-                    <br />
-                    Autonomia: {details.autonomia}
+                    {ano}
+                    {caracteristicas.map((caracteristica) => (
+                      <span key={caracteristica}>
+                        <br />
+                        {caracteristica}
+                      </span>
+                    ))}
                     <br />
                     Local: {local}
                   </p>

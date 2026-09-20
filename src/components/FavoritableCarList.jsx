@@ -4,7 +4,7 @@ import { Heart } from "lucide-react";
 import BottomNav from "../components/BottomNav";
 import { listVeiculos } from "../services/veiculoService";
 import { normalizeVeiculo } from "../services/veiculoService";
-import { resolveModelDetails } from "../utils/vehicleDisplay";
+import { getVehicleCharacteristics, resolveModelDetails } from "../utils/vehicleDisplay";
 import { desfavoritar, favoritar, listarFavoritos } from "../services/favoritoService";
 import { cancelarInteresse, listarInteresses, registrarInteresse } from "../services/interesseService";
 import { formatMoneyBRL } from "../utils/reservationMath";
@@ -113,6 +113,7 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
               const marca = resolveVeiculoField(veiculo, modeloVeiculo, "marca");
               const modelo = resolveVeiculoField(veiculo, modeloVeiculo, "modelo");
               const details = resolveModelDetails(marca, modelo);
+              const caracteristicas = getVehicleCharacteristics(veiculo);
               const isFav = favoritos.has(String(veiculo.id));
 
               return (
@@ -125,7 +126,9 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
                   <div className="fav-card__info">
                     <h3>{modelo}</h3>
                     <p>{marca}</p>
-                    <p>{details.cor}</p>
+                    {caracteristicas.map((caracteristica) => (
+                      <p key={caracteristica}>{caracteristica}</p>
+                    ))}
                     <p>{veiculo.valorDiaria != null ? `${formatMoneyBRL(veiculo.valorDiaria)} /dia` : "Consulte o preço"}</p>
                   </div>
                   <button

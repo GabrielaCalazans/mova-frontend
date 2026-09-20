@@ -208,4 +208,34 @@ describe("CarrosScreen", () => {
       element?.matches("p.carro-list-card__specs") && element.textContent?.includes("Local: Local não informado")
     ))).toBeInTheDocument();
   });
+
+  it("shows real characteristics and omits fake autonomy", async () => {
+    listVeiculos.mockResolvedValue([
+      {
+        ...veiculo("veiculo-real", null),
+        marca: "Fiat",
+        modelo: "Argo",
+        ano: 2025,
+        cambio: "Automatico",
+        capacidade: 5,
+        categoria: "EXECUTIVO",
+        eletrico: true,
+        adaptado: true,
+        autonomia: "900 km",
+        cor: "Preto",
+      },
+    ]);
+
+    render(<CarrosScreen />);
+
+    expect(await screen.findByText("5 lugares")).toBeInTheDocument();
+    expect(screen.getByText("Automático")).toBeInTheDocument();
+    expect(screen.getByText("Executivo")).toBeInTheDocument();
+    expect(screen.getByText("Elétrico")).toBeInTheDocument();
+    expect(screen.getByText("Adaptado PCD")).toBeInTheDocument();
+    expect(screen.queryByText(/Autonomia/i)).not.toBeInTheDocument();
+    expect(screen.queryByText("455km")).not.toBeInTheDocument();
+    expect(screen.queryByText("900 km")).not.toBeInTheDocument();
+    expect(screen.queryByText("Preto")).not.toBeInTheDocument();
+  });
 });

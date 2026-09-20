@@ -349,11 +349,11 @@ describe("Fluxo de autenticacao", () => {
           categoria: "Econômico",
           imagem: "",
           capacidade: 4,
-          caracteristicas: ["Ar-condicionado", "Bluetooth"],
           acessibilidade: "Sim",
           cambio: "Automático",
-          autonomia: "320 km",
-          combustivel: "Elétrico",
+          ano: 2026,
+          eletrico: true,
+          adaptado: true,
           placa: "ABC1D23",
         },
         retirada: {
@@ -375,11 +375,27 @@ describe("Fluxo de autenticacao", () => {
 
     getVeiculoByIdMock.mockResolvedValue({
       id: 42,
-      nome: "Hatch Plus",
-      categoria: "Econômico",
-      cambio: "Automático",
-      capacidade: 4,
-      caracteristicas: ["Ar-condicionado", "Bluetooth"],
+      idLocador: LOCADOR_ID,
+      idModeloVeiculo: "modelo-42",
+      modeloVeiculo: {
+        id: "modelo-42",
+        idLocador: LOCADOR_ID,
+        marca: "Mova",
+        modelo: "Hatch Plus",
+        ano: 2026,
+        cambio: "Automatico",
+        capacidade: 4,
+        categoria: "ECONOMICO",
+        eletrico: true,
+        adaptado: true,
+        valorDiaria: 250,
+        criadoEm: "2026-09-20T00:00:00.000Z",
+      },
+      garagemId: null,
+      garagem: null,
+      placa: "ABC1D23",
+      status: "DISPONIVEL",
+      criadoEm: "2026-09-20T00:00:00.000Z",
     });
 
     window.history.pushState({}, "", "/checkout-reserva");

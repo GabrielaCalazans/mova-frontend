@@ -4,6 +4,7 @@ import styled from "styled-components";
 import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import movaLogo from "../assets/mova_logo.png";
 import { getJourneyStep, updateJourneyStep } from "../utils/journeyStorage";
+import { formatCambio, formatCategoria, getVehicleCharacteristics } from "../utils/vehicleDisplay";
 import {
   formatMoneyBRL,
   parseJourneyDateTime,
@@ -251,14 +252,6 @@ function normalizeDisplayValue(value) {
   return String(value);
 }
 
-function formatEnergyText(autonomy, fuel) {
-  const parts = [autonomy, fuel]
-    .map((part) => normalizeDisplayValue(part))
-    .filter((part) => part !== "Não informado");
-
-  return parts.length > 0 ? parts.join(" • ") : "Não informado";
-}
-
 function buildAdditionalDetails(vehicle) {
   const ignoredKeys = new Set([
     "id",
@@ -288,6 +281,11 @@ function buildAdditionalDetails(vehicle) {
     "precoDiaria",
     "dailyRate",
     "locadorId",
+    "placa",
+    "cor",
+    "color",
+    "range",
+    "km",
     "idModeloVeiculo",
     "modeloVeiculo",  // objeto aninhado — campos já promovidos pela normalização
     "garagemId",
@@ -478,10 +476,7 @@ export default function CheckoutReserva() {
     };
   }, [dropoffDateTime, pickupDateTime, veiculoSalvo]);
 
-  const additionalDetails = useMemo(
-    () => buildAdditionalDetails(vehicle),
-    [vehicle],
-  );
+  const additionalDetails = useMemo(() => buildAdditionalDetails(vehicle), [vehicle]);
 
   if (loading) {
     return (
@@ -531,15 +526,11 @@ export default function CheckoutReserva() {
   }));
   // Novo modelo: campos descritivos vêm de modeloVeiculo mas já normalizados
   // por normalizeVeiculo() no serviço. Fallback para veiculoSalvo (journey storage).
-  const vehicleCategory = resolveVehicleField(
-    vehicle,
-    veiculoSalvo,
-    "categoria",
+  const vehicleCategory = formatCategoria(
+    resolveVehicleField(vehicle, veiculoSalvo, "categoria"),
   );
-  const vehicleTransmission = resolveVehicleField(
-    vehicle,
-    veiculoSalvo,
-    "cambio",
+  const vehicleTransmission = formatCambio(
+    resolveVehicleField(vehicle, veiculoSalvo, "cambio"),
   );
   const vehicleCapacity = resolveVehicleField(
     vehicle,
@@ -554,15 +545,7 @@ export default function CheckoutReserva() {
         ? "Sim"
         : "Não"
       : resolveVehicleField(vehicle, veiculoSalvo, "acessibilidade");
-  const vehicleAutonomy = resolveVehicleField(
-    vehicle,
-    veiculoSalvo,
-    "autonomia",
-  );
-  const vehicleFuel =
-    vehicleEletrico === true
-      ? "Elétrico"
-      : resolveVehicleField(vehicle, veiculoSalvo, "combustivel");
+  const vehicleCharacteristics = getVehicleCharacteristics(vehicle ?? veiculoSalvo);
   const pickupAddress =
     retirada.garageAddress || retirada.garageName || "Não informado";
   const dropoffAddress =
@@ -611,10 +594,6 @@ export default function CheckoutReserva() {
               <VehicleMeta>
                 Acessibilidade: {normalizeDisplayValue(vehicleAccessibility)}
               </VehicleMeta>
-              <VehicleMeta>
-                Autonomia/combustível:{" "}
-                {formatEnergyText(vehicleAutonomy, vehicleFuel)}
-              </VehicleMeta>
             </div>
           </VehicleTop>
 
@@ -624,9 +603,9 @@ export default function CheckoutReserva() {
             <KeyValueItem>
               <KeyValueLabel>Características</KeyValueLabel>
               <KeyValueValue>
-                {normalizeDisplayValue(
-                  vehicle?.caracteristicas ?? veiculoSalvo?.caracteristicas,
-                )}
+                {vehicleCharacteristics.length > 0
+                  ? vehicleCharacteristics.join(", ")
+                  : "Não informado"}
               </KeyValueValue>
             </KeyValueItem>
 

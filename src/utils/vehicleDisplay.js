@@ -6,14 +6,51 @@ import fiatArgoImg from "../assets/fiat-argo-drive.png";
 import hb20Img from "../assets/hiunday-hb20-plus.png";
 import onixImg from "../assets/chevrolet-onix-flex.png";
 
-// Detalhes ilustrativos de imagem, cor, autonomia e garagem. O preço sempre
-// vem de valorDiaria retornado pela API, nunca deste catálogo visual.
+// MODEL_DETAILS contains visual assets only. Functional attributes come from the API.
 const MODEL_DETAILS = {
-  "fiat argo": { image: fiatArgoImg, cor: "Branco", autonomia: "455km", garagem: "Garagem Norte" },
-  "hyundai hb20": { image: hb20Img, cor: "Cinza", autonomia: "255km", garagem: "Garagem Sul" },
-  "chevrolet onix": { image: onixImg, cor: "Branco", autonomia: "380km", garagem: "Garagem Centro" },
-  "honda civic": { image: null, cor: "Branco", autonomia: "480km", garagem: "Garagem Centro" },
+  "fiat argo": { image: fiatArgoImg },
+  "hyundai hb20": { image: hb20Img },
+  "chevrolet onix": { image: onixImg },
+  "honda civic": { image: null },
 };
+
+const CATEGORY_LABELS = {
+  ECONOMICO: "Econômico",
+  ESPACOSO: "Espaçoso",
+  EXECUTIVO: "Executivo",
+  PCD: "PCD",
+};
+
+function resolveVehicleField(vehicle, field) {
+  return vehicle?.[field] ?? vehicle?.modeloVeiculo?.[field];
+}
+
+export function formatCategoria(categoria) {
+  return CATEGORY_LABELS[categoria] ?? "Não informado";
+}
+
+export function formatCambio(cambio) {
+  if (!cambio) return "Não informado";
+  if (String(cambio).toLowerCase() === "automatico") return "Automático";
+  return String(cambio);
+}
+
+export function getVehicleCharacteristics(vehicle) {
+  const characteristics = [];
+  const cambio = resolveVehicleField(vehicle, "cambio");
+  const capacidade = resolveVehicleField(vehicle, "capacidade");
+  const categoria = resolveVehicleField(vehicle, "categoria");
+
+  if (cambio) characteristics.push(formatCambio(cambio));
+  if (capacidade !== undefined && capacidade !== null && capacidade !== "") {
+    characteristics.push(`${capacidade} lugares`);
+  }
+  if (categoria) characteristics.push(formatCategoria(categoria));
+  if (resolveVehicleField(vehicle, "eletrico") === true) characteristics.push("Elétrico");
+  if (resolveVehicleField(vehicle, "adaptado") === true) characteristics.push("Adaptado PCD");
+
+  return characteristics;
+}
 
 export function resolveTipoIcon(tipoFiltro) {
   if (tipoFiltro === "executivo") return executivoImg;
@@ -29,8 +66,5 @@ export function resolveModelDetails(marca, modelo, tipoFiltro) {
 
   return {
     image: details?.image || resolveTipoIcon(tipoFiltro),
-    cor: details?.cor || "—",
-    autonomia: details?.autonomia || "—",
-    garagem: details?.garagem || "—",
   };
 }
