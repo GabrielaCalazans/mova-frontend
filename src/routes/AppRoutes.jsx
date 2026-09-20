@@ -33,6 +33,7 @@ import RelatoriosAvaliacoes from "../pages/RelatoriosAvaliacoes";
 import Suporte from "../pages/Suporte";
 import Configuracoes from "../pages/Configuracoes";
 import InteressesDisponibilidade from "../pages/InteressesDisponibilidade";
+import CompartilhamentoViagem from "../pages/CompartilhamentoViagem";
 import Home from "../pages/Home";
 import { getAuthSession } from "../services/authSession";
 
@@ -56,6 +57,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/viagem/compartilhada/:token" element={<CompartilhamentoViagem />} />
         <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/cadastro-locatario" element={<Cadastro />} />
         <Route path="/cadastro-locador" element={<CadastroLocador />} />

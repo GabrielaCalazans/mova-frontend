@@ -2,7 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import { getAuthSession } from "../services/authSession";
-import { getReservasDoLocatarioPage } from "../services/reservaService";
+import {
+  criarCompartilhamentoReserva,
+  getReservasDoLocatarioPage,
+  revogarCompartilhamentoReserva,
+} from "../services/reservaService";
 import { formatMoneyBRL } from "../utils/reservationMath";
 import { updateJourneyStep } from "../utils/journeyStorage";
 import {
@@ -89,6 +93,24 @@ function agruparPorData(reservas) {
   return Array.from(grupos.entries());
 }
 
+async function copiarLink(link) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(link);
+    return;
+  }
+
+  const area = document.createElement("textarea");
+  area.value = link;
+  area.setAttribute("readonly", "");
+  area.style.position = "fixed";
+  area.style.opacity = "0";
+  document.body.appendChild(area);
+  area.select();
+  const copiado = typeof document.execCommand === "function" && document.execCommand("copy");
+  area.remove();
+  if (!copiado) throw new Error("Não foi possível copiar o link.");
+}
+
 /**
  * Lista de reservas do locatario, agrupada por data. Usada tanto pelo
  * "Historico" (todas as reservas) quanto por "Corridas Realizadas"
@@ -103,6 +125,7 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
   const [paginacao, setPaginacao] = useState({ page: 1, limit: 10, total: 0, totalPages: 0 });
   const [loading, setLoading] = useState(() => Boolean(idLocatario));
   const [erro, setErro] = useState(null);
+  const [compartilhamentos, setCompartilhamentos] = useState({});
 
   useEffect(() => {
     document.title = documentTitle;
@@ -144,6 +167,63 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
   const gruposPorData = useMemo(() => agruparPorData(reservasExibidas), [reservasExibidas]);
   const erroExibido = !idLocatario ? "Sessão inválida. Faça login novamente." : erro;
 
+  const compartilhar = async (reserva) => {
+    setCompartilhamentos((atual) => ({
+      ...atual,
+      [reserva.id]: { ...(atual[reserva.id] ?? {}), loading: true, erro: null },
+    }));
+    try {
+      const resultado = await criarCompartilhamentoReserva(reserva.id);
+      let mensagem = "Link pronto para compartilhar.";
+      let nativoConcluido = false;
+      if (typeof navigator.share === "function") {
+        try {
+          await navigator.share({
+            title: `Viagem MOVA — ${resolveVeiculoNome(reserva)}`,
+            text: "Confira os detalhes desta viagem.",
+            url: resultado.url,
+          });
+          nativoConcluido = true;
+          mensagem = "Compartilhamento aberto.";
+        } catch {
+          // Cancelamento/indisponibilidade do share nativo segue para cópia.
+        }
+      }
+      if (!nativoConcluido) {
+        await copiarLink(resultado.url);
+        mensagem = "Link copiado.";
+      }
+      setCompartilhamentos((atual) => ({
+        ...atual,
+        [reserva.id]: { url: resultado.url, loading: false, mensagem, erro: null },
+      }));
+    } catch (error) {
+      setCompartilhamentos((atual) => ({
+        ...atual,
+        [reserva.id]: { ...(atual[reserva.id] ?? {}), loading: false, erro: error.message || "Não foi possível compartilhar." },
+      }));
+    }
+  };
+
+  const revogar = async (reserva) => {
+    setCompartilhamentos((atual) => ({
+      ...atual,
+      [reserva.id]: { ...(atual[reserva.id] ?? {}), loading: true, erro: null },
+    }));
+    try {
+      await revogarCompartilhamentoReserva(reserva.id);
+      setCompartilhamentos((atual) => ({
+        ...atual,
+        [reserva.id]: { loading: false, mensagem: "Compartilhamento revogado.", erro: null },
+      }));
+    } catch (error) {
+      setCompartilhamentos((atual) => ({
+        ...atual,
+        [reserva.id]: { ...(atual[reserva.id] ?? {}), loading: false, erro: error.message || "Não foi possível revogar." },
+      }));
+    }
+  };
+
   return (
     <AuthenticatedLayout title={title} align="left">
       <div style={{ textAlign: "left" }}>
@@ -181,6 +261,66 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
                   style={{ cursor: acao ? "pointer" : "default" }}
                 >
                   <div className="frota-card__info">
+                    {(() => {
+                      const compartilhamento = compartilhamentos[reserva.id] ?? {};
+                      return (
+                        <div aria-label="Compartilhamento da viagem">
+                          <button
+                            type="button"
+                            disabled={compartilhamento.loading}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              void compartilhar(reserva);
+                            }}
+                          >
+                            {compartilhamento.loading ? "Gerando link…" : "Compartilhar viagem"}
+                          </button>
+                          {compartilhamento.url && (
+                            <>
+                              <p>
+                                <a
+                                  href={compartilhamento.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  aria-label="Link da viagem"
+                                  onClick={(event) => event.stopPropagation()}
+                                >
+                                  Link da viagem
+                                </a>
+                              </p>
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  void copiarLink(compartilhamento.url)
+                                    .then(() => setCompartilhamentos((atual) => ({
+                                      ...atual,
+                                      [reserva.id]: { ...atual[reserva.id], mensagem: "Link copiado." },
+                                    })))
+                                    .catch((error) => setCompartilhamentos((atual) => ({
+                                      ...atual,
+                                      [reserva.id]: { ...atual[reserva.id], erro: error.message },
+                                    })));
+                                }}
+                              >
+                                Copiar link
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  void revogar(reserva);
+                                }}
+                              >
+                                Revogar compartilhamento
+                              </button>
+                            </>
+                          )}
+                          {compartilhamento.mensagem && <p aria-live="polite">{compartilhamento.mensagem}</p>}
+                          {compartilhamento.erro && <p aria-live="assertive">{compartilhamento.erro}</p>}
+                        </div>
+                      );
+                    })()}
                     <h3>{resolveVeiculoNome(reserva)}</h3>
                     <p>
                       {formatarHora(reserva.dataHoraInicio)} — {formatarHora(reserva.dataHoraFim)}

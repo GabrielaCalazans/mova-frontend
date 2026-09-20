@@ -8,7 +8,13 @@ vi.mock("./authSession", () => ({ getAuthSession: vi.fn() }));
 
 import { apiRequest } from "./apiClient";
 import { getAuthSession } from "./authSession";
-import { getRastreamentoReserva, getReservasDoLocatarioPage } from "./reservaService";
+import {
+  buildShareUrl,
+  criarCompartilhamentoReserva,
+  getRastreamentoReserva,
+  getReservasDoLocatarioPage,
+  revogarCompartilhamentoReserva,
+} from "./reservaService";
 
 describe("getReservasDoLocatarioPage", () => {
   beforeEach(() => {
@@ -49,5 +55,38 @@ describe("getRastreamentoReserva", () => {
       "/reserva/reserva-1/localizacao",
       { authToken: "token-teste" },
     );
+  });
+});
+
+describe("compartilhamento da reserva", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    getAuthSession.mockReturnValue({ token: "token-teste" });
+  });
+
+  it("cria link pelo endpoint autenticado real sem enviar dados da reserva", async () => {
+    apiRequest.mockResolvedValue({ result: { token: "A".repeat(43), urlPath: "/viagem/compartilhada/token" } });
+
+    await expect(criarCompartilhamentoReserva("reserva-1")).resolves.toMatchObject({
+      token: "A".repeat(43),
+    });
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/reserva/reserva-1/compartilhamento",
+      { method: "POST", ...{ authToken: "token-teste" } },
+    );
+  });
+
+  it("revoga link pelo endpoint autenticado", async () => {
+    apiRequest.mockResolvedValue({});
+
+    await expect(revogarCompartilhamentoReserva("reserva-1")).resolves.toBeUndefined();
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/reserva/reserva-1/compartilhamento",
+      { method: "DELETE", ...{ authToken: "token-teste" } },
+    );
+  });
+
+  it("monta URL pública usando base configurada ou origem atual", () => {
+    expect(buildShareUrl("/viagem/compartilhada/token")).toContain("/viagem/compartilhada/token");
   });
 });

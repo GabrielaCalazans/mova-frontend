@@ -142,6 +142,40 @@ export async function getRastreamentoReserva(id) {
   return data.result ?? data;
 }
 
+/** Cria/obtém o token persistente de compartilhamento da reserva. */
+export async function criarCompartilhamentoReserva(id) {
+  if (!id) throw new Error("ID da reserva não informado.");
+  const data = await apiRequest(`/reserva/${id}/compartilhamento`, {
+    method: "POST",
+    ...authHeaders(),
+  });
+  const result = data.result ?? data;
+  return {
+    ...result,
+    url: result.url ?? buildShareUrl(result.urlPath),
+  };
+}
+
+/** Revoga o token público ativo da reserva. */
+export async function revogarCompartilhamentoReserva(id) {
+  if (!id) throw new Error("ID da reserva não informado.");
+  await apiRequest(`/reserva/${id}/compartilhamento`, {
+    method: "DELETE",
+    ...authHeaders(),
+  });
+}
+
+/** Monta a URL pública sem fixar localhost como configuração permanente. */
+export function buildShareUrl(urlPath) {
+  if (!urlPath) throw new Error("Caminho de compartilhamento não informado.");
+  if (/^https?:\/\//i.test(urlPath)) return urlPath;
+  const configuredBase = import.meta.env.VITE_APP_URL;
+  const fallbackBase = typeof window !== "undefined" ? window.location.origin : "";
+  const base = (configuredBase || fallbackBase).replace(/\/$/, "");
+  const path = urlPath.startsWith("/") ? urlPath : `/${urlPath}`;
+  return `${base}${path}`;
+}
+
 /** Registra a devolução. O servidor define o instante e a cobrança de atraso. */
 export async function devolverReserva(id) {
   if (!id) throw new Error("ID da reserva não informado.");

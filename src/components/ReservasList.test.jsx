@@ -1,19 +1,33 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ReservasList from "./ReservasList";
-import { getReservasDoLocatarioPage } from "../services/reservaService";
+import {
+  criarCompartilhamentoReserva,
+  getReservasDoLocatarioPage,
+  revogarCompartilhamentoReserva,
+} from "../services/reservaService";
 
 const { navigateMock } = vi.hoisted(() => ({ navigateMock: vi.fn() }));
 
 vi.mock("../layout/AuthenticatedLayout", () => ({ default: ({ children }) => <div>{children}</div> }));
 vi.mock("../services/authSession", () => ({ getAuthSession: () => ({ user: { id: "locatario-1" } }) }));
-vi.mock("../services/reservaService", () => ({ getReservasDoLocatarioPage: vi.fn() }));
+vi.mock("../services/reservaService", () => ({
+  criarCompartilhamentoReserva: vi.fn(),
+  getReservasDoLocatarioPage: vi.fn(),
+  revogarCompartilhamentoReserva: vi.fn(),
+}));
 vi.mock("../utils/journeyStorage", () => ({ updateJourneyStep: vi.fn() }));
 vi.mock("react-router-dom", () => ({ useNavigate: () => navigateMock }));
 
 describe("ReservasList", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    Object.defineProperty(navigator, "share", { configurable: true, writable: true, value: undefined });
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      writable: true,
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+    });
     getReservasDoLocatarioPage.mockResolvedValue({
       reservas: [{
         id: "reserva-1",
@@ -87,5 +101,69 @@ describe("ReservasList", () => {
     expect(screen.getAllByRole("button", { name: /acompanhar veículo/i })).toHaveLength(1);
     await user.click(botao);
     expect(navigateMock).toHaveBeenCalledWith("/reserva/reserva-elegivel/localizacao");
+  });
+
+  it("gera link e usa compartilhamento nativo sem navegar no card", async () => {
+    const share = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "share", { configurable: true, value: share });
+    criarCompartilhamentoReserva.mockResolvedValue({
+      token: "A".repeat(43),
+      url: "http://localhost:5173/viagem/compartilhada/token",
+    });
+    const { default: userEvent } = await import("@testing-library/user-event");
+    const user = userEvent.setup();
+
+    render(<ReservasList title="Histórico" documentTitle="Histórico" />);
+    await user.click(await screen.findByRole("button", { name: "Compartilhar viagem" }));
+
+    expect(criarCompartilhamentoReserva).toHaveBeenCalledWith("reserva-1");
+    expect(share).toHaveBeenCalledWith(expect.objectContaining({
+      url: "http://localhost:5173/viagem/compartilhada/token",
+    }));
+    expect(navigateMock).not.toHaveBeenCalled();
+    expect(screen.getByRole("link", { name: /link da viagem/i })).toHaveAttribute(
+      "href",
+      "http://localhost:5173/viagem/compartilhada/token",
+    );
+  });
+
+  it("faz fallback para copiar o link quando compartilhamento nativo não existe", async () => {
+    criarCompartilhamentoReserva.mockResolvedValue({
+      token: "B".repeat(43),
+      url: "http://localhost:5173/viagem/compartilhada/token-b",
+    });
+    const { default: userEvent } = await import("@testing-library/user-event");
+    const user = userEvent.setup();
+    const clipboard = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      writable: true,
+      value: { writeText: clipboard },
+    });
+
+    render(<ReservasList title="Histórico" documentTitle="Histórico" />);
+    await user.click(await screen.findByRole("button", { name: "Compartilhar viagem" }));
+
+    expect(await screen.findByText("Link copiado.")).toBeInTheDocument();
+    expect(clipboard).toHaveBeenCalledWith("http://localhost:5173/viagem/compartilhada/token-b");
+    expect(screen.getByRole("button", { name: "Revogar compartilhamento" })).toBeInTheDocument();
+  });
+
+  it("mostra erro da API e revoga link existente", async () => {
+    criarCompartilhamentoReserva.mockRejectedValueOnce(new Error("Falha ao compartilhar"));
+    const { default: userEvent } = await import("@testing-library/user-event");
+    const user = userEvent.setup();
+    render(<ReservasList title="Histórico" documentTitle="Histórico" />);
+    await user.click(await screen.findByRole("button", { name: "Compartilhar viagem" }));
+    expect(await screen.findByText("Falha ao compartilhar")).toBeInTheDocument();
+
+    criarCompartilhamentoReserva.mockResolvedValueOnce({
+      token: "C".repeat(43),
+      url: "http://localhost:5173/viagem/compartilhada/token-c",
+    });
+    await user.click(screen.getByRole("button", { name: "Compartilhar viagem" }));
+    await user.click(await screen.findByRole("button", { name: "Revogar compartilhamento" }));
+    expect(revogarCompartilhamentoReserva).toHaveBeenCalledWith("reserva-1");
+    expect(await screen.findByText("Compartilhamento revogado.")).toBeInTheDocument();
   });
 });
