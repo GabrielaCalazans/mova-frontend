@@ -728,14 +728,17 @@ export async function requestPasswordReset({ email }) {
   }
 
   try {
-    const result = await apiRequest("/auth/forgot-password", {
+    const result = await apiRequest("/conta/auth/forgot-password", {
       method: "POST",
       body: JSON.stringify({ email }),
     });
+    const payload = result?.result || result || {};
 
     return {
       mode: "api",
-      message: "Solicitacao de recuperacao enviada com sucesso.",
+      message:
+        payload.message ||
+        "Se existir uma conta associada a este e-mail, enviaremos as instruções de recuperação.",
       ...result,
     };
   } catch (error) {
@@ -743,6 +746,27 @@ export async function requestPasswordReset({ email }) {
       error,
       "Nao foi possivel solicitar recuperacao de senha.",
     );
+  }
+}
+
+export async function resetPassword({ token, novaSenha }) {
+  if (!isApiConfigured()) {
+    throw new Error("API_BASE_URL nao configurada.");
+  }
+
+  try {
+    const result = await apiRequest("/conta/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, novaSenha }),
+    });
+
+    return {
+      mode: "api",
+      message: "Senha redefinida com sucesso.",
+      ...result,
+    };
+  } catch (error) {
+    throw normalizeError(error, "Nao foi possivel redefinir a senha.");
   }
 }
 

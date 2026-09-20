@@ -83,6 +83,29 @@ export function validateForgotPasswordForm(values) {
   return nextErrors;
 }
 
+export function validateResetPasswordForm(values) {
+  const nextErrors = {};
+
+  if (!values.token) {
+    nextErrors.token = "Link de recuperação inválido ou expirado.";
+  }
+
+  if (!values.novaSenha?.trim()) {
+    nextErrors.novaSenha = "Informe a nova senha.";
+  } else if (!isSenhaForte(values.novaSenha)) {
+    nextErrors.novaSenha =
+      "Senha deve ter 8+ caracteres, com maiuscula, minuscula, numero e caractere especial.";
+  }
+
+  if (!values.confirmarNovaSenha?.trim()) {
+    nextErrors.confirmarNovaSenha = "Confirme a nova senha.";
+  } else if (values.novaSenha !== values.confirmarNovaSenha) {
+    nextErrors.confirmarNovaSenha = "As senhas devem ser iguais.";
+  }
+
+  return nextErrors;
+}
+
 export function validateRegisterForm(values) {
   const nextErrors = {};
 

@@ -4,8 +4,10 @@ import { getAuthSession, saveAuthSession } from "./authSession";
 import {
   fetchCurrentUserProfile,
   loginUser,
+  requestPasswordReset,
   registerLocatario,
   registerLocador,
+  resetPassword,
   updateUserProfile,
 } from "./authService";
 
@@ -504,6 +506,42 @@ describe("updateUserProfile two-step flow", () => {
     ).rejects.toThrow("Sessao expirada. Faca login novamente.");
 
     expect(apiRequestMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("password recovery contract", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    isApiConfiguredMock.mockReturnValue(true);
+    getAuthSessionMock.mockReturnValue(null);
+  });
+
+  it("solicita recuperação pelo endpoint real sem autenticação", async () => {
+    apiRequestMock.mockResolvedValue({
+      result: {
+        message: "Se existir uma conta associada a este e-mail, enviaremos as instruções de recuperação.",
+      },
+    });
+
+    const result = await requestPasswordReset({ email: "user@example.com" });
+
+    expect(apiRequestMock).toHaveBeenCalledWith("/conta/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email: "user@example.com" }),
+    });
+    expect(result.message).toContain("Se existir");
+  });
+
+  it("redefine senha com token no body e sem authToken", async () => {
+    apiRequestMock.mockResolvedValue({ result: { ok: true } });
+
+    await resetPassword({ token: "A".repeat(43), novaSenha: "NovaSenha#123" });
+
+    expect(apiRequestMock).toHaveBeenCalledWith("/conta/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token: "A".repeat(43), novaSenha: "NovaSenha#123" }),
+    });
+    expect(apiRequestMock.mock.calls[0][1]).not.toHaveProperty("authToken");
   });
 });
 

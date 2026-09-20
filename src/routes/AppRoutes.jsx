@@ -2,6 +2,7 @@
 import Cadastro from "../pages/Cadastro";
 import CadastroLocador from "../pages/CadastroLocador";
 import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword";
 import Login from "../pages/Login";
 import Conta from "../pages/Conta";
 import CarrosScreen from "../pages/CarrosScreen";
@@ -62,6 +63,7 @@ function AppRoutes() {
         <Route path="/cadastro-locatario" element={<Cadastro />} />
         <Route path="/cadastro-locador" element={<CadastroLocador />} />
         <Route path="/recuperar-senha" element={<ForgotPassword />} />
+        <Route path="/redefinir-senha" element={<ResetPassword />} />
         <Route path="/conta" element={<ProtectedRoute><Conta /></ProtectedRoute>} />
         <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
 
