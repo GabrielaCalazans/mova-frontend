@@ -206,6 +206,18 @@ describe("authService profile flow via /conta/auth/me", () => {
     expect(body).not.toHaveProperty("cargo");
     expect(body).not.toHaveProperty("propriedade");
   });
+
+  it("não conclui perfil quando cadastro não retorna token", async () => {
+    apiRequestMock.mockResolvedValueOnce({ result: { conta: { id: "conta-1" } } });
+
+    await expect(registerLocatario({
+      name: "Ana", email: "ana@example.com", password: "Senha12345",
+      cpf: "12345678909", cnh: "12345678909", rg: "123456789", dataNascimento: "1990-05-15",
+    })).rejects.toThrow("Nao foi possivel autenticar o cadastro do locatario.");
+
+    expect(apiRequestMock).toHaveBeenCalledTimes(1);
+    expect(saveAuthSessionMock).not.toHaveBeenCalled();
+  });
 });
 
 describe("updateUserProfile two-step flow", () => {
