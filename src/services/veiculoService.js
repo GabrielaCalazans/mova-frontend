@@ -106,9 +106,10 @@ export async function createVeiculo(payload) {
 }
 
 /**
- * Atualiza campos de um veículo existente. Endpoint: PUT /veiculo/:id
- * Aceita qualquer subconjunto de updateVeiculoSchema (placa, marca, modelo,
- * ano, cambio, capacidade, status, eletrico, adaptado).
+ * Atualiza veículo e, opcionalmente, seu bloco de catálogo de forma
+ * coordenada. Endpoint: PUT /veiculo/:id
+ * Contrato: { placa?, status?, garagemId?, modelo?: { marca?, modelo?, ano?,
+ * cambio?, capacidade?, valorDiaria?, eletrico?, adaptado?, categoria? } }.
  */
 export async function updateVeiculo(id, payload) {
   if (!id) {

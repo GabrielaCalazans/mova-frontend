@@ -332,6 +332,29 @@ describe("Fluxo de autenticacao", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("não libera a retirada quando o veículo não possui garagem", async () => {
+    saveAuthSession({ token: "token-fake", user: authenticatedUser });
+    window.sessionStorage.setItem(
+      "mova_journey_flow",
+      JSON.stringify({
+        veiculo: {
+          id: "veic-sem-garagem",
+          idLocador: LOCADOR_ID,
+          garagemId: null,
+        },
+      }),
+    );
+    window.history.pushState({}, "", "/escolha-garagem-retirada");
+
+    render(<App />);
+
+    expect(
+      await screen.findByText(/não está alocado em nenhuma garagem/i),
+    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/digite a data/i)).toBeDisabled();
+    expect(screen.getByRole("button", { name: /ir para devolução/i })).toBeDisabled();
+  });
+
   it("mostra o checkout da reserva com dados persistidos", async () => {
     saveAuthSession({
       token: "token-fake",

@@ -190,6 +190,19 @@ describe("authService profile flow via /conta/auth/me", () => {
       dataNascimento: "1990-05-15",
     });
 
+    expect(apiRequestMock).toHaveBeenNthCalledWith(1, "/conta/auth/register", {
+      method: "POST",
+      body: JSON.stringify({
+        nome: "Ana Silva",
+        email: "ana@example.com",
+        telefone: "11999998888",
+        endereco: "Rua A, 1",
+        cep: "01001000",
+        cargo: "LOCATARIO",
+        senha: "Senha12345",
+      }),
+    });
+
     expect(apiRequestMock).toHaveBeenNthCalledWith(2, "/locatario/", {
       method: "POST",
       authToken: "token-cadastro-locatario",
@@ -276,9 +289,9 @@ describe("updateUserProfile two-step flow", () => {
         telefone: "11988887777",
         endereco: "Rua A",
         cep: "00000000",
-        cargo: "LOCATARIO",
       }),
     });
+    expect(JSON.parse(apiRequestMock.mock.calls[0][1].body)).not.toHaveProperty("cargo");
     expect(apiRequestMock).toHaveBeenNthCalledWith(2, "/locatario/perfil-1", {
       method: "PUT",
       authToken: "token-123",
@@ -393,9 +406,9 @@ describe("updateUserProfile two-step flow", () => {
         telefone: "11988887777",
         endereco: "Rua B",
         cep: "01001000",
-        cargo: "LOCADOR",
       }),
     });
+    expect(JSON.parse(apiRequestMock.mock.calls[0][1].body)).not.toHaveProperty("cargo");
     expect(apiRequestMock).toHaveBeenNthCalledWith(2, "/locador/perfil-locador-1", {
       method: "PUT",
       authToken: "token-456",
@@ -469,9 +482,9 @@ describe("updateUserProfile two-step flow", () => {
         telefone: "11977776666",
         endereco: "",
         cep: "",
-        cargo: "LOCATARIO",
       }),
     });
+    expect(JSON.parse(apiRequestMock.mock.calls[1][1].body)).not.toHaveProperty("cargo");
     expect(apiRequestMock).toHaveBeenNthCalledWith(3, "/locatario/perfil-legacy", {
       method: "PUT",
       authToken: "token-legacy",

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import { createVeiculo, updateVeiculo } from "../services/veiculoService";
+import { listGaragens } from "../services/garagemService";
 import { getAuthSession } from "../services/authSession";
 import "../styles/relatorios.css";
 
@@ -31,9 +32,39 @@ export default function CadastroCarroForm() {
     eletrico: veiculoOriginal?.eletrico || false,
     adaptado: veiculoOriginal?.adaptado || false,
     categoria: veiculoOriginal?.categoria || "",
+    garagemId: veiculoOriginal?.garagemId || "",
   });
   const [erro, setErro] = useState(null);
   const [salvando, setSalvando] = useState(false);
+  const [garagens, setGaragens] = useState([]);
+  const [erroGaragens, setErroGaragens] = useState(null);
+
+  useEffect(() => {
+    let ativo = true;
+
+    if (!idLocador) {
+      setErroGaragens("Sessão inválida. Faça login novamente.");
+      return () => {
+        ativo = false;
+      };
+    }
+
+    listGaragens({ idLocador })
+      .then((lista) => {
+        if (!ativo) return;
+        setGaragens(Array.isArray(lista) ? lista : []);
+        setErroGaragens(null);
+      })
+      .catch((e) => {
+        if (!ativo) return;
+        setGaragens([]);
+        setErroGaragens(e.message || "Não foi possível carregar as garagens.");
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [idLocador]);
 
   useEffect(() => {
     document.title = isNovo ? "MOVA - Adicionar Veículo" : "MOVA - Editar Veículo";
@@ -47,29 +78,45 @@ export default function CadastroCarroForm() {
     event.preventDefault();
     setErro(null);
 
-    const payload = {
+    const modeloPayload = {
       marca: values.marca,
       modelo: values.modelo,
-      placa: values.placa.toUpperCase(),
       ano: Number(values.ano),
       cambio: values.cambio,
       capacidade: Number(values.capacidade),
       // Fonte de verdade do preco da reserva: o backend multiplica esta diaria
       // pelo numero de diarias. Ver auditoria/PAGAMENTO.md.
       valorDiaria: Number(values.valorDiaria),
-      status: values.status,
       eletrico: Boolean(values.eletrico),
       adaptado: Boolean(values.adaptado),
-      categoria: values.categoria || undefined,
+      categoria: values.categoria || null,
+    };
+    const payload = isNovo
+      ? {
+          ...modeloPayload,
+          placa: values.placa.toUpperCase(),
+          status: values.status,
+          categoria: values.categoria || undefined,
+        }
+      : {
+          placa: values.placa.toUpperCase(),
+          status: values.status,
+          garagemId: values.garagemId || null,
+          modelo: modeloPayload,
+        };
+
+    const payloadComGaragem = {
+      ...payload,
+      garagemId: values.garagemId || null,
     };
 
     setSalvando(true);
     try {
       if (isNovo) {
         if (!idLocador) throw new Error("Sessão inválida. Faça login novamente.");
-        await createVeiculo({ ...payload, idLocador });
+        await createVeiculo({ ...payloadComGaragem, idLocador });
       } else {
-        await updateVeiculo(id, payload);
+        await updateVeiculo(id, payloadComGaragem);
       }
       navigate("/cadastro-carros");
     } catch (e) {
@@ -78,6 +125,12 @@ export default function CadastroCarroForm() {
       setSalvando(false);
     }
   }
+
+  const garagensElegiveis = garagens.filter((garagem) => {
+    const atual = String(garagem.id) === String(values.garagemId);
+    const temVaga = (garagem.veiculosAlocados ?? 0) < (garagem.capacidade ?? 0);
+    return atual || (garagem.status === "ATIVA" && temVaga);
+  });
 
   return (
     <AuthenticatedLayout title="Informações" align={isNovo ? "left" : "center"}>
@@ -217,6 +270,32 @@ export default function CadastroCarroForm() {
               <option key={status} value={status}>{status}</option>
             ))}
           </select>
+        </div>
+
+        <div className="auth-field">
+          <label htmlFor="garagemId">Garagem operacional</label>
+          <select
+            id="garagemId"
+            className="filtro-select"
+            value={values.garagemId}
+            onChange={(e) => handleChange("garagemId", e.target.value)}
+          >
+            <option value="">Sem garagem (em preparação)</option>
+            {garagensElegiveis.map((garagem) => (
+              <option key={garagem.id} value={garagem.id}>
+                {garagem.nome}
+                {garagem.status !== "ATIVA" ? " (indisponível)" : ""}
+              </option>
+            ))}
+          </select>
+          {erroGaragens && (
+            <small role="status">{erroGaragens}</small>
+          )}
+          {!erroGaragens && garagensElegiveis.length === 0 && (
+            <small role="status">
+              Nenhuma garagem própria ativa com vaga disponível.
+            </small>
+          )}
         </div>
 
         <div className="auth-checkbox-group">

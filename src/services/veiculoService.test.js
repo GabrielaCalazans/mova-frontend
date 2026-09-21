@@ -6,9 +6,9 @@ vi.mock("./apiClient", () => ({
 }));
 vi.mock("./authSession", () => ({ getAuthSession: vi.fn() }));
 
-import { apiRequestPaginado } from "./apiClient";
+import { apiRequest, apiRequestPaginado } from "./apiClient";
 import { getAuthSession } from "./authSession";
-import { listFrota, listVeiculos } from "./veiculoService";
+import { listFrota, listVeiculos, updateVeiculo } from "./veiculoService";
 
 describe("listFrota", () => {
   beforeEach(() => {
@@ -59,5 +59,35 @@ describe("listVeiculos — filtros do catálogo", () => {
       "/veiculo?cambio=Automatico&capacidade=5&eletrico=true&categoria=EXECUTIVO",
       { authToken: "jwt-locatario" },
     );
+  });
+});
+
+describe("updateVeiculo — contrato coordenado", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    getAuthSession.mockReturnValue({ token: "jwt-locador" });
+    apiRequest.mockResolvedValue({
+      result: {
+        id: "veiculo-1",
+        placa: "ABC1D23",
+        modeloVeiculo: { marca: "Toyota", valorDiaria: 321.45 },
+      },
+    });
+  });
+
+  it("envia os campos de catálogo dentro de modelo no PUT", async () => {
+    const payload = {
+      placa: "ABC1D23",
+      status: "DISPONIVEL",
+      modelo: { marca: "Toyota", valorDiaria: 321.45 },
+    };
+
+    await updateVeiculo("veiculo-1", payload);
+
+    expect(apiRequest).toHaveBeenCalledWith("/veiculo/veiculo-1", {
+      method: "PUT",
+      authToken: "jwt-locador",
+      body: JSON.stringify(payload),
+    });
   });
 });

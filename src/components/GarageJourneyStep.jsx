@@ -195,7 +195,7 @@ export default function GarageJourneyStep({
 
   const visibleGarages = selectedGarage ? [selectedGarage] : garagens;
   const etapaLiberada = retiradaFixa
-    ? !carregandoGaragens && !erroGaragens
+    ? !carregandoGaragens && !erroGaragens && garagens.length > 0
     : Boolean(selectedGarage);
 
   // Valida o instante escolhido já nesta etapa, com as MESMAS mensagens do

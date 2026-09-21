@@ -95,20 +95,19 @@ function onlyDigits(value) {
   return String(value || "").replace(/\D/g, "");
 }
 
-function buildContaPayload(values) {
-  // O backend exige o campo "cargo" (LOCATARIO | LOCADOR | ADMIN).
-  // Inferimos pelo contexto: se vier em values.cargo, usamos;
-  // caso contrario, values.cnpj ou values.empresa indicam LOCADOR; default LOCATARIO.
-  const cargo =
-    values.cargo ||
-    (values.cnpj || values.empresa ? "LOCADOR" : "LOCATARIO");
-
+function buildProfileUpdatePayload(values) {
   return {
     nome: values.name,
     email: values.email,
     telefone: onlyDigits(values.celphone),
     endereco: values.address || "",
     cep: onlyDigits(values.cep),
+  };
+}
+
+function buildRegistrationPayload(values, cargo) {
+  return {
+    ...buildProfileUpdatePayload(values),
     cargo,
   };
 }
@@ -507,9 +506,8 @@ export async function registerLocatario(values) {
     const contaResult = await apiRequest("/conta/auth/register", {
       method: "POST",
       body: JSON.stringify({
-        ...buildContaPayload(values),
+        ...buildRegistrationPayload(values, "LOCATARIO"),
         senha: values.password,
-        cargo: "LOCATARIO",
       }),
     });
 
@@ -553,7 +551,7 @@ export async function registerLocador(values) {
     const contaResult = await apiRequest("/conta/auth/register", {
       method: "POST",
       body: JSON.stringify({
-        ...buildContaPayload(values),
+        ...buildRegistrationPayload(values, "LOCADOR"),
         senha: values.password,
       }),
     });
@@ -648,7 +646,7 @@ export async function updateUserProfile(values) {
       method: "PUT",
       authToken: token,
       body: JSON.stringify({
-        ...buildContaPayload(values),
+        ...buildProfileUpdatePayload(values),
       }),
     });
 
