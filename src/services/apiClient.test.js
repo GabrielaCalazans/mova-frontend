@@ -5,11 +5,16 @@ import { ApiError, apiRequest, apiRequestPaginado } from "./apiClient";
 // header Authorization nunca eram exercitados. Estes testes cobrem o contrato
 // de erro e o consumo de paginação.
 
-function respostaJson(body, status = 200) {
+function respostaJson(body, status = 200, responseHeaders = {}) {
   return {
     ok: status >= 200 && status < 300,
     status,
-    headers: { get: () => "application/json" },
+    headers: {
+      get: (name) =>
+        name.toLowerCase() === "content-type"
+          ? "application/json"
+          : responseHeaders[name.toLowerCase()] ?? null,
+    },
     json: async () => body,
     text: async () => JSON.stringify(body),
   };
@@ -79,6 +84,44 @@ describe("apiClient — contrato de erro", () => {
     const erro = await apiRequest("/reserva", { method: "POST" }).catch((e) => e);
     expect(erro.status).toBe(409);
     expect(erro.message).toBe("O veículo não está disponível para reserva.");
+  });
+
+  it("mantém HTTP 404 como erro da operação da API e expõe requestId", async () => {
+    const requestId = "api-operation-404";
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      respostaJson(
+        envelope({
+          code: "RESERVATION_NOT_FOUND",
+          message: "Reserva n\u00e3o encontrada",
+          requestId,
+        }),
+        404,
+        { "x-request-id": requestId },
+      ),
+    );
+
+    const erro = await apiRequest("/reserva/missing").catch((e) => e);
+
+    expect(erro).toBeInstanceOf(ApiError);
+    expect(erro.status).toBe(404);
+    expect(erro.isNotFound).toBe(true);
+    expect(erro.code).toBe("RESERVATION_NOT_FOUND");
+    expect(erro.requestId).toBe(requestId);
+    expect(erro.message).toBe("Reserva n\u00e3o encontrada");
+  });
+
+  it("não registra token da rota nem credencial nos logs de erro", async () => {
+    const routeToken = "share-token-secret";
+    const authToken = "bearer-client-secret";
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      respostaJson(envelope({ code: "NOT_FOUND", message: "Opera\u00e7\u00e3o n\u00e3o encontrada" }), 404),
+    );
+
+    await apiRequest(`/viagem/${routeToken}`, { authToken }).catch(() => {});
+
+    const log = vi.mocked(console.error).mock.calls;
+    expect(JSON.stringify(log)).not.toContain(routeToken);
+    expect(JSON.stringify(log)).not.toContain(authToken);
   });
 
   it("falha de rede vira ApiError com status 0", async () => {

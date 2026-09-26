@@ -36,11 +36,8 @@ import Configuracoes from "../pages/Configuracoes";
 import InteressesDisponibilidade from "../pages/InteressesDisponibilidade";
 import CompartilhamentoViagem from "../pages/CompartilhamentoViagem";
 import Home from "../pages/Home";
+import NotFound from "../pages/NotFound";
 import { getAuthSession } from "../services/authSession";
-
-function NotFound() {
-  return <Navigate to="/login" replace />;
-}
 
 function ProtectedRoute({ children }) {
   const session = getAuthSession();

@@ -6,13 +6,14 @@
  * mensagem. Ver auditoria/CONTRATO-FRONTEND-BACKEND.md.
  */
 export class ApiError extends Error {
-  constructor(message, { status, code, errors, payload } = {}) {
+  constructor(message, { status, code, errors, payload, requestId } = {}) {
     super(message);
     this.name = "ApiError";
     this.status = status ?? 0;
     this.code = code ?? null;
     this.errors = errors ?? null;
     this.payload = payload ?? null;
+    this.requestId = requestId ?? null;
   }
 
   get isUnauthorized() {
@@ -110,18 +111,21 @@ export async function apiRequest(path, options = {}) {
   if (!response.ok) {
     const parsedMessage = parseApiErrorMessage(payload);
     const message = parsedMessage || `Erro ao comunicar com a API (HTTP ${response.status}).`;
+    const requestId = payload?.requestId ?? response.headers.get("x-request-id");
 
-    // eslint-disable-next-line no-console
-    console.error(
-      `[apiRequest] ${requestOptions.method || "GET"} ${path} -> HTTP ${response.status}`,
-      { contentType, hasJson, message }
-    );
+    // Keep credentials and path parameters out of browser logs.
+    console.error("[apiRequest] API operation failed", {
+      method: requestOptions.method || "GET",
+      status: response.status,
+      requestId,
+    });
 
     throw new ApiError(message, {
       status: response.status,
       code: payload?.code ?? null,
       errors: Array.isArray(payload?.errors) ? payload.errors : null,
       payload,
+      requestId,
     });
   }
 

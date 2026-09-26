@@ -207,12 +207,13 @@ describe("Fluxo de autenticacao", () => {
     ).toBeInTheDocument();
   });
 
-  it("redireciona rota invalida para login", () => {
+  it("mostra a pagina 404 em uma rota invalida", () => {
     window.history.pushState({}, "", "/rota-invalida");
 
     render(<App />);
 
-    expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /p.gina n.o encontrada/i })).toBeInTheDocument();
+    expect(window.location.pathname).toBe("/rota-invalida");
   });
 
   it("bloqueia fluxo sem sessao e redireciona para login", () => {
