@@ -48,16 +48,32 @@ describe("listVeiculos — filtros do catálogo", () => {
     [{ categoria: "ESPACOSO" }, "/veiculo?categoria=ESPACOSO"],
     [{ categoria: "EXECUTIVO" }, "/veiculo?categoria=EXECUTIVO"],
     [{ adaptado: true }, "/veiculo?adaptado=true"],
+    [{ pcd: true }, "/veiculo?pcd=true"],
   ])("mapeia o filtro %o para o contrato real", async (filtros, endpoint) => {
     await listVeiculos(filtros);
-    expect(apiRequestPaginado).toHaveBeenCalledWith(endpoint, { authToken: "jwt-locatario" });
+    expect(apiRequestPaginado).toHaveBeenCalledWith(endpoint, { authToken: undefined });
+  });
+
+  it("consulta o catálogo público sem enviar credencial de locatário", async () => {
+    await listVeiculos();
+    expect(apiRequestPaginado).toHaveBeenCalledWith("/veiculo", {
+      authToken: undefined,
+    });
   });
 
   it("mantém combinação de filtros por interseção", async () => {
     await listVeiculos({ categoria: "EXECUTIVO", cambio: "Automatico", eletrico: true, capacidade: 5 });
     expect(apiRequestPaginado).toHaveBeenCalledWith(
       "/veiculo?cambio=Automatico&capacidade=5&eletrico=true&categoria=EXECUTIVO",
-      { authToken: "jwt-locatario" },
+      { authToken: undefined },
+    );
+  });
+
+  it("combina o predicado PCD com filtros independentes", async () => {
+    await listVeiculos({ pcd: true, eletrico: true, capacidade: 5 });
+    expect(apiRequestPaginado).toHaveBeenCalledWith(
+      "/veiculo?capacidade=5&eletrico=true&pcd=true",
+      { authToken: undefined },
     );
   });
 });

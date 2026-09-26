@@ -272,7 +272,6 @@ describe("Fluxo de autenticacao", () => {
       JSON.stringify({
         veiculo: {
           id: "veic-1",
-          idLocador: LOCADOR_ID,
           garagemId: GARAGENS_MOCK[0].id,
         },
       }),
@@ -285,8 +284,8 @@ describe("Fluxo de autenticacao", () => {
       await screen.findByRole("heading", { name: /escolha a garagem para devolução/i })
     ).toBeInTheDocument();
 
-    // Filtro por idLocador vai na query — é o backend que restringe a ATIVA.
-    expect(listGaragens).toHaveBeenCalledWith({ idLocador: LOCADOR_ID });
+    // O backend deriva o locador do veículo sem expor seu id no catálogo.
+    expect(listGaragens).toHaveBeenCalledWith({ veiculoId: "veic-1" });
     expect(await screen.findByRole("button", { name: /garagem centro/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /garagem sul/i })).toBeInTheDocument();
   });

@@ -27,6 +27,7 @@ describe("reservationPricing", () => {
     const payload = {
       idVeiculo: "veiculo-1",
       idLocatario: "locatario-1",
+      deficienciaId: "deficiencia-1",
       dataHoraInicio: "2027-01-10T10:00:00.000Z",
       dataHoraFim: "2027-01-12T10:00:00.000Z",
       servicosIds: ["servico-1"],
@@ -42,8 +43,13 @@ describe("reservationPricing", () => {
     });
     expect(apiRequest).toHaveBeenCalledWith("/reserva/precificacao", {
       method: "POST",
-      authToken: "token-de-teste",
-      body: JSON.stringify(payload),
+      authToken: undefined,
+      body: JSON.stringify({
+        idVeiculo: "veiculo-1",
+        dataHoraInicio: "2027-01-10T10:00:00.000Z",
+        dataHoraFim: "2027-01-12T10:00:00.000Z",
+        servicosIds: ["servico-1"],
+      }),
     });
   });
 });

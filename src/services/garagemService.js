@@ -14,6 +14,7 @@ function authHeaders() {
 export async function listGaragens(filters = {}) {
   const params = new URLSearchParams();
   if (filters.idLocador) params.set("idLocador", filters.idLocador);
+  if (filters.veiculoId) params.set("veiculoId", filters.veiculoId);
   if (filters.nome) params.set("nome", filters.nome);
   if (filters.acessibilidade !== undefined) params.set("acessibilidade", String(filters.acessibilidade));
   if (filters.capacidadeMin) params.set("capacidadeMin", String(filters.capacidadeMin));

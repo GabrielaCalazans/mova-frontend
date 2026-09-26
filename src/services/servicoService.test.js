@@ -31,7 +31,7 @@ describe("servicoService — contrato real do catálogo", () => {
       valor: 49.9,
     })]);
     expect(apiRequestPaginado).toHaveBeenCalledWith("/servico", {
-      authToken: "jwt-locatario",
+      authToken: undefined,
     });
   });
 });

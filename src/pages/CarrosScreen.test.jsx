@@ -54,14 +54,31 @@ describe("CarrosScreen", () => {
     expect(listVeiculos).toHaveBeenCalledWith({ categoria: "ESPACOSO" });
   });
 
-  it("envia adaptado=true ao catálogo para Adaptados PCD", async () => {
+  it("envia o predicado PCD ao catálogo para Adaptados PCD", async () => {
     tipoFiltro = "adaptado";
     listVeiculos.mockResolvedValue([]);
 
     render(<CarrosScreen />);
 
     await screen.findByText(/Nenhum veículo cadastrado/);
-    expect(listVeiculos).toHaveBeenCalledWith({ adaptado: true });
+    expect(listVeiculos).toHaveBeenCalledWith({ pcd: true });
+  });
+
+  it("apresenta as quatro combinações de categoria PCD e adaptação retornadas pelo catálogo", async () => {
+    tipoFiltro = "adaptado";
+    listVeiculos.mockResolvedValue([
+      { ...veiculo("pcd-sem-adaptacao", { id: "g1", nome: "Garagem 1", status: "ATIVA" }), modelo: "PCD sem adaptação", categoria: "PCD", adaptado: false },
+      { ...veiculo("pcd-adaptado", { id: "g2", nome: "Garagem 2", status: "ATIVA" }), modelo: "PCD adaptado", categoria: "PCD", adaptado: true },
+      { ...veiculo("comum-adaptado", { id: "g3", nome: "Garagem 3", status: "ATIVA" }), modelo: "Comum adaptado", categoria: "ECONOMICO", adaptado: true },
+      { ...veiculo("comum-sem-adaptacao", { id: "g4", nome: "Garagem 4", status: "ATIVA" }), modelo: "Comum sem adaptação", categoria: "ECONOMICO", adaptado: false },
+    ]);
+
+    render(<CarrosScreen />);
+
+    for (const name of ["PCD sem adaptação", "PCD adaptado", "Comum adaptado", "Comum sem adaptação"]) {
+      expect(await screen.findByRole("heading", { name: `Fiat ${name}` })).toBeInTheDocument();
+    }
+    expect(listVeiculos).toHaveBeenCalledWith({ pcd: true });
   });
 
   it("exibe filtros semânticos e permite selecionar/remover/limpar", async () => {

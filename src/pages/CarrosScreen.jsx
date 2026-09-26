@@ -46,7 +46,7 @@ function CarrosScreen() {
         economico: { categoria: "ECONOMICO" },
         espacoso: { categoria: "ESPACOSO" },
         executivo: { categoria: "EXECUTIVO" },
-        adaptado: { adaptado: true },
+        adaptado: { pcd: true },
         eletrico: { eletrico: true },
       };
       const resultado = await listVeiculos(filtrosPorTipo[tipoFiltro] ?? {});

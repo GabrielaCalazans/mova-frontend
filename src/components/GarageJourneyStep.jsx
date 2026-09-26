@@ -115,10 +115,10 @@ export default function GarageJourneyStep({
 
   // O veículo escolhido define as duas garagens possíveis:
   //  - retirada  -> exatamente veiculo.garagemId (ReservaService.resolverGaragemRetirada)
-  //  - devolução -> qualquer garagem ATIVA do veiculo.idLocador (assertGaragemDevolucao)
+  //  - devolução -> qualquer garagem ATIVA do locador do veículo (assertGaragemDevolucao)
   const veiculoSelecionado = useMemo(() => getJourneyStep("veiculo"), []);
   const garagemDoVeiculo = veiculoSelecionado?.garagemId || "";
-  const locadorDoVeiculo = veiculoSelecionado?.idLocador || "";
+  const veiculoId = veiculoSelecionado?.id || "";
   const retiradaFixa = stepKey === "retirada";
 
   const [garagens, setGaragens] = useState([]);
@@ -153,7 +153,7 @@ export default function GarageJourneyStep({
       ? garagemDoVeiculo
         ? getGaragemById(garagemDoVeiculo).then((g) => (g ? [g] : []))
         : Promise.resolve([])
-      : listGaragens(locadorDoVeiculo ? { idLocador: locadorDoVeiculo } : {});
+      : listGaragens(veiculoId ? { veiculoId } : {});
 
     consulta
       .then((lista) => {
@@ -173,7 +173,7 @@ export default function GarageJourneyStep({
     return () => {
       ativo = false;
     };
-  }, [retiradaFixa, garagemDoVeiculo, locadorDoVeiculo]);
+  }, [retiradaFixa, garagemDoVeiculo, veiculoId]);
 
   const selectedGarage =
     garagens.find((garage) => String(garage.id) === selectedGarageId) ?? null;

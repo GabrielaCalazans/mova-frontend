@@ -53,9 +53,6 @@ export function normalizeVeiculo(veiculo) {
  * Os mesmos filtros de searchVeiculos se aplicam, além de idLocador e garagemId.
  */
 export async function listVeiculos(filters = {}) {
-  const session = getAuthSession();
-  const authToken = session?.token;
-
   const params = new URLSearchParams();
   if (filters.marca)      params.set("marca", filters.marca);
   if (filters.modelo)     params.set("modelo", filters.modelo);
@@ -67,9 +64,10 @@ export async function listVeiculos(filters = {}) {
   if (filters.categoria) params.set("categoria", filters.categoria);
   if (filters.idLocador)  params.set("idLocador", filters.idLocador);
   if (filters.garagemId)  params.set("garagemId", filters.garagemId);
+  if (filters.pcd !== undefined) params.set("pcd", String(filters.pcd));
 
   const query = params.toString() ? `?${params.toString()}` : "";
-  const itens = await apiRequestPaginado(`/veiculo${query}`, { authToken });
+  const itens = await apiRequestPaginado(`/veiculo${query}`, { authToken: undefined });
   return itens.map(normalizeVeiculo);
 }
 
@@ -154,9 +152,7 @@ export async function getVeiculoById(id) {
     throw new Error("ID do veículo não informado.");
   }
 
-  const session = getAuthSession();
-  const authToken = session?.token;
-  const data = await apiRequest(`/veiculo/${id}`, { authToken });
+  const data = await apiRequest(`/veiculo/${id}`, { authToken: undefined });
 
   const raw = data.result ?? data;
   return normalizeVeiculo(raw);
