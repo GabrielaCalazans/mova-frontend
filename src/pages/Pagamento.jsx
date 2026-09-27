@@ -437,7 +437,7 @@ export default function Pagamento() {
               ))}
             </QrPlaceholder>
             <p className="payment-modal-note">
-              O pix deve ser feito em até 5 minutos
+              QR Code ilustrativo; nenhuma transferência é feita.
             </p>
           </div>
         </div>

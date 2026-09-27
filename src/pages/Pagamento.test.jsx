@@ -212,4 +212,14 @@ describe("Pagamento", () => {
     );
     expect(iniciarPagamento).not.toHaveBeenCalled();
   });
+
+  it("identifica o QR Code como simulação sem transferência real", async () => {
+    render(<Pagamento />);
+    await screen.findByTestId("valor-reserva");
+
+    await userEvent.selectOptions(screen.getByLabelText(/Método de pagamento/i), "PIX");
+    await userEvent.click(screen.getByRole("button", { name: /Ver QR Code/i }));
+
+    expect(screen.getByText(/QR Code ilustrativo; nenhuma transferência é feita/i)).toBeInTheDocument();
+  });
 });
