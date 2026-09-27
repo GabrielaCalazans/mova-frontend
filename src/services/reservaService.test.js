@@ -10,6 +10,7 @@ import { apiRequest } from "./apiClient";
 import { getAuthSession } from "./authSession";
 import {
   buildShareUrl,
+  cancelarReserva,
   criarCompartilhamentoReserva,
   getRastreamentoReserva,
   getReservasDoLocatarioPage,
@@ -55,6 +56,26 @@ describe("getRastreamentoReserva", () => {
       "/reserva/reserva-1/localizacao",
       { authToken: "token-teste" },
     );
+  });
+});
+
+describe("cancelarReserva", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    getAuthSession.mockReturnValue({ token: "token-teste" });
+  });
+
+  it("usa somente o endpoint de cancelamento POST", async () => {
+    apiRequest.mockResolvedValue({ result: { id: "reserva-1", status: "CANCELADA" } });
+
+    await expect(cancelarReserva("reserva-1")).resolves.toEqual({
+      id: "reserva-1",
+      status: "CANCELADA",
+    });
+    expect(apiRequest).toHaveBeenCalledWith("/reserva/reserva-1/cancelar", {
+      method: "POST",
+      authToken: "token-teste",
+    });
   });
 });
 
