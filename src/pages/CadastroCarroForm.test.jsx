@@ -73,6 +73,22 @@ describe("CadastroCarroForm", () => {
     expect(navigateMock).not.toHaveBeenCalled();
   });
 
+  it("mantém garagem escolhida e anuncia bloqueio de reserva ativa", async () => {
+    const { listGaragens } = await import("../services/garagemService");
+    listGaragens.mockResolvedValueOnce([{ id: "garagem-2", nome: "Garagem Norte", status: "ATIVA", capacidade: 5, veiculosAlocados: 0 }]);
+    updateVeiculo.mockRejectedValueOnce(Object.assign(new Error("erro técnico"), {
+      code: "VEHICLE_HAS_ACTIVE_RESERVATION",
+      status: 409,
+    }));
+    render(<CadastroCarroForm />);
+    await screen.findByRole("option", { name: "Garagem Norte" });
+    fireEvent.change(screen.getByLabelText("Garagem operacional"), { target: { value: "garagem-2" } });
+    fireEvent.click(screen.getByRole("button", { name: "Editar" }));
+    expect(await screen.findByText(/reserva.*impede.*transfer/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("Garagem operacional")).toHaveValue("garagem-2");
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
+
   it("envia campos físicos e de catálogo no contrato coordenado", async () => {
     updateVeiculo.mockResolvedValue(veiculo);
 

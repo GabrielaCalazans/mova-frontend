@@ -43,7 +43,7 @@ describe("reservationPricing", () => {
     });
     expect(apiRequest).toHaveBeenCalledWith("/reserva/precificacao", {
       method: "POST",
-      authToken: undefined,
+      authToken: "token-de-teste",
       body: JSON.stringify({
         idVeiculo: "veiculo-1",
         dataHoraInicio: "2027-01-10T10:00:00.000Z",

@@ -1,4 +1,5 @@
 import { apiRequest } from "./apiClient";
+import { getAuthSession } from "./authSession";
 
 // Cotação obtida do servidor. A criação recalcula o mesmo valor no POST final.
 export async function getReservationPricing(payload) {
@@ -10,9 +11,10 @@ export async function getReservationPricing(payload) {
     dataHoraFim,
     servicosIds,
   } = payload;
+  const session = getAuthSession();
   const data = await apiRequest("/reserva/precificacao", {
     method: "POST",
-    authToken: undefined,
+    authToken: session?.token,
     body: JSON.stringify({
       idVeiculo,
       idGaragemRetirada,

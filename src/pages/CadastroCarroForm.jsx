@@ -120,7 +120,11 @@ export default function CadastroCarroForm() {
       }
       navigate("/cadastro-carros");
     } catch (e) {
-      setErro(e.message || "Não foi possível salvar o veículo.");
+      setErro(
+        e.code === "VEHICLE_HAS_ACTIVE_RESERVATION"
+          ? "O veículo possui uma reserva que impede sua transferência de garagem."
+          : e.message || "Não foi possível salvar o veículo.",
+      );
     } finally {
       setSalvando(false);
     }
