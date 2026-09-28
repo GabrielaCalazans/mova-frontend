@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import AuthenticatedLayout from "../layout/AuthenticatedLayout";
-import { createVeiculo, updateVeiculo } from "../services/veiculoService";
+import { createVeiculo, listFrota, updateVeiculo } from "../services/veiculoService";
 import { listGaragens } from "../services/garagemService";
 import { getAuthSession } from "../services/authSession";
 import "../styles/relatorios.css";
@@ -36,14 +36,58 @@ export default function CadastroCarroForm() {
   });
   const [erro, setErro] = useState(null);
   const [salvando, setSalvando] = useState(false);
+  const [carregandoVeiculo, setCarregandoVeiculo] = useState(!isNovo && !veiculoOriginal);
   const [garagens, setGaragens] = useState([]);
   const [erroGaragens, setErroGaragens] = useState(null);
+
+  useEffect(() => {
+    if (isNovo || veiculoOriginal || !id) return undefined;
+
+    let ativo = true;
+    listFrota()
+      .then((frota) => {
+        if (!ativo) return;
+        const veiculo = (Array.isArray(frota) ? frota : []).find(
+          (item) => String(item.id) === String(id),
+        );
+        if (!veiculo) {
+          throw new Error("Veículo não encontrado na sua frota.");
+        }
+        setValues({
+          marca: veiculo.marca || "",
+          modelo: veiculo.modelo || "",
+          placa: veiculo.placa || "",
+          ano: veiculo.ano ? String(veiculo.ano) : "",
+          cambio: veiculo.cambio || "",
+          capacidade: veiculo.capacidade ? String(veiculo.capacidade) : "",
+          valorDiaria: veiculo.valorDiaria ? String(veiculo.valorDiaria) : "",
+          status: veiculo.status || "DISPONIVEL",
+          eletrico: Boolean(veiculo.eletrico),
+          adaptado: Boolean(veiculo.adaptado),
+          categoria: veiculo.categoria || "",
+          garagemId: veiculo.garagemId || "",
+        });
+        setErro(null);
+      })
+      .catch((error) => {
+        if (ativo) setErro(error.message || "Não foi possível carregar o veículo.");
+      })
+      .finally(() => {
+        if (ativo) setCarregandoVeiculo(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [id, isNovo, veiculoOriginal]);
 
   useEffect(() => {
     let ativo = true;
 
     if (!idLocador) {
-      setErroGaragens("Sessão inválida. Faça login novamente.");
+      queueMicrotask(() => {
+        if (ativo) setErroGaragens("Sessão inválida. Faça login novamente.");
+      });
       return () => {
         ativo = false;
       };
@@ -135,6 +179,14 @@ export default function CadastroCarroForm() {
     const temVaga = (garagem.veiculosAlocados ?? 0) < (garagem.capacidade ?? 0);
     return atual || (garagem.status === "ATIVA" && temVaga);
   });
+
+  if (carregandoVeiculo) {
+    return (
+      <AuthenticatedLayout title="Informações" align="center">
+        <p role="status" aria-live="polite">Carregando veículo…</p>
+      </AuthenticatedLayout>
+    );
+  }
 
   return (
     <AuthenticatedLayout title="Informações" align={isNovo ? "left" : "center"}>

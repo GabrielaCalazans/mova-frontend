@@ -34,7 +34,7 @@ function CarrosScreen() {
   const [tipoFiltro, setTipoFiltro] = useState(location.state?.tipo ?? null);
 
   const [veiculos, setVeiculos] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
 
   const buscar = useCallback(async () => {
@@ -60,7 +60,9 @@ function CarrosScreen() {
 
   useEffect(() => {
     document.title = "MOVA - Escolha seu Carro";
-    buscar();
+    queueMicrotask(() => {
+      void buscar();
+    });
   }, [buscar]);
 
   const veiculosFiltrados = veiculos;

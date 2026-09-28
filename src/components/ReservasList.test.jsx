@@ -49,6 +49,14 @@ describe("ReservasList", () => {
     expect(screen.getByLabelText("Serviços contratados")).toBeInTheDocument();
   });
 
+  it("abre detalhe real da reserva", async () => {
+    const { default: userEvent } = await import("@testing-library/user-event");
+    const user = userEvent.setup();
+    render(<ReservasList title="Histórico" documentTitle="Histórico" />);
+    await user.click(await screen.findByRole("button", { name: "Ver detalhes da reserva" }));
+    expect(navigateMock).toHaveBeenCalledWith("/reservas/reserva-1", { state: { reservaId: "reserva-1" } });
+  });
+
   it("exibe a cobertura persistida no histórico", async () => {
     const cobertura = "Cobertura contratada: danos ao veículo e assistência prevista.";
     getReservasDoLocatarioPage.mockResolvedValueOnce({

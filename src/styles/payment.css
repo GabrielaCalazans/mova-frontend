@@ -117,6 +117,10 @@
   animation: payment-spin 0.9s linear infinite;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .payment-spinner { animation: none; }
+}
+
 @keyframes payment-spin {
   to {
     transform: rotate(360deg);

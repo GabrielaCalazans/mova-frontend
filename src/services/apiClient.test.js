@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError, apiRequest, apiRequestPaginado } from "./apiClient";
+import { consumeAuthFeedback, getAuthSession, saveAuthSession } from "./authSession";
 
 // O apiClient não tinha nenhuma cobertura: buildUrl, o parser de erro e o
 // header Authorization nunca eram exercitados. Estes testes cobrem o contrato
@@ -29,6 +30,8 @@ const envelope = (extra) => ({
 
 describe("apiClient — contrato de erro", () => {
   beforeEach(() => {
+    window.localStorage.clear();
+    window.sessionStorage.clear();
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
   afterEach(() => {
@@ -139,6 +142,28 @@ describe("apiClient — contrato de erro", () => {
 
     const [, init] = fetchMock.mock.calls[0];
     expect(init.headers.Authorization).toBe("Bearer abc.def.ghi");
+  });
+
+  it("limpa sessão quando backend informa revogação", async () => {
+    saveAuthSession({ token: "revoked-token", user: { id: "account-1" } });
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      respostaJson(envelope({ code: "SESSION_REVOKED", message: "Sessão revogada" }), 401),
+    );
+
+    await apiRequest("/conta/auth/me").catch(() => {});
+
+    expect(getAuthSession()).toBeNull();
+    expect(consumeAuthFeedback()).toEqual({ type: "error", message: "Sessão revogada" });
+  });
+  it("limpa sessao em 401 autenticado mesmo sem code", async () => {
+    saveAuthSession({ token: "expired-token", user: { id: "account-1" } });
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      respostaJson(envelope({ error: "Nao autenticado" }), 401),
+    );
+
+    await apiRequest("/conta/auth/me", { authToken: "expired-token" }).catch(() => {});
+
+    expect(getAuthSession()).toBeNull();
   });
 });
 

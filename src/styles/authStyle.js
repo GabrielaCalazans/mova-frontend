@@ -462,8 +462,6 @@ export const LightInput = styled(Input)`
 export const InputWithIcon = styled(Input)`
   padding-right: 2.8rem;
   cursor: pointer;
-  caret-color: transparent;
-  user-select: none;
 `;
 
 export const IconBtn = styled.span`
@@ -580,6 +578,10 @@ export const ClockPart = styled.span`
   text-decoration: ${p => p.active ? 'underline' : 'none'};
   text-underline-offset: 4px;
   cursor: pointer;
+  background: none;
+  border: 0;
+  font: inherit;
+  padding: 2px 4px;
 `;
 
 export const ModeBtns = styled.div`

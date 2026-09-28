@@ -108,6 +108,13 @@
   cursor: pointer;
   opacity: 0.75;
   transition: opacity 150ms, background 150ms;
+  min-width: 64px;
+  min-height: 44px;
+  flex-direction: column;
+  gap: 3px;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .home-bottom-nav__item:hover {
@@ -134,4 +141,77 @@
     padding-left: max(0.5rem, calc((100vw - 960px) / 2));
     padding-right: max(0.5rem, calc((100vw - 960px) / 2));
   }
+}
+
+.theme-switch-indicator { width: 34px; height: 18px; border-radius: 999px; background: #c8c8c8; position: relative; flex-shrink: 0; }
+.theme-switch-indicator__thumb { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+
+.public-home__intro { max-width: 760px; border-bottom: 1px solid var(--mova-rule); padding-bottom: 32px; }
+.public-home__intro h1 { max-width: 700px; margin: 6px 0 12px; font-size: clamp(2.25rem, 7vw, 5rem); line-height: 1.02; }
+.public-home__intro > p:not(.mova-eyebrow) { max-width: 600px; color: var(--mova-muted); font-size: 1.08rem; line-height: 1.6; }
+.public-home__primary { min-height: 52px; margin-top: 16px; }
+.public-home__profile { min-height: 44px; margin-left: 12px; border: 0; background: transparent; color: var(--mova-blue-dark); font-weight: 700; text-decoration: underline; }
+.public-home__catalog { padding-top: 32px; }
+.public-home__section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--mova-rule); padding-bottom: 12px; }
+.public-home__section-heading h2 { margin: 5px 0 0; }
+.public-home__section-heading > p { color: var(--mova-muted); }
+.public-home__filters { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px 0; }
+.public-home__filters .mova-button { min-height: 44px; }
+.public-home__filters .mova-button[aria-pressed="true"] { background: var(--mova-blue); color: var(--mova-on-blue); }
+.public-home__category-carousel { grid-column: 1 / -1; min-width: 0; padding: 8px 0; border-top: 1px solid var(--mova-rule); border-bottom: 1px solid var(--mova-rule); }
+.public-home__category-carousel-list { display: flex; gap: 8px; overflow-x: auto; padding: 8px 2px; scroll-snap-type: x proximity; }
+.public-home__category-carousel-list .mova-button { flex: 0 0 auto; min-height: 44px; scroll-snap-align: start; }
+.public-home__category-carousel-list .mova-button[aria-pressed="true"] { background: var(--mova-blue); color: var(--mova-on-blue); }
+.public-home__search { display: grid; grid-template-columns: auto minmax(120px, 1fr) auto minmax(120px, 1fr) auto auto; gap: 8px 12px; align-items: center; padding: 0 0 20px; }
+.public-home__search input { min-height: 44px; box-sizing: border-box; border: 1px solid var(--mova-rule); border-radius: 2px; padding: 8px 10px; background: var(--mova-paper); color: var(--mova-ink); }
+.public-home__check { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--mova-muted); font-weight: 700; }
+.public-home__check input { min-height: 20px; }
+.public-home__message { padding: 24px 0; color: var(--mova-muted); }
+.active-reservation-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto; align-items: end; gap: 20px; border-block: 2px solid var(--mova-blue); padding: 20px 0; margin-bottom: 24px; }
+.active-reservation-card h2 { margin: 4px 0; }
+.active-reservation-card__status { color: var(--mova-blue-dark); font-weight: 800; text-transform: uppercase; letter-spacing: .06em; font-size: .8rem; }
+.active-reservation-card dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 18px; margin: 0; }
+.active-reservation-card dt { color: var(--mova-muted); font-size: .78rem; }
+.active-reservation-card dd { margin: 2px 0 0; font-weight: 700; }
+.active-reservation-card__actions { display: flex; flex-direction: column; gap: 8px; min-width: 170px; }
+@media (max-width: 760px) { .active-reservation-card { grid-template-columns: 1fr; align-items: stretch; } .active-reservation-card__actions { flex-direction: row; flex-wrap: wrap; } .active-reservation-card__actions .mova-button { flex: 1 1 180px; } }
+.public-home__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.vehicle-card { display: flex; flex-direction: column; border: 1px solid var(--mova-rule); background: color-mix(in srgb, var(--mova-paper) 94%, var(--mova-blue) 6%); }
+.vehicle-card__image { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: var(--mova-rule); }
+.vehicle-card__body { display: flex; flex: 1; flex-direction: column; padding: 18px; }
+.vehicle-card__body h3 { margin: 6px 0; font-size: 1.2rem; }
+.vehicle-card__body p:not(.mova-eyebrow) { color: var(--mova-muted); line-height: 1.45; }
+.vehicle-card__specs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-block: 1px solid var(--mova-rule); margin: 12px 0; }
+.vehicle-card__specs div { min-width: 0; padding: 10px 8px; border-right: 1px solid var(--mova-rule); }
+.vehicle-card__specs div:last-child { border-right: 0; }
+.vehicle-card__specs dt { color: var(--mova-muted); font-size: .76rem; }
+.vehicle-card__specs dd { margin: 6px 0 0; font-size: .9rem; font-weight: 700; overflow-wrap: anywhere; }
+.vehicle-card__location { margin-top: auto; }
+.vehicle-card__price { margin: 14px 0 0; }
+.vehicle-card__price strong { color: var(--mova-ink); font-size: 1.2rem; }
+.vehicle-card .mova-button { align-self: flex-start; margin-top: 8px; }
+.vehicle-detail { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+.vehicle-detail__image { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--mova-rule); }
+.vehicle-detail__body { padding-top: 12px; }
+.vehicle-detail__body h1 { margin: 6px 0 12px; font-size: clamp(2rem, 6vw, 4rem); line-height: 1.05; }
+.vehicle-detail__body > p { color: var(--mova-muted); line-height: 1.6; }
+.vehicle-detail dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 28px 0; border-top: 1px solid var(--mova-rule); }
+.vehicle-detail dl div { padding-top: 12px; border-bottom: 1px solid var(--mova-rule); }
+.vehicle-detail dt { color: var(--mova-muted); font-size: .85rem; }
+.vehicle-detail dd { margin: 5px 0 12px; font-weight: 700; }
+@media (max-width: 700px) { .vehicle-detail { grid-template-columns: 1fr; gap: 20px; } }
+@media (max-width: 900px) { .public-home__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .public-home__search { grid-template-columns: auto 1fr; } }
+@media (max-width: 560px) { .public-home__section-heading { align-items: start; flex-direction: column; gap: 0; } .public-home__grid { grid-template-columns: 1fr; } .public-home__profile { display: block; margin: 12px 0 0; } .public-home__search { grid-template-columns: 1fr; } }
+@media (max-width: 560px) {
+  .vehicle-card { grid-template-columns: 108px minmax(0, 1fr); display: grid; }
+  .vehicle-card__image { width: 108px; height: 100%; min-height: 108px; aspect-ratio: auto; }
+  .vehicle-card__body { padding: 12px; }
+  .vehicle-card__body h3 { font-size: 1.05rem; }
+  .vehicle-card__specs { grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 8px 0; }
+  .vehicle-card__specs div { padding: 6px 4px; }
+  .vehicle-card__specs dt { font-size: .68rem; }
+  .vehicle-card__specs dd { font-size: .78rem; }
+  .vehicle-card__location { margin-top: 8px; }
+  .vehicle-card .mova-button { width: 100%; }
 }

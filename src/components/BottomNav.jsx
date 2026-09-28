@@ -1,18 +1,22 @@
-import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { User, Clock, HeadphonesIcon, Settings, LogOut, Sun, Moon } from "lucide-react";
-import { Icone01, Icone02, Icone03, Icone04, Icone05 } from "./icons";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCalendarCheck,
+  faCarSide,
+  faHeart,
+  faHouse,
+  faRightFromBracket,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
+import { User, Clock, HeadphonesIcon, Settings, Sun, Moon } from "lucide-react";
 import { ModalOverlay, ModalContent, MenuItem } from "../styles/authStyle";
 import { clearAuthSession } from "../services/authSession";
-import { useTheme } from "../context/ThemeContext";
+import { getUserCargo } from "../services/authIdentity";
+import { useAuthSession } from "../hooks/useAuthSession";
+import { useActiveReservation } from "../hooks/useActiveReservation";
+import { useTheme } from "../context/useTheme";
 import "../styles/home.css";
-
-const NAV_ITEMS = [
-  { key: "home", icon: Icone01, route: "/home", label: "Início" },
-  { key: "carros", icon: Icone02, route: "/carros", label: "Carros" },
-  { key: "historico", icon: Icone03, route: "/historico", label: "Histórico" },
-  { key: "relatorios", icon: Icone04, route: "/relatorios/avaliacoes-filtro", label: "Relatórios" },
-];
 
 const MENU_ITEMS = [
   { label: "Minha Conta", icon: <User size={18} />, route: "/conta" },
@@ -21,69 +25,114 @@ const MENU_ITEMS = [
   { label: "Configurações", icon: <Settings size={18} />, route: "/configuracoes" },
 ];
 
-/**
- * Menu inferior fixo, presente em toda tela autenticada (exceto
- * login/cadastro/esqueci-minha-senha). O ultimo botao (Perfil) abre o menu
- * principal (Minha Conta, Historico, Suporte, Configuracoes, Tema, Sair) -
- * a navegacao "voltar/inicio/menu" que antes vivia no topo agora vive toda
- * aqui embaixo.
- */
-export default function BottomNav() {
+/** Navegação do locatário derivada da sessão e da reserva ativa real. */
+export default function BottomNav({ activeReservation: providedReservation } = {}) {
   const navigate = useNavigate();
   const location = useLocation();
+  const session = useAuthSession();
   const { temaEscuro, toggleTemaEscuro } = useTheme();
   const [menuVisible, setMenuVisible] = useState(false);
+  const menuButtonRef = useRef(null);
+  const firstMenuRef = useRef(null);
+  const localActivity = useActiveReservation({ enabled: providedReservation === undefined });
+  const activeReservation = providedReservation === undefined
+    ? localActivity.reservation
+    : providedReservation;
 
-  function handleKeyAction(event, action) {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      action();
-    }
-  }
+  useEffect(() => {
+    if (!menuVisible) return undefined;
+    firstMenuRef.current?.focus();
+
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setMenuVisible(false);
+        menuButtonRef.current?.focus();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = [...document.querySelectorAll("[data-mova-menu] button")];
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [menuVisible]);
+
+  if (!session?.token || getUserCargo(session.user) === "LOCADOR") return null;
+
+  const navItems = [
+    { key: "home", icon: faHouse, route: "/home", label: "Início" },
+    ...(activeReservation
+      ? [{ key: "alugar", icon: faCarSide, route: "/carros", label: "Alugar" }]
+      : []),
+    { key: "historico", icon: faCalendarCheck, route: "/historico", label: "Reservas" },
+    { key: "favoritos", icon: faHeart, route: "/carros/favoritos", label: "Favoritos" },
+  ];
+
+  const closeMenu = () => {
+    setMenuVisible(false);
+    menuButtonRef.current?.focus();
+  };
+
+  const leave = () => {
+    closeMenu();
+    clearAuthSession();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <>
       <nav className="home-bottom-nav" aria-label="Navegação principal">
-        {NAV_ITEMS.map(({ key, icon: Icon, route, label }) => {
+        {navItems.map(({ key, icon, route, label }) => {
           const isActive = location.pathname === route || location.pathname.startsWith(`${route}/`);
-
           return (
             <button
               key={key}
               type="button"
               className={`home-bottom-nav__item${isActive ? " home-bottom-nav__item--active" : ""}`}
               onClick={() => navigate(route)}
-              aria-label={label}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon size={24} />
+              <FontAwesomeIcon icon={icon} aria-hidden="true" />
+              <span>{label}</span>
             </button>
           );
         })}
 
         <button
+          ref={menuButtonRef}
           type="button"
           className={`home-bottom-nav__item${location.pathname === "/conta" ? " home-bottom-nav__item--active" : ""}`}
           onClick={() => setMenuVisible(true)}
           aria-label="Menu"
-          aria-haspopup="true"
+          aria-haspopup="dialog"
           aria-expanded={menuVisible}
         >
-          <Icone05 size={24} />
+          <FontAwesomeIcon icon={faUser} aria-hidden="true" />
+          <span>Conta</span>
         </button>
       </nav>
 
       {menuVisible && (
-        <ModalOverlay onClick={() => setMenuVisible(false)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            {MENU_ITEMS.map(({ label, icon, route }) => (
+        <ModalOverlay onClick={closeMenu}>
+          <ModalContent data-mova-menu role="dialog" aria-modal="true" aria-label="Menu da conta" onClick={(event) => event.stopPropagation()}>
+            {MENU_ITEMS.map(({ label, icon, route }, index) => (
               <MenuItem
+                as="button"
+                type="button"
                 key={route}
-                role="button"
-                tabIndex={0}
-                onClick={() => { setMenuVisible(false); navigate(route); }}
-                onKeyDown={(event) => handleKeyAction(event, () => { setMenuVisible(false); navigate(route); })}
-                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                ref={index === 0 ? firstMenuRef : undefined}
+                onClick={() => { closeMenu(); navigate(route); }}
+                style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", background: "transparent" }}
               >
                 {icon}
                 {label}
@@ -91,61 +140,30 @@ export default function BottomNav() {
             ))}
 
             <MenuItem
+              as="button"
+              type="button"
               role="switch"
               aria-checked={temaEscuro}
               aria-label={temaEscuro ? "Desativar tema escuro" : "Ativar tema escuro"}
-              tabIndex={0}
               onClick={toggleTemaEscuro}
-              onKeyDown={(event) => handleKeyAction(event, toggleTemaEscuro)}
-              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px" }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", width: "100%", background: "transparent" }}
             >
               <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 {temaEscuro ? <Moon size={18} /> : <Sun size={18} />}
                 {temaEscuro ? "Tema Escuro" : "Tema Claro"}
               </span>
-              <span
-                aria-hidden="true"
-                style={{
-                  width: 34,
-                  height: 18,
-                  borderRadius: 999,
-                  background: temaEscuro ? "var(--color-brand-fill)" : "#c8c8c8",
-                  position: "relative",
-                  flexShrink: 0,
-                  transition: "background 150ms",
-                }}
-              >
-                <span
-                  style={{
-                    position: "absolute",
-                    top: 2,
-                    left: temaEscuro ? 18 : 2,
-                    width: 14,
-                    height: 14,
-                    borderRadius: "50%",
-                    background: "#fff",
-                    transition: "left 150ms",
-                  }}
-                />
+              <span aria-hidden="true" className="theme-switch-indicator">
+                <span className="theme-switch-indicator__thumb" />
               </span>
             </MenuItem>
 
             <MenuItem
-              role="button"
-              tabIndex={0}
-              onClick={() => {
-                setMenuVisible(false);
-                clearAuthSession();
-                navigate("/login", { replace: true });
-              }}
-              onKeyDown={(event) => handleKeyAction(event, () => {
-                setMenuVisible(false);
-                clearAuthSession();
-                navigate("/login", { replace: true });
-              })}
-              style={{ display: "flex", alignItems: "center", gap: "10px", color: "#c0392b", fontWeight: "700" }}
+              as="button"
+              type="button"
+              onClick={leave}
+              style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", background: "transparent", color: "#c0392b", fontWeight: "700" }}
             >
-              <LogOut size={18} color="#c0392b" />
+              <FontAwesomeIcon icon={faRightFromBracket} aria-hidden="true" />
               Sair
             </MenuItem>
           </ModalContent>

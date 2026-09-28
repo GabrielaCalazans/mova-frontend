@@ -47,7 +47,9 @@ export default function InteressesDisponibilidade() {
 
   useEffect(() => {
     document.title = "MOVA - Avisos de disponibilidade";
-    carregar();
+    queueMicrotask(() => {
+      void carregar();
+    });
   }, [carregar]);
 
   async function alternarInteresse(idVeiculo) {

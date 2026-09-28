@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Download } from "lucide-react";
 import BottomNav from "../components/BottomNav";
 import { getAvaliacaoDashboard, getFinanceiro, getReservas, getUtilizacao } from "../services/dashboardService";
@@ -27,32 +27,88 @@ function downloadCsv(porVeiculo) {
 
 const moeda = (valor) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(valor || 0));
 const percentual = (valor) => `${(Number(valor || 0) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%`;
-const data = (valor) => valor ? new Intl.DateTimeFormat("pt-BR").format(new Date(valor)) : "—";
+const DISPLAY_TIME_ZONE = import.meta.env.VITE_TIMEZONE_EXIBICAO || "America/Sao_Paulo";
+const data = (valor) => valor ? new Intl.DateTimeFormat("pt-BR", { timeZone: DISPLAY_TIME_ZONE }).format(new Date(valor)) : "—";
 
 export default function RelatoriosVeiculos() {
   const [relatorios, setRelatorios] = useState(null);
   const [erro, setErro] = useState("");
+  const [carregando, setCarregando] = useState(true);
+  const [filtros, setFiltros] = useState({ dataInicio: "", dataFim: "", idVeiculo: "" });
+
+  const carregarRelatorios = useCallback(async (filtrosAtuais = {}, incluirAgregados = false) => {
+    setCarregando(true);
+    setErro("");
+    try {
+      if (!incluirAgregados) {
+        const reservas = await getReservas(filtrosAtuais);
+        setRelatorios((atual) => ({ ...atual, reservas }));
+        return;
+      }
+      const [reservas, financeiro, utilizacao, avaliacoes] = await Promise.all([
+        getReservas(filtrosAtuais),
+        getFinanceiro(),
+        getUtilizacao(),
+        getAvaliacaoDashboard(),
+      ]);
+      setRelatorios({ reservas, financeiro, utilizacao, avaliacoes });
+    } catch {
+      setErro("Não foi possível carregar os relatórios.");
+    } finally {
+      setCarregando(false);
+    }
+  }, []);
 
   useEffect(() => {
     document.title = "MOVA - Relatórios de Veículos";
-    let ativo = true;
-    Promise.all([getReservas(), getFinanceiro(), getUtilizacao(), getAvaliacaoDashboard()])
-      .then(([reservas, financeiro, utilizacao, avaliacoes]) => ativo && setRelatorios({ reservas, financeiro, utilizacao, avaliacoes }))
-      .catch(() => ativo && setErro("Não foi possível carregar os relatórios."));
-    return () => { ativo = false; };
-  }, []);
+    const carregamentoInicial = window.setTimeout(() => void carregarRelatorios({}, true), 0);
+    return () => window.clearTimeout(carregamentoInicial);
+  }, [carregarRelatorios]);
 
   const porVeiculo = relatorios?.financeiro?.porVeiculo || [];
   const maisUtilizados = relatorios?.utilizacao?.maisUtilizados || [];
   const reservas = relatorios?.reservas?.reservas || [];
   const avaliacoes = relatorios?.avaliacoes?.resumo || {};
+  const veiculosFiltro = Array.from(new Map([
+    ...porVeiculo.map((veiculo) => [veiculo.idVeiculo, { id: veiculo.idVeiculo, placa: veiculo.placa }]),
+    ...reservas.map((reserva) => [reserva.idVeiculo, { id: reserva.idVeiculo, placa: reserva.veiculo?.placa || reserva.idVeiculo }]),
+    ...(filtros.idVeiculo ? [[filtros.idVeiculo, { id: filtros.idVeiculo, placa: filtros.idVeiculo }]] : []),
+  ]).values());
+
+  function aplicarFiltros(event) {
+    event.preventDefault();
+    if (filtros.dataInicio && filtros.dataFim && filtros.dataFim < filtros.dataInicio) {
+      setErro("A data final deve ser igual ou posterior à data inicial.");
+      return;
+    }
+    void carregarRelatorios(filtros);
+  }
 
   return (
     <main className="carro-page">
       <div className="carro-header"><h1>Relatórios | Veículos</h1></div>
       <div className="carro-content">
         <p className="relatorio-filter-summary">Dados reais da frota, reservas, receita e avaliações do Locador autenticado.</p>
-        {!relatorios && !erro && <p className="carro-status">Carregando relatórios…</p>}
+        <form className="filtro-card" onSubmit={aplicarFiltros} aria-describedby="relatorio-filtros-ajuda">
+          <div className="auth-field">
+            <label htmlFor="relatorio-data-inicio">Data inicial</label>
+            <input id="relatorio-data-inicio" type="date" value={filtros.dataInicio} onChange={(event) => setFiltros((atual) => ({ ...atual, dataInicio: event.target.value }))} />
+          </div>
+          <div className="auth-field">
+            <label htmlFor="relatorio-data-fim">Data final</label>
+            <input id="relatorio-data-fim" type="date" value={filtros.dataFim} onChange={(event) => setFiltros((atual) => ({ ...atual, dataFim: event.target.value }))} />
+          </div>
+          <div className="auth-field">
+            <label htmlFor="relatorio-veiculo">Veículo</label>
+            <select id="relatorio-veiculo" value={filtros.idVeiculo} onChange={(event) => setFiltros((atual) => ({ ...atual, idVeiculo: event.target.value }))}>
+              <option value="">Todos os veículos</option>
+              {veiculosFiltro.map((veiculo) => <option key={veiculo.id} value={veiculo.id}>{veiculo.placa}</option>)}
+            </select>
+          </div>
+          <button type="submit" className="carro-button" disabled={carregando}>Aplicar filtros</button>
+        </form>
+        <p id="relatorio-filtros-ajuda" className="relatorio-filter-summary">Período e veículo filtram as reservas conforme o contrato atual. Financeiro, utilização e avaliações seguem seus endpoints agregados sem esses filtros.</p>
+        {carregando && <p className="carro-status" role="status" aria-busy="true">{relatorios ? "Atualizando relatórios…" : "Carregando relatórios…"}</p>}
         {erro && <p className="carro-status" role="alert">{erro}</p>}
         {relatorios && (
           <div className="relatorio-grid">

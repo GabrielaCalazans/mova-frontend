@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import RelatoriosAvaliacoes from "./RelatoriosAvaliacoes";
@@ -33,7 +33,7 @@ describe("RelatoriosAvaliacoes", () => {
     fireEvent.change(screen.getByLabelText("Veículo"), { target: { value: "v1" } });
     fireEvent.change(screen.getByLabelText("Nota mínima"), { target: { value: "4" } });
     fireEvent.click(screen.getByRole("button", { name: "Aplicar filtros" }));
-    expect(getAvaliacaoDashboard).toHaveBeenLastCalledWith({ dataInicio: "2026-01-01", dataFim: "2026-01-31", idVeiculo: "v1", notaMin: "4" });
+    await waitFor(() => expect(getAvaliacaoDashboard).toHaveBeenLastCalledWith({ dataInicio: "2026-01-01", dataFim: "2026-01-31", idVeiculo: "v1", notaMin: "4" }));
   });
 
   it("mostra vazio e erro", async () => {

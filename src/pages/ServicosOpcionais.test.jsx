@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ServicosOpcionais from "./ServicosOpcionais";
@@ -74,7 +74,9 @@ describe("ServicosOpcionais", () => {
     listServicos.mockReturnValueOnce(new Promise((res) => { resolve = res; }));
     render(<ServicosOpcionais />);
     expect(screen.getByText(/carregando servi/i)).toBeInTheDocument();
-    resolve([]);
+    await act(async () => {
+      resolve([]);
+    });
   });
 
   it("mostra erro quando o catálogo não carrega", async () => {

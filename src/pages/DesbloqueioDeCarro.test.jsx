@@ -48,6 +48,14 @@ const RESERVA_ID = "11111111-2222-4333-8444-555555555555";
 const CODIGO = "ABCD-2345";
 const COORD = { latitude: -23.5, longitude: -46.6 };
 
+function qrTokenFor(id) {
+  const payload = btoa(JSON.stringify({ idReserva: id, codigo: "ABCD-2345" }))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+  return `header.${payload}.assinatura`;
+}
+
 function reserva(overrides = {}) {
   return {
     id: RESERVA_ID,
@@ -296,7 +304,8 @@ describe("DesbloqueioDeCarro", () => {
 
   // 11. QR: deep link /desbloqueio?qr=<token> usa o endpoint do QR.
   it("usa o endpoint de QR quando a URL traz o token", async () => {
-    location = { state: null, search: "?qr=token-assinado" };
+    const token = qrTokenFor(RESERVA_ID);
+    location = { state: null, search: `?qr=${token}` };
     desbloquearReservaPorQr.mockResolvedValue(
       reserva({
         status: "EM_ANDAMENTO",
@@ -314,10 +323,34 @@ describe("DesbloqueioDeCarro", () => {
     expect(await screen.findByTestId("titulo-desbloqueado")).toBeInTheDocument();
     expect(desbloquearReservaPorQr).toHaveBeenCalledWith(
       RESERVA_ID,
-      "token-assinado",
+      token,
       COORD,
     );
     expect(desbloquearReserva).not.toHaveBeenCalled();
+  });
+
+  it("não usa uma reserva local diferente da reserva identificada pelo QR", async () => {
+    const outraReserva = "22222222-3333-4333-8444-666666666666";
+    const token = qrTokenFor(outraReserva);
+    location = { state: { reservaId: RESERVA_ID }, search: `?qr=${token}` };
+    getReservaById.mockImplementation(async (id) => reserva({ id }));
+    desbloquearReservaPorQr.mockResolvedValue(
+      reserva({ id: outraReserva, status: "EM_ANDAMENTO", codigoUsadoEm: "2026-09-18T13:00:00.000Z" }),
+    );
+
+    render(<DesbloqueioDeCarro />);
+    await screen.findByTestId("codigo-desbloqueio");
+    await userEvent.click(screen.getByRole("button", { name: /Desbloquear pelo QR Code/i }));
+
+    expect(desbloquearReservaPorQr).toHaveBeenCalledWith(outraReserva, token, COORD);
+    expect(desbloquearReservaPorQr).not.toHaveBeenCalledWith(RESERVA_ID, token, COORD);
+  });
+
+  it("recusa QR sem payload de reserva antes de buscar outra reserva", async () => {
+    location = { state: { reservaId: RESERVA_ID }, search: "?qr=token-invalido" };
+    render(<DesbloqueioDeCarro />);
+    expect(await screen.findByRole("alert")).toHaveTextContent(/QR Code inválido/i);
+    expect(getReservaById).not.toHaveBeenCalled();
   });
 
   it.each([

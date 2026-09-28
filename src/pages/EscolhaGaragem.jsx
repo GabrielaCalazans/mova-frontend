@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import movaLogo from "../assets/mova_logo.png";

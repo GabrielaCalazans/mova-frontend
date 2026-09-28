@@ -21,6 +21,22 @@ import "../styles/payment.css";
 
 const TIMEOUT_GEO_MS = 8000;
 
+function idReservaDoQr(token) {
+  if (!token) return "";
+  const segmento = token.split(".")[1];
+  if (!segmento) return "";
+
+  try {
+    const base64 = segmento.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(segmento.length / 4) * 4, "=");
+    const bytes = atob(base64);
+    const texto = decodeURIComponent([...bytes].map((char) => `%${char.charCodeAt(0).toString(16).padStart(2, "0")}`).join(""));
+    const id = JSON.parse(texto)?.idReserva;
+    return typeof id === "string" && /^[A-Za-z0-9_-]{1,100}$/.test(id) ? id : "";
+  } catch {
+    return "";
+  }
+}
+
 // A posicao deve ser obtida no momento do pedido. Falhas do navegador
 // interrompem o envio; o backend continua responsavel por validar o raio.
 function obterCoordenadas() {
@@ -128,7 +144,12 @@ export default function TelaDeDesbloqueio() {
       setErroCarregamento("");
 
       try {
-        const idDireto =
+        const idQr = idReservaDoQr(qrToken);
+        if (qrToken && !idQr) {
+          throw new Error("QR Code inválido. Solicite um novo código ao locatário.");
+        }
+
+        const idDireto = idQr ||
           location?.state?.reservaId || getJourneyStep("reserva")?.id || "";
 
         let encontrada = idDireto ? await getReservaById(idDireto) : null;
@@ -174,7 +195,7 @@ export default function TelaDeDesbloqueio() {
     return () => {
       ativo = false;
     };
-  }, [location?.state]);
+  }, [location?.state, qrToken]);
 
   async function enviarDesbloqueio(usarQr) {
     if (!reserva?.id) return;

@@ -33,7 +33,7 @@ export const STATUS_PAGAMENTO_LABELS = {
   [STATUS_PAGAMENTO.AGUARDANDO_PAGAMENTO]: "Aguardando pagamento",
   [STATUS_PAGAMENTO.PROCESSANDO]: "Processando",
   [STATUS_PAGAMENTO.SUCESSO]: "Pago",
-  [STATUS_PAGAMENTO.FALHA]: "Falhou",
+  [STATUS_PAGAMENTO.FALHA]: "Não aprovado",
 };
 
 /**

@@ -100,6 +100,12 @@ function buildStepLabel(stepKey) {
   return stepKey === "retirada" ? "Retirada" : "Devolução";
 }
 
+function abrirSeletor(event, abrir) {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  abrir();
+}
+
 export default function GarageJourneyStep({
   stepKey,
   title,
@@ -446,9 +452,17 @@ export default function GarageJourneyStep({
                 type="text"
                 placeholder="Digite a data (DD/MM/AAAA)"
                 value={data}
-                readOnly
                 required
                 disabled={!etapaLiberada}
+                inputMode="numeric"
+                aria-describedby={`${stepKey}-date-help`}
+                onChange={(event) => setData(event.target.value.replace(/[^\d/]/g, "").slice(0, 10))}
+                onKeyDown={(event) => abrirSeletor(event, () => {
+                  if (etapaLiberada) {
+                    setCalOpen(true);
+                    setClockOpen(false);
+                  }
+                })}
                 onClick={() => {
                   if (etapaLiberada) {
                     setCalOpen((value) => !value);
@@ -466,6 +480,8 @@ export default function GarageJourneyStep({
                   <line x1="3" y1="10" x2="21" y2="10" />
                 </svg>
               </IconBtn>
+
+              <span id={`${stepKey}-date-help`} className="sr-only">Digite no formato dia, mês e ano ou use o calendário.</span>
 
               {calOpen && etapaLiberada && (
                 <>
@@ -517,9 +533,17 @@ export default function GarageJourneyStep({
                 type="text"
                 placeholder="Digite o horário (HH:MM)"
                 value={hora}
-                readOnly
                 required
                 disabled={!etapaLiberada}
+                inputMode="numeric"
+                aria-describedby={`${stepKey}-time-help`}
+                onChange={(event) => setHora(event.target.value.replace(/[^\d:]/g, "").slice(0, 5))}
+                onKeyDown={(event) => abrirSeletor(event, () => {
+                  if (etapaLiberada) {
+                    setClockOpen(true);
+                    setCalOpen(false);
+                  }
+                })}
                 onClick={() => {
                   if (etapaLiberada) {
                     setClockOpen((value) => !value);
@@ -536,16 +560,18 @@ export default function GarageJourneyStep({
                 </svg>
               </IconBtn>
 
+              <span id={`${stepKey}-time-help`} className="sr-only">Digite no formato horas e minutos ou use o relógio.</span>
+
               {clockOpen && etapaLiberada && (
                 <>
                   <PopupOverlay onClick={() => setClockOpen(false)} />
                   <Popup>
                     <ClockDisplay>
-                      <ClockPart active={clockMode === "hour"} onClick={() => setClockMode("hour")}>
+                      <ClockPart as="button" type="button" active={clockMode === "hour"} onClick={() => setClockMode("hour")}>
                         {String(clockH).padStart(2, "0")}
                       </ClockPart>
                       <span style={{ color: "#aec5e7" }}>:</span>
-                      <ClockPart active={clockMode === "minute"} onClick={() => setClockMode("minute")}>
+                      <ClockPart as="button" type="button" active={clockMode === "minute"} onClick={() => setClockMode("minute")}>
                         {String(clockM).padStart(2, "0")}
                       </ClockPart>
                       <span style={{ fontSize: "1.2rem", marginLeft: "8px", color: "#aec5e7" }}>
@@ -564,7 +590,7 @@ export default function GarageJourneyStep({
                     </ModeBtns>
 
                     <ClockFaceWrap>
-                      <FaceSvg width="200" height="200" viewBox="0 0 200 200" onClick={handleFaceClick}>
+                      <FaceSvg width="200" height="200" viewBox="0 0 200 200" role="application" aria-label={`Relógio para selecionar ${clockMode === "hour" ? "a hora" : "os minutos"}`} onClick={handleFaceClick}>
                         <circle cx={CX} cy={CY} r="95" fill="#f0f8ff" stroke="#aec5e7" strokeWidth="2" />
                         <line x1={CX} y1={CY} x2={hEnd.x} y2={hEnd.y} stroke="#003366" strokeWidth="4" strokeLinecap="round" />
                         <line x1={CX} y1={CY} x2={mEnd.x} y2={mEnd.y} stroke="#2b5ba8" strokeWidth="3" strokeLinecap="round" />
@@ -573,6 +599,19 @@ export default function GarageJourneyStep({
                         {numbers.map((number, index) => (
                           <g
                             key={index}
+                            tabIndex="0"
+                            role="button"
+                            aria-label={`${clockMode === "hour" ? "Hora" : "Minutos"} ${number.label}`}
+                            onKeyDown={(event) => {
+                              if (event.key !== "Enter" && event.key !== " ") return;
+                              event.preventDefault();
+                              if (clockMode === "hour") {
+                                setClockH(number.val);
+                                setTimeout(() => setClockMode("minute"), 200);
+                              } else {
+                                setClockM(number.val);
+                              }
+                            }}
                             onClick={(event) => {
                               event.stopPropagation();
                               if (clockMode === "hour") {

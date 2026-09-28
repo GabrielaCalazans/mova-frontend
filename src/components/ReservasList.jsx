@@ -32,14 +32,21 @@ function formatarData(valor) {
   if (!valor) return "";
   const data = new Date(valor);
   if (Number.isNaN(data.getTime())) return "";
-  return data.toLocaleDateString("pt-BR");
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeZone: import.meta.env.VITE_TIMEZONE_EXIBICAO || "America/Sao_Paulo",
+  }).format(data);
 }
 
 function formatarHora(valor) {
   if (!valor) return "";
   const data = new Date(valor);
   if (Number.isNaN(data.getTime())) return "";
-  return data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  return new Intl.DateTimeFormat("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: import.meta.env.VITE_TIMEZONE_EXIBICAO || "America/Sao_Paulo",
+  }).format(data);
 }
 
 function nomeGaragem(garagem, fallback) {
@@ -244,23 +251,29 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
               {reservasDoDia.map((reserva) => (
                 (() => {
                   const acao = acaoDaReserva(reserva);
-                  const abrir = () => {
-                    if (!acao) return;
+                  const prepararReserva = () => {
                     updateJourneyStep("reserva", {
                       id: reserva.id,
                       valorTotal: reserva.valorTotal,
                       codigoDesbloqueio: reserva.codigoDesbloqueio || "",
                     });
+                  };
+                  const abrirDetalhe = () => {
+                    prepararReserva();
+                    navigate(`/reservas/${reserva.id}`, { state: { reservaId: reserva.id } });
+                  };
+                  const abrirAcao = () => {
+                    if (!acao) return;
+                    prepararReserva();
                     navigate(acao.rota, { state: { reservaId: reserva.id } });
                   };
                   return (
                 <div
                   className="frota-card"
                   key={reserva.id}
-                  onClick={abrir}
-                  style={{ cursor: acao ? "pointer" : "default" }}
                 >
                   <div className="frota-card__info">
+                    <button type="button" onClick={abrirDetalhe}>Ver detalhes da reserva</button>
                     {(() => {
                       const compartilhamento = compartilhamentos[reserva.id] ?? {};
                       return (
@@ -363,7 +376,7 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
                       </button>
                     )}
                     {acao && (
-                      <button type="button" onClick={(event) => { event.stopPropagation(); abrir(); }}>
+                      <button type="button" onClick={abrirAcao}>
                         {acao.rotulo}
                       </button>
                     )}

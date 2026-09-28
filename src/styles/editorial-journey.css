@@ -1,0 +1,258 @@
+/*
+ * Compatibilidade visual da jornada legada com "A Ficha Técnica".
+ * Mantém o markup e os contratos antigos; só remove a linguagem de app
+ * arredondada/gradiente das telas que ainda usam carro-page.
+ */
+main.carro-page {
+  min-height: 100vh;
+  background: var(--mova-paper, var(--color-page-bg, #f7f9fb));
+  color: var(--mova-ink, var(--color-text, #132b45));
+  font-family: "Open Sans", var(--font-family-base, sans-serif);
+  padding-bottom: 64px;
+}
+
+.auth-page {
+  min-height: 100vh;
+  box-sizing: border-box;
+  align-items: stretch;
+  padding: 40px 16px 80px;
+  background: var(--mova-paper, var(--color-page-bg, #f7f9fb));
+  color: var(--mova-ink, var(--color-text, #132b45));
+  font-family: "Open Sans", var(--font-family-base, sans-serif);
+}
+
+.auth-page .auth-header,
+.auth-page .auth-card {
+  width: min(100%, 680px);
+  max-width: none;
+  margin-inline: auto;
+}
+
+.auth-page .auth-header {
+  padding: 0 0 24px;
+  border-bottom: 1px solid var(--mova-rule, var(--color-border-soft, #b8c5d1));
+  text-align: left;
+}
+
+.auth-page .auth-card {
+  padding: 32px 0 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: left;
+}
+
+.auth-page .auth-card h1 {
+  margin: 0 0 24px;
+  color: var(--mova-ink, var(--color-primary-strong, #132b45));
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.auth-page .auth-form input,
+.auth-page .auth-form select,
+.auth-page .auth-form textarea {
+  min-height: 44px;
+  border: 1px solid var(--mova-rule, var(--color-border-soft, #b8c5d1));
+  border-radius: 2px;
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #132b45);
+  box-sizing: border-box;
+}
+
+.auth-page .auth-form input:focus-visible,
+.auth-page .auth-form select:focus-visible,
+.auth-page .auth-form textarea:focus-visible,
+.auth-page .auth-button:focus-visible,
+.auth-page .auth-button-secondary:focus-visible,
+.auth-page a:focus-visible {
+  outline: 3px solid var(--mova-focus, var(--color-focus, #f0a500));
+  outline-offset: 3px;
+}
+
+.auth-page .auth-button,
+.auth-page .auth-button-secondary {
+  min-height: 52px;
+  border: 1px solid var(--mova-blue, var(--color-brand-fill, #0c5aa6));
+  border-radius: 2px;
+  background: var(--mova-blue, var(--color-brand-fill, #0c5aa6));
+  color: #fff;
+  padding: 12px 18px;
+  font-weight: 700;
+  transform: none;
+  box-shadow: none;
+}
+
+.auth-page .auth-button:hover,
+.auth-page .auth-button-secondary:hover {
+  background: var(--mova-blue-dark, var(--color-primary-strong, #083c70));
+  transform: none;
+  box-shadow: none;
+}
+
+.auth-page .auth-footer a,
+.auth-page .auth-forgot a {
+  color: var(--mova-blue-dark, var(--color-primary-strong, #083c70));
+}
+
+.carro-page .carro-header {
+  padding: 24px clamp(16px, 4vw, 64px);
+  border-bottom: 1px solid var(--mova-rule, var(--color-border-soft, #b8c5d1));
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.carro-page .carro-header h1 {
+  max-width: 1180px;
+  margin: 0 auto;
+  color: var(--mova-ink, var(--color-primary-strong, #132b45));
+  font-size: clamp(1.35rem, 2.5vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.carro-page .carro-content {
+  width: min(920px, calc(100% - 32px));
+  max-width: none;
+  margin: 0 auto;
+  padding: 32px 0 96px;
+  box-sizing: border-box;
+}
+
+.carro-page .carro-content > * + * {
+  margin-top: 16px;
+}
+
+.carro-page .payment-method-card,
+.carro-page .carro-type-card,
+.carro-page .carro-list-card,
+.carro-page .garage-card,
+.carro-page .fav-card,
+.carro-page .frota-card {
+  border: 1px solid var(--mova-rule, var(--color-border-soft, #b8c5d1));
+  border-radius: 2px;
+  background: var(--color-surface, #fff);
+  box-shadow: none;
+}
+
+.carro-page .payment-method-card {
+  padding: 20px;
+}
+
+.carro-page .payment-method-card h2,
+.carro-page .carro-type-card__label h2,
+.carro-page .carro-list-card h3,
+.carro-page .garage-card__info h3,
+.carro-page .fav-card__info h3,
+.carro-page .frota-card__info h3 {
+  color: var(--mova-blue-dark, var(--color-primary-strong, #083c70));
+}
+
+.carro-page .carro-button {
+  min-height: 52px;
+  border: 1px solid var(--mova-blue, var(--color-brand-fill, #0c5aa6));
+  border-radius: 2px;
+  background: var(--mova-blue, var(--color-brand-fill, #0c5aa6));
+  color: #fff;
+  padding: 12px 18px;
+  font-weight: 700;
+  transition: background-color 150ms ease, border-color 150ms ease, opacity 150ms ease;
+}
+
+.carro-page .carro-button:hover {
+  transform: none;
+  box-shadow: none;
+  background: var(--mova-blue-dark, var(--color-primary-strong, #083c70));
+}
+
+.carro-page .carro-button:focus-visible,
+.carro-page .carro-type-card__nav:focus-visible,
+.carro-page .garage-card:focus-visible,
+.carro-page .fav-card:focus-visible,
+.carro-page .fav-card__heart:focus-visible,
+.carro-page .frota-card__actions button:focus-visible,
+.carro-page input:focus-visible,
+.carro-page select:focus-visible,
+.carro-page textarea:focus-visible {
+  outline: 3px solid var(--mova-focus, var(--color-focus, #f0a500));
+  outline-offset: 3px;
+}
+
+.carro-page .carro-button:disabled {
+  transform: none;
+  box-shadow: none;
+}
+
+.carro-page .auth-form {
+  max-width: 680px;
+  margin-inline: auto;
+}
+
+.carro-page .auth-form input,
+.carro-page .auth-form select,
+.carro-page .auth-form textarea,
+.carro-page .payment-method-card input,
+.carro-page .payment-method-card select,
+.carro-page .payment-method-card textarea {
+  min-height: 44px;
+  border: 1px solid var(--mova-rule, var(--color-border-soft, #b8c5d1));
+  border-radius: 2px;
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #132b45);
+  box-sizing: border-box;
+}
+
+.carro-page .garage-card,
+.carro-page .fav-card,
+.carro-page .frota-card {
+  min-height: 92px;
+}
+
+.carro-page .carro-status,
+.carro-page .carro-empty-state {
+  max-width: 680px;
+  margin-inline: auto;
+  color: var(--mova-muted, var(--color-text-secondary, #516273));
+}
+
+@media (max-width: 520px) {
+  .carro-page .carro-header {
+    padding: 20px 16px;
+  }
+
+  .carro-page .carro-header h1 {
+    font-size: 1.35rem;
+  }
+
+  .carro-page .carro-content {
+    width: calc(100% - 24px);
+    padding-top: 24px;
+  }
+
+  .carro-page .payment-method-card {
+    padding: 16px;
+  }
+
+  .auth-page {
+    padding: 24px 12px 72px;
+  }
+
+  .auth-page .auth-card {
+    padding-top: 24px;
+  }
+
+  .carro-page .garage-card,
+  .carro-page .fav-card,
+  .carro-page .frota-card {
+    gap: 12px;
+    padding: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carro-page .carro-button {
+    transition: none;
+  }
+}

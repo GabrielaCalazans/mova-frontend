@@ -28,7 +28,9 @@ export default function CompartilhamentoViagem() {
 
   useEffect(() => {
     let ativo = true;
-    setCarregando(true);
+    queueMicrotask(() => {
+      if (ativo) setCarregando(true);
+    });
     getCompartilhamentoPublico(token)
       .then((resultado) => {
         if (!ativo) return;

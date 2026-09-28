@@ -1,6 +1,5 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-
-const ThemeContext = createContext(undefined);
+import { useEffect, useState } from 'react';
+import { ThemeContext } from './theme-context';
 
 const STORAGE_KEY = 'mova:tema-escuro:v2';
 
@@ -35,12 +34,4 @@ export function ThemeProvider({ children }) {
       {children}
     </ThemeContext.Provider>
   );
-}
-
-export function useTheme() {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useTheme deve ser usado dentro de um ThemeProvider');
-  }
-  return context;
 }

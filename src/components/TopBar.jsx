@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ModalOverlay, ModalContent, MenuItem, HeaderIcons } from "../styles/authStyle";
 import { Menu, User, Clock, HeadphonesIcon, Settings, LogOut, Sun, Moon } from "lucide-react";
 import { clearAuthSession } from "../services/authSession";
-import { useTheme } from "../context/ThemeContext";
+import { useTheme } from "../context/useTheme";
 import movaLogo from "../assets/mova_logo.png";
 
 function TopBar({ showLogo = false, iconColor }) {

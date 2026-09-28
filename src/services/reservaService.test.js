@@ -12,6 +12,7 @@ import {
   buildShareUrl,
   cancelarReserva,
   criarCompartilhamentoReserva,
+  getQrDesbloqueio,
   getRastreamentoReserva,
   getReservasDoLocatarioPage,
   revogarCompartilhamentoReserva,
@@ -54,6 +55,23 @@ describe("getRastreamentoReserva", () => {
     });
     expect(apiRequest).toHaveBeenCalledWith(
       "/reserva/reserva-1/localizacao",
+      { authToken: "token-teste" },
+    );
+  });
+});
+
+describe("getQrDesbloqueio", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    getAuthSession.mockReturnValue({ token: "token-teste" });
+  });
+
+  it("consulta o token assinado somente pelo endpoint autenticado", async () => {
+    apiRequest.mockResolvedValue({ result: { qr: "token-qr-assinado" } });
+
+    await expect(getQrDesbloqueio("reserva-1")).resolves.toBe("token-qr-assinado");
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/reserva/reserva-1/desbloqueio/qr",
       { authToken: "token-teste" },
     );
   });

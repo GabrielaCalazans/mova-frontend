@@ -17,18 +17,6 @@ import {
 import { maskCelphone, maskCep, maskCpf, maskCnpj } from "../utils/inputMasks";
 import { validateProfileForm, isSenhaForte } from "../utils/formValidators";
 
-const CONTA_DEBUG_ENABLED = String(import.meta.env.AUTH_DEBUG).toLowerCase() === "true";
-
-function contaDebug(label, payload) {
-  if (!CONTA_DEBUG_ENABLED) {
-    return;
-  }
-
-  console.groupCollapsed(`[conta-debug] ${label}`);
-  console.log(payload);
-  console.groupEnd();
-}
-
 function ProfileMenuRow({ label, open, onToggle, tone = "default", children }) {
   const isExpandable = Boolean(children);
 
@@ -112,20 +100,24 @@ function Conta() {
     let isMounted = true;
 
     if (!authToken) {
-      setProfileStatus("error");
-      setProfileFeedback({
-        type: "error",
-        message: "Sua sessao expirou. Entre novamente para acessar a conta.",
+      queueMicrotask(() => {
+        if (!isMounted) return;
+        setProfileStatus("error");
+        setProfileFeedback({
+          type: "error",
+          message: "Sua sessao expirou. Entre novamente para acessar a conta.",
+        });
       });
       return () => {
         isMounted = false;
       };
     }
 
-    contaDebug("hydrateProfile.sessionUser", sessionUser);
-
-    setProfileStatus("loading");
-    setProfileFeedback(null);
+    queueMicrotask(() => {
+      if (!isMounted) return;
+      setProfileStatus("loading");
+      setProfileFeedback(null);
+    });
 
     async function hydrateProfile() {
       try {
@@ -133,8 +125,6 @@ function Conta() {
           authToken,
           persistToSession: true,
         });
-
-        contaDebug("hydrateProfile.freshProfile", freshProfile);
 
         if (!isMounted || !freshProfile) {
           return;
@@ -157,13 +147,11 @@ function Conta() {
             cep: freshProfile.cep || "",
           };
 
-          contaDebug("hydrateProfile.nextFormValues", nextValues);
           return nextValues;
         });
 
         setProfileStatus("ready");
       } catch (error) {
-        contaDebug("hydrateProfile.error", error);
         const message = error instanceof Error ? error.message : "Nao foi possivel carregar os dados da conta.";
 
         if (/sessao expirada|faca login novamente/i.test(message)) {

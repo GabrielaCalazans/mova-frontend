@@ -57,11 +57,11 @@ export default function CancelamentoReserva() {
       <p>Retirada prevista: {formatarDataHora(reserva.dataHoraInicio)}</p>
       <p>Valor da reserva: {formatMoneyBRL(reserva.valorTotal)}</p>
       <p>Status: {reserva.status}</p>
-      {!cancelada && cancelavel && <p>O sistema verificará o prazo e aplicará, se houver, a multa de cancelamento.</p>}
+      {!cancelada && cancelavel && <p>Até 2 horas antes da retirada, o cancelamento não tem multa. Depois desse prazo, o sistema aplica multa de 20% sobre o valor da reserva; o valor final exibido após o cancelamento é calculado pelo servidor.</p>}
       {!cancelada && !cancelavel && <p>Esta reserva não pode ser cancelada porque já está em andamento, foi realizada ou já foi cancelada.</p>}
       {!cancelada && cancelavel && !confirmando && <button type="button" className="carro-button" onClick={() => setConfirmando(true)}>Solicitar cancelamento</button>}
       {!cancelada && cancelavel && confirmando && <div role="dialog" aria-label="Confirmar cancelamento" className="payment-method-card">
-        <p>Confirma o cancelamento desta reserva? O impacto financeiro será informado pelo sistema.</p>
+        <p>Confirma o cancelamento? A regra é sem multa até 2 horas antes e multa de 20% depois; o servidor calculará o valor final.</p>
         <button type="button" onClick={() => setConfirmando(false)} disabled={enviando}>Voltar</button>
         <button type="button" className="carro-button" onClick={cancelar} disabled={enviando}>{enviando ? "Cancelando…" : "Confirmar cancelamento"}</button>
       </div>}

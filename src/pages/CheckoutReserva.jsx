@@ -332,8 +332,13 @@ export default function CheckoutReserva() {
     devolucao: getJourneyStep("devolucao"),
     servicos: getJourneyStep("servicos"),
   }));
+  const [dateTimes] = useState(() => ({
+    pickup: parseJourneyDateTime(journey.retirada),
+    dropoff: parseJourneyDateTime(journey.devolucao),
+  }));
 
   const { veiculo: veiculoSalvo, retirada, devolucao, servicos } = journey;
+  const { pickup: pickupDateTime, dropoff: dropoffDateTime } = dateTimes;
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -406,15 +411,6 @@ export default function CheckoutReserva() {
     }
   }
 
-  const pickupDateTime = useMemo(
-    () => parseJourneyDateTime(retirada),
-    [retirada],
-  );
-  const dropoffDateTime = useMemo(
-    () => parseJourneyDateTime(devolucao),
-    [devolucao],
-  );
-
   useEffect(() => {
     document.title = "MOVA - Checkout da Reserva";
   }, []);
@@ -474,7 +470,14 @@ export default function CheckoutReserva() {
     return () => {
       active = false;
     };
-  }, [dropoffDateTime, pickupDateTime, veiculoSalvo]);
+  }, [
+    devolucao?.garageId,
+    dropoffDateTime,
+    pickupDateTime,
+    retirada?.garageId,
+    servicos?.ids,
+    veiculoSalvo,
+  ]);
 
   const additionalDetails = useMemo(() => buildAdditionalDetails(vehicle), [vehicle]);
 

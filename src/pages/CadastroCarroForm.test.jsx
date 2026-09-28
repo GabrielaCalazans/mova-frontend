@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import CadastroCarroForm from "./CadastroCarroForm";
-import { updateVeiculo } from "../services/veiculoService";
+import { listFrota, updateVeiculo } from "../services/veiculoService";
 
 const navigateMock = vi.hoisted(() => vi.fn());
 let veiculo = null;
@@ -16,6 +16,7 @@ vi.mock("../layout/AuthenticatedLayout", () => ({
 }));
 vi.mock("../services/veiculoService", () => ({
   createVeiculo: vi.fn(),
+  listFrota: vi.fn(),
   updateVeiculo: vi.fn(),
 }));
 vi.mock("../services/garagemService", () => ({
@@ -58,6 +59,39 @@ describe("CadastroCarroForm", () => {
       status: "DISPONIVEL",
     })));
     expect(navigateMock).toHaveBeenCalledWith("/cadastro-carros");
+  });
+
+  it("carrega veículo real ao abrir URL direta sem location state", async () => {
+    const { listGaragens } = await import("../services/garagemService");
+    veiculo = null;
+    listGaragens.mockResolvedValueOnce([{
+      id: "garagem-1",
+      nome: "Garagem Centro",
+      status: "ATIVA",
+      capacidade: 10,
+      veiculosAlocados: 1,
+    }]);
+    listFrota.mockResolvedValueOnce([{
+      id: "veiculo-1",
+      marca: "Toyota",
+      modelo: "Corolla",
+      placa: "XYZ9A99",
+      ano: 2024,
+      cambio: "Automatico",
+      capacidade: 5,
+      valorDiaria: 280,
+      status: "DISPONIVEL",
+      eletrico: true,
+      adaptado: false,
+      categoria: "EXECUTIVO",
+      garagemId: "garagem-1",
+    }]);
+
+    render(<CadastroCarroForm />);
+
+    expect(await screen.findByDisplayValue("Toyota")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("XYZ9A99")).toBeInTheDocument();
+    expect(screen.getByLabelText("Garagem operacional")).toHaveValue("garagem-1");
   });
 
   it("exibe erro quando a alteração de status falha", async () => {

@@ -46,7 +46,7 @@ function buildMonthCells(refDate) {
   return cells;
 }
 
-export function formatarDataBR(data) {
+function formatarDataBR(data) {
   if (!data) return "";
   return `${pad(data.getDate())}/${pad(data.getMonth() + 1)}/${data.getFullYear()}`;
 }

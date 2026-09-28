@@ -13,7 +13,7 @@ export default function CadastroDeCarros() {
   const navigate = useNavigate();
   const idLocador = getAuthSession()?.user?.id;
   const [veiculos, setVeiculos] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(Boolean(idLocador));
   const [erro, setErro] = useState(null);
   const [veiculoParaExcluir, setVeiculoParaExcluir] = useState(null);
   const [excluindo, setExcluindo] = useState(false);
@@ -39,7 +39,9 @@ export default function CadastroDeCarros() {
 
   useEffect(() => {
     document.title = "MOVA - Cadastro de Carros";
-    carregar();
+    queueMicrotask(() => {
+      void carregar();
+    });
   }, [carregar]);
 
   async function confirmarExclusao() {

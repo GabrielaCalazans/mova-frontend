@@ -25,7 +25,9 @@ export default function PendenciasFinanceiras() {
   };
 
   useEffect(() => {
-    carregar();
+    queueMicrotask(() => {
+      void carregar();
+    });
   }, []);
 
   const pagar = async (id) => {

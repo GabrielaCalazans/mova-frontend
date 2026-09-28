@@ -9,13 +9,33 @@ import {
 const AUTH_DEBUG_ENABLED =
   String(import.meta.env.AUTH_DEBUG).toLowerCase() === "true";
 
+const SENSITIVE_DEBUG_KEY = /authorization|token|senha|password|secret|cookie|cpf|cnh|cnpj|cvv|cartao|card/i;
+
+export function sanitizeAuthDebug(value, key = "") {
+  if (SENSITIVE_DEBUG_KEY.test(key)) {
+    return "[redacted]";
+  }
+  if (value instanceof Error) {
+    return { name: value.name, message: value.message };
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeAuthDebug(item));
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([entryKey, entryValue]) => [entryKey, sanitizeAuthDebug(entryValue, entryKey)]),
+    );
+  }
+  return value;
+}
+
 function authDebug(label, payload) {
   if (!AUTH_DEBUG_ENABLED) {
     return;
   }
 
   console.groupCollapsed(`[auth-debug] ${label}`);
-  console.log(payload);
+  console.log(sanitizeAuthDebug(payload));
   console.groupEnd();
 }
 

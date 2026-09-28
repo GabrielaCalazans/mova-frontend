@@ -33,5 +33,5 @@ export function isLocatario(user) {
 }
 
 export function resolveAuthRoute(user) {
-  return isLocador(user) ? "/conta" : "/home";
+  return isLocador(user) ? "/painel" : "/home";
 }

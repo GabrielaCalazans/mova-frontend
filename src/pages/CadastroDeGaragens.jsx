@@ -12,7 +12,7 @@ export default function CadastroDeGaragens() {
   const navigate = useNavigate();
   const idLocador = getAuthSession()?.user?.id;
   const [garagens, setGaragens] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(Boolean(idLocador));
   const [erro, setErro] = useState(null);
   const [garagemParaExcluir, setGaragemParaExcluir] = useState(null);
   const [excluindo, setExcluindo] = useState(false);
@@ -37,7 +37,9 @@ export default function CadastroDeGaragens() {
 
   useEffect(() => {
     document.title = "MOVA - Cadastro de Garagens";
-    carregar();
+    queueMicrotask(() => {
+      void carregar();
+    });
   }, [carregar]);
 
   async function confirmarExclusao() {

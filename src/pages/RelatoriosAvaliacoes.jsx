@@ -53,7 +53,9 @@ export default function RelatoriosAvaliacoes() {
 
   useEffect(() => {
     document.title = "MOVA - Relatórios de Avaliações";
-    carregar();
+    queueMicrotask(() => {
+      void carregar();
+    });
     // A carga inicial deve acontecer apenas uma vez.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -112,8 +112,13 @@ export default function Pagamento() {
       .then((encontrada) => {
         if (!montado.current) return;
         setReserva(encontrada);
-        setStatusPagamento(encontrada?.statusPagamento ?? "");
+        const statusAtual = encontrada?.statusPagamento ?? "";
+        setStatusPagamento(statusAtual);
         if (encontrada?.metodoPagamento) setMetodo(encontrada.metodoPagamento);
+        if (statusAtual === STATUS_PAGAMENTO.PROCESSANDO) {
+          setProcessando(true);
+          acompanhar(TENTATIVAS_POLLING);
+        }
       })
       .catch((error) => {
         if (!montado.current) return;
@@ -124,6 +129,9 @@ export default function Pagamento() {
       .finally(() => {
         if (montado.current) setCarregando(false);
       });
+    // Acompanhamento deve iniciar uma vez por reserva; incluir a função recriada
+    // em cada render reiniciaria o polling e poderia duplicar timers.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reservaId]);
 
   // Observa a reserva até o gateway decidir. Só o backend muda esse status.
@@ -235,7 +243,8 @@ export default function Pagamento() {
       });
   }
 
-  const aprovado = statusPagamento === STATUS_PAGAMENTO.SUCESSO;
+  const reservaForaDaEtapaDePagamento = ["CANCELADA", "REALIZADA", "EM_ANDAMENTO"].includes(reserva?.status);
+  const aprovado = statusPagamento === STATUS_PAGAMENTO.SUCESSO && !reservaForaDaEtapaDePagamento;
   const usaCartao = METODOS_COM_CARTAO.includes(metodo);
 
   const semReserva = !reservaId;
@@ -293,6 +302,28 @@ export default function Pagamento() {
       </div>
 
       <div className="carro-content">
+        {reservaForaDaEtapaDePagamento ? (
+          <section className="payment-method-card" role="status">
+            <h2>
+              {reserva?.status === "CANCELADA"
+                ? "Reserva cancelada"
+                : reserva?.status === "REALIZADA"
+                  ? "Reserva concluída"
+                  : "Locação em andamento"}
+            </h2>
+            <p>
+              {reserva?.status === "CANCELADA"
+                ? "Esta reserva não pode receber pagamento nem liberar o veículo."
+                : reserva?.status === "REALIZADA"
+                  ? "O pagamento e a retirada já foram encerrados para esta reserva."
+                  : "O pagamento já foi confirmado e a locação está em andamento."}
+            </p>
+            <button type="button" className="carro-button" onClick={() => navigate("/historico")}>
+              Ver minhas reservas
+            </button>
+          </section>
+        ) : (
+          <>
         <section className="payment-method-card">
           <h2>Valor da reserva</h2>
           {/* Valor calculado pelo backend — o frontend só exibe. */}
@@ -419,6 +450,8 @@ export default function Pagamento() {
         <p className="payment-footer-text">
           Dúvidas? <a href="#">Fale com o suporte</a>
         </p>
+          </>
+        )}
       </div>
 
       {pixModalOpen && (

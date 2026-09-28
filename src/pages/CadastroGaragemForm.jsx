@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import AuthenticatedLayout from "../layout/AuthenticatedLayout";
-import { createGaragem, updateGaragem } from "../services/garagemService";
+import { createGaragem, listGaragens, updateGaragem } from "../services/garagemService";
 import { getAuthSession } from "../services/authSession";
 import "../styles/relatorios.css";
 
@@ -25,6 +25,41 @@ export default function CadastroGaragemForm() {
   });
   const [erro, setErro] = useState(null);
   const [salvando, setSalvando] = useState(false);
+  const [carregandoGaragem, setCarregandoGaragem] = useState(!isNovo && !garagemOriginal);
+
+  useEffect(() => {
+    if (isNovo || garagemOriginal || !idLocador || !id) return undefined;
+
+    let ativo = true;
+    listGaragens({ idLocador })
+      .then((garagens) => {
+        if (!ativo) return;
+        const garagem = (Array.isArray(garagens) ? garagens : []).find(
+          (item) => String(item.id) === String(id),
+        );
+        if (!garagem) {
+          throw new Error("Garagem não encontrada na sua conta.");
+        }
+        setValues({
+          nome: garagem.nome || "",
+          endereco: garagem.endereco || "",
+          capacidade: garagem.capacidade ? String(garagem.capacidade) : "",
+          acessibilidade: garagem.acessibilidade ?? true,
+          status: garagem.status || "ATIVA",
+        });
+        setErro(null);
+      })
+      .catch((error) => {
+        if (ativo) setErro(error.message || "Não foi possível carregar a garagem.");
+      })
+      .finally(() => {
+        if (ativo) setCarregandoGaragem(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [garagemOriginal, id, idLocador, isNovo]);
 
   useEffect(() => {
     document.title = isNovo ? "MOVA - Adicionar Garagem" : "MOVA - Editar Garagem";
@@ -60,6 +95,14 @@ export default function CadastroGaragemForm() {
     } finally {
       setSalvando(false);
     }
+  }
+
+  if (carregandoGaragem) {
+    return (
+      <AuthenticatedLayout title="Informações" align="center">
+        <p role="status" aria-live="polite">Carregando garagem…</p>
+      </AuthenticatedLayout>
+    );
   }
 
   return (

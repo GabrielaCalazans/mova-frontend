@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '../layout/AuthenticatedLayout';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../context/useTheme';
 import {
   Title,
   Section,

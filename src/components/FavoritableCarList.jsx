@@ -25,7 +25,7 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
   const [veiculos, setVeiculos] = useState([]);
   const [favoritos, setFavoritos] = useState(new Set());
   const [interesses, setInteresses] = useState(new Set());
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
 
   const crossLinkRoute = onlyFavorites ? "/carros/disponiveis" : "/carros/favoritos";
@@ -49,11 +49,13 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [onlyFavorites]);
 
   useEffect(() => {
     document.title = documentTitle;
-    carregar();
+    queueMicrotask(() => {
+      void carregar();
+    });
   }, [carregar, documentTitle]);
 
   async function handleToggleFavorito(event, id) {

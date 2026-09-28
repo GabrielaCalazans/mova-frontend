@@ -116,6 +116,17 @@ describe("Pagamento", () => {
     expect(screen.queryByText(/Pagamento aprovado/i)).not.toBeInTheDocument();
   });
 
+  it("mantem estado pendente ao recarregar reserva PROCESSANDO", async () => {
+    getReservaById.mockResolvedValue(reserva({ statusPagamento: "PROCESSANDO" }));
+
+    render(<Pagamento />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/Processando pagamento/i)).toBeInTheDocument(),
+    );
+    expect(screen.queryByRole("button", { name: /^Pagar$/i })).not.toBeInTheDocument();
+  });
+
   // 4. Sucesso
   it("só mostra sucesso com a confirmação real do backend", async () => {
     iniciarPagamento.mockResolvedValue({
@@ -141,6 +152,19 @@ describe("Pagamento", () => {
       "reserva",
       expect.objectContaining({ codigoDesbloqueio: "AB12-CD34" }),
     );
+  });
+
+  it("não reabre pagamento nem mostra sucesso para reserva cancelada", async () => {
+    getReservaById.mockResolvedValue(
+      reserva({ status: "CANCELADA", statusPagamento: "SUCESSO", codigoDesbloqueio: "AB12-CD34" }),
+    );
+
+    render(<Pagamento />);
+
+    expect(await screen.findByRole("heading", { name: /Reserva cancelada/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Pagar$/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Pagamento aprovado/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/AB12-CD34/i)).not.toBeInTheDocument();
   });
 
   // 5. Falha

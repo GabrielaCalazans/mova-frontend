@@ -119,7 +119,7 @@ describe("Fluxo de autenticacao", () => {
 
     render(<App />);
 
-    await user.type(screen.getByRole("textbox", { name: /e-mail/i }), "cliente@mova.com");
+    await user.type(await screen.findByRole("textbox", { name: /e-mail/i }), "cliente@mova.com");
     await user.type(screen.getByLabelText(/senha/i), "Senha12345");
     await user.click(screen.getByRole("button", { name: /entrar/i }));
 
@@ -128,12 +128,8 @@ describe("Fluxo de autenticacao", () => {
       senha: "Senha12345",
     });
 
-    expect(await screen.findByRole("heading", { name: /página inicial/i })).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /alugar um carro/i }));
-
-    expect(await screen.findByRole("heading", { name: /escolha o tipo de carro/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /selecionar/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /veículos disponíveis agora/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /alugar um carro/i })).not.toBeInTheDocument();
   });
 
   it("faz logout e limpa a sessao", async () => {
@@ -142,11 +138,11 @@ describe("Fluxo de autenticacao", () => {
 
     render(<App />);
 
-    await user.type(screen.getByRole("textbox", { name: /e-mail/i }), "cliente@mova.com");
+    await user.type(await screen.findByRole("textbox", { name: /e-mail/i }), "cliente@mova.com");
     await user.type(screen.getByLabelText(/senha/i), "Senha12345");
     await user.click(screen.getByRole("button", { name: /entrar/i }));
 
-    expect(await screen.findByRole("heading", { name: /página inicial/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /veículos disponíveis agora/i })).toBeInTheDocument();
 
     await user.click(screen.getAllByRole("button", { name: /perfil/i })[0]);
     await user.click(await screen.findByText(/^sair$/i));
@@ -161,10 +157,10 @@ describe("Fluxo de autenticacao", () => {
 
     render(<App />);
 
-    await user.click(screen.getByRole("link", { name: /esqueci minha senha/i }));
+    await user.click(await screen.findByRole("link", { name: /esqueci minha senha/i }));
 
     expect(
-      screen.getByRole("heading", { name: /recuperar senha/i })
+      await screen.findByRole("heading", { name: /recuperar senha/i })
     ).toBeInTheDocument();
 
     const submitButton = screen.getByRole("button", {
@@ -207,21 +203,21 @@ describe("Fluxo de autenticacao", () => {
     ).toBeInTheDocument();
   });
 
-  it("mostra a pagina 404 em uma rota invalida", () => {
+  it("mostra a pagina 404 em uma rota invalida", async () => {
     window.history.pushState({}, "", "/rota-invalida");
 
     render(<App />);
 
-    expect(screen.getByRole("heading", { name: /p.gina n.o encontrada/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /p.gina n.o encontrada/i })).toBeInTheDocument();
     expect(window.location.pathname).toBe("/rota-invalida");
   });
 
-  it("bloqueia fluxo sem sessao e redireciona para login", () => {
+  it("permite catálogo público sem sessão", async () => {
     window.history.pushState({}, "", "/tipos-carros");
 
     render(<App />);
 
-    expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /escolha o tipo de carro/i })).toBeInTheDocument();
   });
 
   // A retirada NÃO é escolha do usuário: o backend exige que
@@ -426,7 +422,7 @@ describe("Fluxo de autenticacao", () => {
     render(<App />);
 
     expect(await screen.findByRole("heading", { name: /checkout da reserva/i })).toBeInTheDocument();
-    expect(screen.getAllByText(/hatch plus/i).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/hatch plus/i)).length).toBeGreaterThan(0);
     expect(screen.getByText(/garagem centro/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /confirmar e seguir para pagamento/i })).toBeInTheDocument();
   });

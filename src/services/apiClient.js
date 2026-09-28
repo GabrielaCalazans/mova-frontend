@@ -5,6 +5,8 @@
  * genérico e quem chamava só conseguia distinguir 401 de 500 por regex na
  * mensagem. Ver auditoria/CONTRATO-FRONTEND-BACKEND.md.
  */
+import { clearAuthSession, saveAuthFeedback } from "./authSession";
+
 export class ApiError extends Error {
   constructor(message, { status, code, errors, payload, requestId } = {}) {
     super(message);
@@ -112,6 +114,11 @@ export async function apiRequest(path, options = {}) {
     const parsedMessage = parseApiErrorMessage(payload);
     const message = parsedMessage || `Erro ao comunicar com a API (HTTP ${response.status}).`;
     const requestId = payload?.requestId ?? response.headers.get("x-request-id");
+
+    if (response.status === 401) {
+      saveAuthFeedback({ type: "error", message });
+      clearAuthSession();
+    }
 
     // Keep credentials and path parameters out of browser logs.
     console.error("[apiRequest] API operation failed", {
