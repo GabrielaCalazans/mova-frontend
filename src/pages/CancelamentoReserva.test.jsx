@@ -8,7 +8,7 @@ const navigate = vi.fn();
 vi.mock("react-router-dom", () => ({ useNavigate: () => navigate, useLocation: () => ({ state: { reservaId: "reserva-1" } }) }));
 vi.mock("../layout/AuthenticatedLayout", () => ({ default: ({ children }) => <div>{children}</div> }));
 vi.mock("../utils/journeyStorage", () => ({ getJourneyStep: () => null }));
-vi.mock("../services/reservaService", () => ({ cancelarReserva: vi.fn(), getReservaById: vi.fn() }));
+vi.mock("../services/reservaService", () => ({ cancelarReserva: vi.fn(), getPagamentoReserva: vi.fn(), getReservaById: vi.fn() }));
 
 const confirmada = { id: "reserva-1", status: "CONFIRMADA", valorTotal: 400, dataHoraInicio: "2026-09-20T12:00:00Z", veiculo: { modeloVeiculo: { marca: "Fiat", modelo: "Argo" } } };
 

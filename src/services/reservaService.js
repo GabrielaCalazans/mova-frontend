@@ -142,6 +142,13 @@ export async function getRastreamentoReserva(id) {
   return data.result ?? data;
 }
 
+/** Endpoint: GET /reserva/:id/pagamento — projeção financeira sanitizada. */
+export async function getPagamentoReserva(id) {
+  if (!id) throw new Error("ID da reserva não informado.");
+  const data = await apiRequest(`/reserva/${id}/pagamento`, authHeaders());
+  return data.result ?? data;
+}
+
 /** Cria/obtém o token persistente de compartilhamento da reserva. */
 export async function criarCompartilhamentoReserva(id) {
   if (!id) throw new Error("ID da reserva não informado.");

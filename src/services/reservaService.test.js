@@ -13,6 +13,7 @@ import {
   cancelarReserva,
   criarCompartilhamentoReserva,
   getQrDesbloqueio,
+  getPagamentoReserva,
   getRastreamentoReserva,
   getReservasDoLocatarioPage,
   revogarCompartilhamentoReserva,
@@ -72,6 +73,26 @@ describe("getQrDesbloqueio", () => {
     await expect(getQrDesbloqueio("reserva-1")).resolves.toBe("token-qr-assinado");
     expect(apiRequest).toHaveBeenCalledWith(
       "/reserva/reserva-1/desbloqueio/qr",
+      { authToken: "token-teste" },
+    );
+  });
+});
+
+describe("getPagamentoReserva", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    getAuthSession.mockReturnValue({ token: "token-teste" });
+  });
+
+  it("consulta status financeiro real pelo endpoint autenticado", async () => {
+    apiRequest.mockResolvedValue({ result: { statusPagamento: "SUCESSO", statusEstorno: "CONCLUIDO" } });
+
+    await expect(getPagamentoReserva("reserva-1")).resolves.toEqual({
+      statusPagamento: "SUCESSO",
+      statusEstorno: "CONCLUIDO",
+    });
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/reserva/reserva-1/pagamento",
       { authToken: "token-teste" },
     );
   });

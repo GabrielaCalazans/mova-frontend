@@ -12,6 +12,7 @@ import { getJourneyStep, updateJourneyStep } from "../utils/journeyStorage";
 
 vi.mock("../services/reservaService", () => ({
   getReservaById: vi.fn(),
+  getPagamentoReserva: vi.fn(),
   iniciarPagamento: vi.fn(),
 }));
 

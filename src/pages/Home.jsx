@@ -109,7 +109,7 @@ function Home() {
                 return (
                   <Fragment key={veiculo.id || `${marca}-${modelo}-${index}`}>
                     <article className="vehicle-card">
-                      <img src={details.image} alt={`${marca} ${modelo}`} className="vehicle-card__image" />
+                      <img src={veiculo.imagens?.[0]?.url || details.image} alt={veiculo.imagens?.[0]?.altText || `${marca} ${modelo}`} className="vehicle-card__image" loading="lazy" decoding="async" />
                       <div className="vehicle-card__body">
                         <p className="mova-eyebrow">{veiculo.categoria || "Veículo"}</p>
                         <h3>{marca} {modelo}</h3>

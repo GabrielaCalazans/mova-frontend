@@ -44,7 +44,59 @@ export function normalizeVeiculo(veiculo) {
 
     // Mantém o objeto aninhado para acesso direto quando necessário
     modeloVeiculo: mv,
+    imagens: Array.isArray(veiculo.imagens) ? veiculo.imagens : [],
   };
+}
+
+/** Lista imagens prontas; o backend decide se a consulta é pública ou privada. */
+export async function listImagensVeiculo(id) {
+  if (!id) throw new Error("ID do veículo não informado.");
+  const session = getAuthSession();
+  const data = await apiRequest(`/veiculo/${id}/imagens`, { authToken: session?.token });
+  return data.result ?? data;
+}
+
+/** Upload binário autenticado; nenhuma credencial de storage vai para o browser. */
+export async function uploadImagemVeiculo(id, file, altText = "", onProgress) {
+  if (!id || !file) throw new Error("Veículo e arquivo são obrigatórios.");
+  const session = getAuthSession();
+  const progress = typeof onProgress === "function" ? { onUploadProgress: onProgress } : {};
+  const data = await apiRequest(`/veiculo/${id}/imagens`, {
+    method: "POST",
+    authToken: session?.token,
+    body: file,
+    contentType: file.type,
+    headers: altText ? { "X-Image-Alt": altText } : {},
+    ...progress,
+  });
+  return data.result ?? data;
+}
+
+export async function reorderImagensVeiculo(id, imagemIds) {
+  const session = getAuthSession();
+  const data = await apiRequest(`/veiculo/${id}/imagens/ordem`, {
+    method: "PUT",
+    authToken: session?.token,
+    body: JSON.stringify({ imagemIds }),
+  });
+  return data.result ?? data;
+}
+
+export async function setCapaImagemVeiculo(id, imagemId) {
+  const session = getAuthSession();
+  const data = await apiRequest(`/veiculo/${id}/imagens/${imagemId}/capa`, {
+    method: "POST",
+    authToken: session?.token,
+  });
+  return data.result ?? data;
+}
+
+export async function deleteImagemVeiculo(id, imagemId) {
+  const session = getAuthSession();
+  await apiRequest(`/veiculo/${id}/imagens/${imagemId}`, {
+    method: "DELETE",
+    authToken: session?.token,
+  });
 }
 
 /**

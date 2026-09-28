@@ -83,11 +83,77 @@ function buildUrl(path) {
   return `${normalizedBase}${normalizedPath}`;
 }
 
+function apiRequestWithUploadProgress(path, options) {
+  const {
+    authToken,
+    contentType: requestContentType = "application/json",
+    headers: customHeaders = {},
+    onUploadProgress,
+    ...requestOptions
+  } = options;
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open(requestOptions.method || "GET", buildUrl(path));
+
+    if (requestContentType) xhr.setRequestHeader("Content-Type", requestContentType);
+    Object.entries(customHeaders).forEach(([name, value]) => xhr.setRequestHeader(name, value));
+    if (authToken) xhr.setRequestHeader("Authorization", `Bearer ${authToken}`);
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) onUploadProgress(event.loaded, event.total);
+    };
+
+    xhr.onerror = () => reject(new ApiError("Nao foi possivel conectar com a API.", { status: 0 }));
+    xhr.onload = () => {
+      const responseContentType = xhr.getResponseHeader("content-type") || "";
+      let payload = xhr.responseText;
+      if (responseContentType.includes("application/json")) {
+        try {
+          payload = JSON.parse(xhr.responseText);
+        } catch {
+          payload = null;
+        }
+      }
+
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(payload);
+        return;
+      }
+
+      const message = parseApiErrorMessage(payload) || `Erro ao comunicar com a API (HTTP ${xhr.status}).`;
+      const requestId = payload?.requestId ?? xhr.getResponseHeader("x-request-id");
+      if (xhr.status === 401) {
+        saveAuthFeedback({ type: "error", message });
+        clearAuthSession();
+      }
+      console.error("[apiRequest] API operation failed", {
+        method: requestOptions.method || "GET",
+        status: xhr.status,
+        requestId,
+      });
+      reject(new ApiError(message, {
+        status: xhr.status,
+        code: payload?.code ?? null,
+        errors: Array.isArray(payload?.errors) ? payload.errors : null,
+        payload,
+        requestId,
+      }));
+    };
+
+    xhr.send(requestOptions.body ?? null);
+  });
+}
+
 export async function apiRequest(path, options = {}) {
-  const { authToken, headers: customHeaders = {}, ...requestOptions } = options;
+  if (typeof options.onUploadProgress === "function") {
+    return apiRequestWithUploadProgress(path, options);
+  }
+
+  const { authToken, contentType: requestContentType = "application/json", headers: customHeaders = {}, ...requestOptions } = options;
 
   const headers = {
-    "Content-Type": "application/json",
+    ...(requestContentType ? { "Content-Type": requestContentType } : {}),
     ...customHeaders,
   };
 

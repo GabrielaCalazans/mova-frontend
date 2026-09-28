@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import AuthenticatedLayout from "../layout/AuthenticatedLayout";
-import { createVeiculo, listFrota, updateVeiculo } from "../services/veiculoService";
+import { createVeiculo, listFrota, updateVeiculo, uploadImagemVeiculo, deleteImagemVeiculo, reorderImagensVeiculo, setCapaImagemVeiculo } from "../services/veiculoService";
 import { listGaragens } from "../services/garagemService";
 import { getAuthSession } from "../services/authSession";
 import "../styles/relatorios.css";
@@ -39,6 +39,19 @@ export default function CadastroCarroForm() {
   const [carregandoVeiculo, setCarregandoVeiculo] = useState(!isNovo && !veiculoOriginal);
   const [garagens, setGaragens] = useState([]);
   const [erroGaragens, setErroGaragens] = useState(null);
+  const [imagensSelecionadas, setImagensSelecionadas] = useState([]);
+  const [enviandoImagens, setEnviandoImagens] = useState(false);
+  const [progressoImagens, setProgressoImagens] = useState(0);
+  const [imagensAtuais, setImagensAtuais] = useState(veiculoOriginal?.imagens ?? []);
+
+  const previewsSelecionadas = useMemo(() => imagensSelecionadas.map((arquivo) => ({
+      nome: arquivo.name,
+      url: URL.createObjectURL(arquivo),
+    })), [imagensSelecionadas]);
+
+  useEffect(() => () => {
+    previewsSelecionadas.forEach(({ url }) => URL.revokeObjectURL(url));
+  }, [previewsSelecionadas]);
 
   useEffect(() => {
     if (isNovo || veiculoOriginal || !id) return undefined;
@@ -67,6 +80,7 @@ export default function CadastroCarroForm() {
           categoria: veiculo.categoria || "",
           garagemId: veiculo.garagemId || "",
         });
+        setImagensAtuais(veiculo.imagens ?? []);
         setErro(null);
       })
       .catch((error) => {
@@ -118,6 +132,40 @@ export default function CadastroCarroForm() {
     setValues((current) => ({ ...current, [key]: value }));
   }
 
+  async function removerImagem(imagem) {
+    if (!id || typeof deleteImagemVeiculo !== "function") return;
+    try {
+      await deleteImagemVeiculo(id, imagem.id);
+      setImagensAtuais((atual) => atual.filter((item) => item.id !== imagem.id));
+    } catch (error) {
+      setErro(error.message || "Não foi possível remover a imagem.");
+    }
+  }
+
+  async function definirCapa(imagem) {
+    if (!id || typeof setCapaImagemVeiculo !== "function") return;
+    try {
+      const imagens = await setCapaImagemVeiculo(id, imagem.id);
+      setImagensAtuais(imagens);
+    } catch (error) {
+      setErro(error.message || "Não foi possível definir a capa.");
+    }
+  }
+
+  async function moverImagem(index, delta) {
+    if (!id || typeof reorderImagensVeiculo !== "function") return;
+    const ordem = [...imagensAtuais];
+    const destino = index + delta;
+    if (destino < 0 || destino >= ordem.length) return;
+    [ordem[index], ordem[destino]] = [ordem[destino], ordem[index]];
+    try {
+      const imagens = await reorderImagensVeiculo(id, ordem.map((item) => item.id));
+      setImagensAtuais(imagens);
+    } catch (error) {
+      setErro(error.message || "Não foi possível reordenar as imagens.");
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setErro(null);
@@ -156,11 +204,30 @@ export default function CadastroCarroForm() {
 
     setSalvando(true);
     try {
+      let veiculoSalvo;
       if (isNovo) {
         if (!idLocador) throw new Error("Sessão inválida. Faça login novamente.");
-        await createVeiculo({ ...payloadComGaragem, idLocador });
+        veiculoSalvo = await createVeiculo({ ...payloadComGaragem, idLocador });
       } else {
-        await updateVeiculo(id, payloadComGaragem);
+        veiculoSalvo = await updateVeiculo(id, payloadComGaragem);
+      }
+      const idParaUpload = veiculoSalvo?.id || id;
+      if (imagensSelecionadas.length > 0) {
+        if (!idParaUpload || typeof uploadImagemVeiculo !== "function") {
+          throw new Error("Salve o veículo antes de enviar imagens.");
+        }
+        setEnviandoImagens(true);
+        for (const arquivo of imagensSelecionadas) {
+          const imagem = await uploadImagemVeiculo(
+            idParaUpload,
+            arquivo,
+            "",
+            (carregado, total) => {
+              if (total > 0) setProgressoImagens(Math.round((carregado / total) * 100));
+            },
+          );
+          if (imagem?.id) setImagensAtuais((atual) => [...atual, imagem]);
+        }
       }
       navigate("/cadastro-carros");
     } catch (e) {
@@ -170,6 +237,8 @@ export default function CadastroCarroForm() {
           : e.message || "Não foi possível salvar o veículo.",
       );
     } finally {
+      setEnviandoImagens(false);
+      setProgressoImagens(0);
       setSalvando(false);
     }
   }
@@ -195,6 +264,22 @@ export default function CadastroCarroForm() {
           <p className="auth-feedback auth-feedback--error" role="status" aria-live="polite">
             {erro}
           </p>
+        )}
+
+        {imagensAtuais.length > 0 && (
+          <section aria-label="Galeria de imagens do veículo" className="vehicle-image-gallery">
+            {imagensAtuais.map((imagem, index) => (
+              <figure key={imagem.id} className="vehicle-image-gallery__item">
+                <img src={imagem.url} alt={imagem.altText || `Imagem ${index + 1} do veículo`} width={imagem.largura} height={imagem.altura} loading="lazy" />
+                <figcaption>
+                  <button type="button" onClick={() => definirCapa(imagem)} disabled={index === 0}>Definir capa</button>
+                  <button type="button" onClick={() => void moverImagem(index, -1)} disabled={index === 0} aria-label={`Mover imagem ${index + 1} para cima`}>↑</button>
+                  <button type="button" onClick={() => void moverImagem(index, 1)} disabled={index === imagensAtuais.length - 1} aria-label={`Mover imagem ${index + 1} para baixo`}>↓</button>
+                  <button type="button" onClick={() => void removerImagem(imagem)}>Excluir</button>
+                </figcaption>
+              </figure>
+            ))}
+          </section>
         )}
 
         <div className="auth-field">
@@ -373,10 +458,33 @@ export default function CadastroCarroForm() {
           </label>
         </div>
 
+        <div className="auth-field">
+          <label htmlFor="imagens-veiculo">Imagens reais do veículo</label>
+          <input
+            id="imagens-veiculo"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            onChange={(event) => setImagensSelecionadas(Array.from(event.target.files ?? []))}
+          />
+          <small>JPEG, PNG ou WebP; o servidor valida bytes e dimensões.</small>
+          {imagensSelecionadas.length > 0 && <span role="status">{imagensSelecionadas.length} imagem(ns) pronta(s) para envio.</span>}
+          {previewsSelecionadas.length > 0 && (
+            <div aria-label="Pré-visualizações locais" className="vehicle-image-gallery">
+              {previewsSelecionadas.map((preview) => (
+                <figure key={preview.url} className="vehicle-image-gallery__item">
+                  <img src={preview.url} alt={`Prévia local de ${preview.nome}`} width="160" height="100" />
+                  <figcaption>{preview.nome}</figcaption>
+                </figure>
+              ))}
+            </div>
+          )}
+        </div>
+
         {isNovo && <p className="auth-required-note">Todos os campos com * são obrigatórios</p>}
 
         <button type="submit" className="auth-button" disabled={salvando}>
-          {salvando ? "Salvando..." : isNovo ? "Finalizar Cadastro" : "Editar"}
+          {salvando ? (enviandoImagens ? `Enviando imagens${progressoImagens ? ` (${progressoImagens}%)` : "..."}` : "Salvando...") : isNovo ? "Finalizar Cadastro" : "Editar"}
         </button>
       </form>
     </AuthenticatedLayout>

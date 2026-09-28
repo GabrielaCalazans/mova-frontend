@@ -95,7 +95,7 @@ export default function CadastroDeCarros() {
 
               return (
                 <div className="frota-card" key={veiculo.id}>
-                  <img src={details.image} alt={nomeExibicao} className="frota-card__image" />
+                  <img src={veiculo.imagens?.[0]?.url || details.image} alt={veiculo.imagens?.[0]?.altText || nomeExibicao} className="frota-card__image" loading="lazy" decoding="async" />
                   <div className="frota-card__info">
                     <h3>{nomeExibicao}</h3>
                     <p>{veiculo.placa}</p>

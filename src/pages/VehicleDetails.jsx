@@ -59,7 +59,7 @@ export default function VehicleDetails() {
   return (
     <PublicAppShell>
       <article className="vehicle-detail" aria-labelledby="vehicle-detail-title">
-        <img src={details.image} alt={`${marca} ${modelo}`} className="vehicle-detail__image" />
+        <img src={vehicle.imagens?.[0]?.url || details.image} alt={vehicle.imagens?.[0]?.altText || `${marca} ${modelo}`} className="vehicle-detail__image" decoding="async" />
         <div className="vehicle-detail__body">
           <p className="mova-eyebrow">Ficha técnica</p>
           <h1 id="vehicle-detail-title">{marca} {modelo}</h1>

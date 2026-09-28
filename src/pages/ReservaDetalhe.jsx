@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import {
   criarCompartilhamentoReserva,
+  getPagamentoReserva,
   getReservaById,
   revogarCompartilhamentoReserva,
 } from "../services/reservaService";
@@ -73,6 +74,7 @@ export default function ReservaDetalhe() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [reserva, setReserva] = useState(null);
+  const [pagamento, setPagamento] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [compartilhamento, setCompartilhamento] = useState({});
@@ -89,8 +91,9 @@ export default function ReservaDetalhe() {
       return () => { ativo = false; };
     }
 
-    getReservaById(id)
-      .then((resultado) => { if (ativo) setReserva(resultado); })
+    const financeiro = typeof getPagamentoReserva === "function" ? Promise.resolve(getPagamentoReserva(id)) : Promise.resolve(null);
+    Promise.all([getReservaById(id), financeiro])
+      .then(([resultado, statusFinanceiro]) => { if (ativo) { setReserva(resultado); setPagamento(statusFinanceiro); } })
       .catch((error) => { if (ativo) setErro(error?.message || "Não foi possível carregar a reserva."); })
       .finally(() => { if (ativo) setCarregando(false); });
 
@@ -182,9 +185,19 @@ export default function ReservaDetalhe() {
               <div><dt>Devolução</dt><dd>{formatarDataHora(reserva.dataHoraFim)}</dd></div>
               <div><dt>Garagem de retirada</dt><dd>{nomeGaragem(reserva.garagemRetirada, reserva.idGaragemRetirada)}</dd></div>
               <div><dt>Garagem de devolução</dt><dd>{nomeGaragem(reserva.garagemDevolucao, reserva.idGaragemDevolucao)}</dd></div>
-              <div><dt>Pagamento</dt><dd>{rotulo(STATUS_PAGAMENTO_LABELS, reserva.statusPagamento)}</dd></div>
+              <div><dt>Pagamento</dt><dd>{rotulo(STATUS_PAGAMENTO_LABELS, pagamento?.statusPagamento ?? reserva.statusPagamento)}</dd></div>
               <div><dt>Valor total</dt><dd>{reserva.valorTotal != null ? formatMoneyBRL(reserva.valorTotal) : "Valor não informado"}</dd></div>
             </dl>
+
+            {pagamento && (
+              <section className="reservation-detail__section" aria-labelledby="estorno-title">
+                <h3 id="estorno-title">Pagamento e estorno</h3>
+                <p>{pagamento.aviso}</p>
+                <p>Status do estorno: {pagamento.statusEstorno}</p>
+                <p>Valor pago: {formatMoneyBRL(pagamento.valorPago)}</p>
+                <p>Valor elegível ao estorno: {formatMoneyBRL(pagamento.valorElegivelEstorno)}</p>
+              </section>
+            )}
 
             {reserva.servicos?.length > 0 && (
               <section className="reservation-detail__section" aria-labelledby="servicos-title">

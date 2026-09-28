@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import { getJourneyStep } from "../utils/journeyStorage";
 import { STATUS_RESERVA } from "../services/apiEnums";
-import { cancelarReserva, getReservaById } from "../services/reservaService";
+import { cancelarReserva, getPagamentoReserva, getReservaById } from "../services/reservaService";
 import { formatMoneyBRL } from "../utils/reservationMath";
 import "../styles/carselect.css";
 
@@ -17,6 +17,7 @@ export default function CancelamentoReserva() {
   const navigate = useNavigate();
   const id = location.state?.reservaId || getJourneyStep("reserva")?.id;
   const [reserva, setReserva] = useState(null);
+  const [pagamento, setPagamento] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [confirmando, setConfirmando] = useState(false);
   const [enviando, setEnviando] = useState(false);
@@ -25,7 +26,11 @@ export default function CancelamentoReserva() {
   useEffect(() => {
     document.title = "MOVA - Cancelamento";
     if (!id) return;
-    getReservaById(id).then(setReserva).catch((error) => {
+    const financeiro = typeof getPagamentoReserva === "function" ? Promise.resolve(getPagamentoReserva(id)) : Promise.resolve(null);
+    Promise.all([getReservaById(id), financeiro]).then(([resultado, statusFinanceiro]) => {
+      setReserva(resultado);
+      setPagamento(statusFinanceiro);
+    }).catch((error) => {
       setErro(error?.message || "Não foi possível carregar a reserva.");
     }).finally(() => setCarregando(false));
   }, [id]);
@@ -41,6 +46,7 @@ export default function CancelamentoReserva() {
       const atualizada = await cancelarReserva(reserva.id);
       if (atualizada.status !== STATUS_RESERVA.CANCELADA) throw new Error("O cancelamento não foi confirmado pelo sistema.");
       setReserva(atualizada);
+      if (typeof getPagamentoReserva === "function") setPagamento(await getPagamentoReserva(reserva.id));
       setConfirmando(false);
     } catch (error) { setErro(error?.message || "Não foi possível cancelar a reserva."); }
     finally { setEnviando(false); }
@@ -68,7 +74,9 @@ export default function CancelamentoReserva() {
       {cancelada && <div role="status">
         <p>Cancelamento confirmado pelo sistema.</p>
         <p data-testid="multa-cancelamento">Multa de cancelamento: {formatMoneyBRL(reserva.multaCancelamento ?? 0)}</p>
-        <p>Reembolso: não informado pelo backend.</p>
+        <p>Pagamento e estorno simulados — nenhum dinheiro real movimentado.</p>
+        <p>Status do estorno: {pagamento?.statusEstorno || "Aguardando consulta do servidor"}</p>
+        <p>Valor elegível ao estorno: {pagamento?.valorElegivelEstorno != null ? formatMoneyBRL(pagamento.valorElegivelEstorno) : "Aguardando consulta do servidor"}</p>
         <button type="button" className="carro-button" onClick={() => navigate("/historico")}>Ver minhas reservas</button>
       </div>}
     </div>}

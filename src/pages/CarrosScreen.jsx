@@ -174,9 +174,11 @@ function CarrosScreen() {
               return (
                 <div className="carro-list-card" key={veiculo.id}>
                   <img
-                    src={details.image}
-                    alt={`${marca} ${modelo}`}
+                    src={veiculo.imagens?.[0]?.url || details.image}
+                    alt={veiculo.imagens?.[0]?.altText || `${marca} ${modelo}`}
                     className="carro-list-card__image"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <h3>
                     {marca} {modelo}

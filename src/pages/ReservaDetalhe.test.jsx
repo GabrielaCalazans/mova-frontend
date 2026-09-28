@@ -19,6 +19,7 @@ vi.mock("../layout/AuthenticatedLayout", () => ({
 }));
 vi.mock("../services/reservaService", () => ({
   criarCompartilhamentoReserva: vi.fn(),
+  getPagamentoReserva: vi.fn(),
   getReservaById: vi.fn(),
   revogarCompartilhamentoReserva: vi.fn(),
 }));

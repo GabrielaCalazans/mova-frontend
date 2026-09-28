@@ -8,7 +8,7 @@ import {
   METODO_PAGAMENTO_LABELS,
   STATUS_PAGAMENTO,
 } from "../services/apiEnums";
-import { getReservaById, iniciarPagamento } from "../services/reservaService";
+import { getPagamentoReserva, getReservaById, iniciarPagamento } from "../services/reservaService";
 import { formatMoneyBRL } from "../utils/reservationMath";
 import "../styles/carselect.css";
 import "../styles/auth.css";
@@ -72,6 +72,7 @@ export default function Pagamento() {
   const navigate = useNavigate();
 
   const [reserva, setReserva] = useState(null);
+  const [pagamento, setPagamento] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [erroCarregamento, setErroCarregamento] = useState("");
 
@@ -119,6 +120,12 @@ export default function Pagamento() {
           setProcessando(true);
           acompanhar(TENTATIVAS_POLLING);
         }
+        if (typeof getPagamentoReserva === "function") {
+          return Promise.resolve(getPagamentoReserva(reservaId)).then((statusFinanceiro) => {
+            if (montado.current) setPagamento(statusFinanceiro);
+          });
+        }
+        return null;
       })
       .catch((error) => {
         if (!montado.current) return;
@@ -152,6 +159,11 @@ export default function Pagamento() {
           if (!montado.current) return;
           setReserva(atual);
           setStatusPagamento(atual?.statusPagamento ?? "");
+          if (typeof getPagamentoReserva === "function") {
+            void Promise.resolve(getPagamentoReserva(reservaId)).then((statusFinanceiro) => {
+              if (montado.current) setPagamento(statusFinanceiro);
+            });
+          }
 
           if (atual?.statusPagamento === STATUS_PAGAMENTO.PROCESSANDO) {
             acompanhar(tentativasRestantes - 1);
@@ -225,6 +237,11 @@ export default function Pagamento() {
         const atual = resultado?.reserva ?? null;
         setReserva(atual);
         setStatusPagamento(atual?.statusPagamento ?? "");
+        if (typeof getPagamentoReserva === "function") {
+          void Promise.resolve(getPagamentoReserva(reservaId)).then((statusFinanceiro) => {
+            if (montado.current) setPagamento(statusFinanceiro);
+          });
+        }
 
         if (atual?.statusPagamento === STATUS_PAGAMENTO.PROCESSANDO) {
           acompanhar(TENTATIVAS_POLLING);
@@ -330,6 +347,8 @@ export default function Pagamento() {
           <p className="payment-total" data-testid="valor-reserva">
             {formatMoneyBRL(reserva?.valorTotal)}
           </p>
+          <p className="payment-modal-note">Pagamento e estorno simulados — nenhum dinheiro real movimentado.</p>
+          {pagamento && <p role="status">Status do estorno: {pagamento.statusEstorno}. Valor pago: {formatMoneyBRL(pagamento.valorPago)}.</p>}
         </section>
 
         <p className="payment-subtitle">Escolha seu método de pagamento</p>

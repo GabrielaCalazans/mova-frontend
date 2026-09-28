@@ -124,7 +124,7 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
                   key={veiculo.id}
                   onClick={() => navigate("/carros/lista", { state: {} })}
                 >
-                  <img src={details.image} alt={`${marca} ${modelo}`} className="fav-card__image" />
+                  <img src={veiculo.imagens?.[0]?.url || details.image} alt={veiculo.imagens?.[0]?.altText || `${marca} ${modelo}`} className="fav-card__image" loading="lazy" decoding="async" />
                   <div className="fav-card__info">
                     <h3>{modelo}</h3>
                     <p>{marca}</p>

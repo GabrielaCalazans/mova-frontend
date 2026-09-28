@@ -8,7 +8,7 @@ vi.mock("./authSession", () => ({ getAuthSession: vi.fn() }));
 
 import { apiRequest, apiRequestPaginado } from "./apiClient";
 import { getAuthSession } from "./authSession";
-import { listFrota, listVeiculos, updateVeiculo } from "./veiculoService";
+import { listFrota, listVeiculos, updateVeiculo, uploadImagemVeiculo, reorderImagensVeiculo } from "./veiculoService";
 
 describe("listFrota", () => {
   beforeEach(() => {
@@ -33,6 +33,35 @@ describe("listFrota", () => {
       "/veiculo/meus",
       { authToken: "jwt-locador" },
     );
+  });
+});
+
+describe("imagens de veículo", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    getAuthSession.mockReturnValue({ token: "jwt-locador" });
+    apiRequest.mockResolvedValue({ result: [{ id: "imagem-1", status: "READY" }] });
+  });
+
+  it("envia bytes e MIME declarado ao endpoint autenticado", async () => {
+    const file = new File(["bytes"], "carro.png", { type: "image/png" });
+    await uploadImagemVeiculo("veiculo-1", file, "Frente");
+    expect(apiRequest).toHaveBeenCalledWith("/veiculo/veiculo-1/imagens", {
+      method: "POST",
+      authToken: "jwt-locador",
+      body: file,
+      contentType: "image/png",
+      headers: { "X-Image-Alt": "Frente" },
+    });
+  });
+
+  it("reordena pelo contrato do servidor", async () => {
+    await reorderImagensVeiculo("veiculo-1", ["imagem-1"]);
+    expect(apiRequest).toHaveBeenCalledWith("/veiculo/veiculo-1/imagens/ordem", {
+      method: "PUT",
+      authToken: "jwt-locador",
+      body: JSON.stringify({ imagemIds: ["imagem-1"] }),
+    });
   });
 });
 
