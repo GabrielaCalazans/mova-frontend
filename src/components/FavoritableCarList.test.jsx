@@ -1,10 +1,12 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import FavoritableCarList from "./FavoritableCarList";
 
 const navigateMock = vi.hoisted(() => vi.fn());
 const listarFavoritosMock = vi.hoisted(() => vi.fn());
 const listarInteressesMock = vi.hoisted(() => vi.fn());
+const desfavoritarMock = vi.hoisted(() => vi.fn());
 
 vi.mock("react-router-dom", () => ({ useNavigate: () => navigateMock }));
 vi.mock("../components/BottomNav", () => ({ default: () => null }));
@@ -15,7 +17,7 @@ vi.mock("../services/veiculoService", async () => {
 vi.mock("../services/favoritoService", () => ({
   listarFavoritos: listarFavoritosMock,
   favoritar: vi.fn(),
-  desfavoritar: vi.fn(),
+  desfavoritar: desfavoritarMock,
 }));
 vi.mock("../services/interesseService", () => ({
   listarInteresses: listarInteressesMock,
@@ -76,5 +78,42 @@ describe("FavoritableCarList", () => {
     expect(document.querySelector(".vcard__price")).toHaveTextContent("R$ 180,00 /dia");
     expect(screen.queryByText("Branco")).not.toBeInTheDocument();
     expect(screen.queryByText(/Autonomia/i)).not.toBeInTheDocument();
+  });
+
+  it("mantém a lista visível e mostra o erro acima dela quando o toggle falha", async () => {
+    desfavoritarMock.mockRejectedValue(new Error("Falha ao desfavoritar."));
+    render(
+      <FavoritableCarList
+        title="Carros Favoritados"
+        onlyFavorites
+        emptyMessage="Nenhum favorito"
+        documentTitle="Favoritos"
+      />,
+    );
+
+    await userEvent.click(await screen.findByRole("button", { name: /Remover .* dos favoritos/ }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Falha ao desfavoritar.");
+    expect(screen.getByText("5 lugares")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ver detalhes" })).toBeInTheDocument();
+  });
+
+  it("mostra Adaptado PCD para categoria PCD mesmo com adaptado=false", async () => {
+    const [favorito] = await listarFavoritosMock();
+    listarFavoritosMock.mockResolvedValue([{
+      ...favorito,
+      veiculo: { ...favorito.veiculo, modeloVeiculo: { ...favorito.veiculo.modeloVeiculo, categoria: "PCD", adaptado: false } },
+    }]);
+    render(
+      <FavoritableCarList
+        title="Carros Favoritados"
+        onlyFavorites
+        emptyMessage="Nenhum favorito"
+        documentTitle="Favoritos"
+      />,
+    );
+
+    expect(await screen.findByText("Adaptado PCD")).toBeInTheDocument();
+    expect(screen.queryByText("Sem adaptação PCD")).not.toBeInTheDocument();
   });
 });

@@ -141,6 +141,7 @@ function AppRoutes() {
             <Route path="/historico" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={Historico} label="o histórico" /></ProtectedRoute>} />
             <Route path="/pendencias-financeiras" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={PendenciasFinanceiras} label="as pendências financeiras" /></ProtectedRoute>} />
             <Route path="/interesses" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={InteressesDisponibilidade} label="os avisos de disponibilidade" /></ProtectedRoute>} />
+            <Route path="/carros/disponiveis" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CarrosDisponiveis} label="os carros disponíveis" /></ProtectedRoute>} />
             <Route path="/carros/favoritos" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CarrosFavoritados} label="os favoritos" /></ProtectedRoute>} />
             <Route path="*" element={<Screen Page={NotFound} label="a página" />} />
           </Route>
@@ -163,7 +164,6 @@ function AppRoutes() {
           <Route path="/cadastro-garagens" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CadastroDeGaragens} label="as garagens" /></ProtectedRoute>} />
           <Route path="/cadastro-garagens/:id/capacidade" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CapacidadeGaragem} label="a capacidade da garagem" /></ProtectedRoute>} />
           <Route path="/cadastro-garagens/:id" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CadastroGaragemForm} label="a garagem" /></ProtectedRoute>} />
-          <Route path="/carros/disponiveis" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CarrosDisponiveis} label="os carros disponíveis" /></ProtectedRoute>} />
 
           {/* Redirecionamentos legados. */}
           <Route path="/locador" element={<Navigate to="/painel" replace />} />

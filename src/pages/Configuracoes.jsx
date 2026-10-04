@@ -27,6 +27,9 @@ export default function Configuracoes() {
   const [carregando, setCarregando] = useState(temOpcoes);
   const [aviso, setAviso] = useState('');
   const [erro, setErro] = useState('');
+  // Sem a leitura do backend o estado exibido não é confirmado: não permite alternar.
+  const [falhouCarga, setFalhouCarga] = useState(false);
+  const [salvando, setSalvando] = useState({});
 
   useEffect(() => {
     document.title = 'MOVA - Configurações';
@@ -39,7 +42,11 @@ export default function Configuracoes() {
         for (const pref of lista) if (pref.canal === 'EMAIL') mapa[pref.tipo] = pref.habilitado;
         setHabilitadas(mapa);
       })
-      .catch((error) => { if (ativo) setErro(error?.message || 'Não foi possível carregar suas preferências.'); })
+      .catch((error) => {
+        if (!ativo) return;
+        setFalhouCarga(true);
+        setErro(error?.message || 'Não foi possível carregar suas preferências.');
+      })
       .finally(() => { if (ativo) setCarregando(false); });
     return () => { ativo = false; };
   }, [temOpcoes]);
@@ -49,12 +56,15 @@ export default function Configuracoes() {
     const atual = habilitadas[tipo] ?? true;
     setErro('');
     setHabilitadas((anterior) => ({ ...anterior, [tipo]: !atual }));
+    setSalvando((anterior) => ({ ...anterior, [tipo]: true }));
     try {
       await definirPreferencia({ canal: 'EMAIL', tipo, habilitado: !atual });
       setAviso(`${rotulo}: ${!atual ? 'ativado' : 'desativado'}.`);
     } catch (error) {
       setHabilitadas((anterior) => ({ ...anterior, [tipo]: atual }));
       setErro(error?.message || 'Não foi possível salvar a preferência.');
+    } finally {
+      setSalvando((anterior) => ({ ...anterior, [tipo]: false }));
     }
   }
 
@@ -80,7 +90,12 @@ export default function Configuracoes() {
                 <Label>{rotulo}</Label>
                 <span className="field__hint" style={{ display: 'block' }}>{dica}</span>
               </span>
-              <Toggle checked={habilitadas[tipo] ?? true} onChange={() => alternar(tipo, rotulo)} />
+              <Toggle
+                checked={habilitadas[tipo] ?? true}
+                disabled={falhouCarga || Boolean(salvando[tipo])}
+                aria-busy={salvando[tipo] || undefined}
+                onChange={() => alternar(tipo, rotulo)}
+              />
             </Row>
           ))}
           <p className="sr-only" role="status" aria-live="polite">{aviso}</p>

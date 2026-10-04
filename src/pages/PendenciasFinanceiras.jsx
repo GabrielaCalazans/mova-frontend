@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { rotulo, STATUS_PAGAMENTO_LABELS, TIPO_COBRANCA_LABELS } from "../services/apiEnums";
+import { rotulo, STATUS_PAGAMENTO, STATUS_PAGAMENTO_LABELS, TIPO_COBRANCA_LABELS } from "../services/apiEnums";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { faCircleCheck, faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { listarCobrancasPendentes, pagarCobranca } from "../services/cobrancaService";
 
 import "../styles/journey.css";
@@ -17,6 +17,8 @@ export default function PendenciasFinanceiras() {
   const [itens, setItens] = useState([]);
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(true);
+  const [pagandoId, setPagandoId] = useState(null);
+  const [sucesso, setSucesso] = useState("");
 
   const carregar = async () => {
     setLoading(true);
@@ -37,11 +39,22 @@ export default function PendenciasFinanceiras() {
   }, []);
 
   const pagar = async (id) => {
+    setPagandoId(id);
+    setSucesso("");
+    setErro("");
     try {
-      await pagarCobranca(id, { metodoPagamento: "PIX" });
+      const resultado = await pagarCobranca(id, { metodoPagamento: "PIX" });
+      const status = resultado?.cobranca?.statusPagamento;
+      setSucesso(
+        status && status !== STATUS_PAGAMENTO.SUCESSO
+          ? `Pagamento enviado. Status: ${rotulo(STATUS_PAGAMENTO_LABELS, status)}.`
+          : "Pagamento aprovado. Pendência quitada.",
+      );
       await carregar();
     } catch (e) {
       setErro(e.message || "Pagamento não aprovado.");
+    } finally {
+      setPagandoId(null);
     }
   };
 
@@ -53,6 +66,12 @@ export default function PendenciasFinanceiras() {
       </header>
       {loading && (
         <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando pendências...</p>
+      )}
+      {sucesso && (
+        <div className="alert alert--success" role="status">
+          <FontAwesomeIcon icon={faCircleCheck} aria-hidden="true" />
+          <p className="alert__body">{sucesso}</p>
+        </div>
       )}
       {erro && (
         <div className="alert alert--danger">
@@ -74,7 +93,15 @@ export default function PendenciasFinanceiras() {
                 <p className="post-item__title tabular">{rotulo(TIPO_COBRANCA_LABELS, c.tipo)} — R$ {formatarValor(c.valor)}</p>
                 <p className="post-item__meta">Status: {rotulo(STATUS_PAGAMENTO_LABELS, c.statusPagamento)}</p>
               </div>
-              <button type="button" className="btn" onClick={() => pagar(c.id)}>Pagar via Pix (sandbox)</button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => pagar(c.id)}
+                disabled={pagandoId !== null}
+                aria-busy={pagandoId === c.id || undefined}
+              >
+                {pagandoId === c.id ? "Pagando..." : "Pagar via Pix (sandbox)"}
+              </button>
             </li>
           ))}
         </ul>

@@ -1,15 +1,17 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import CadastroCarroForm from "./CadastroCarroForm";
-import { listFrota, updateVeiculo } from "../services/veiculoService";
+import { createVeiculo, listFrota, updateVeiculo, uploadImagemVeiculo } from "../services/veiculoService";
 
 const navigateMock = vi.hoisted(() => vi.fn());
 let veiculo = null;
+let routeId = "veiculo-1";
+let aviso;
 
 vi.mock("react-router-dom", () => ({
-  useLocation: () => ({ state: { veiculo } }),
+  useLocation: () => ({ state: { veiculo, aviso } }),
   useNavigate: () => navigateMock,
-  useParams: () => ({ id: "veiculo-1" }),
+  useParams: () => ({ id: routeId }),
 }));
 vi.mock("../layout/AuthenticatedLayout", () => ({
   default: ({ children }) => children,
@@ -18,6 +20,7 @@ vi.mock("../services/veiculoService", () => ({
   createVeiculo: vi.fn(),
   listFrota: vi.fn(),
   updateVeiculo: vi.fn(),
+  uploadImagemVeiculo: vi.fn(),
 }));
 vi.mock("../services/garagemService", () => ({
   listGaragens: vi.fn(() => Promise.resolve([])),
@@ -29,6 +32,8 @@ vi.mock("../services/authSession", () => ({
 describe("CadastroCarroForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    routeId = "veiculo-1";
+    aviso = undefined;
     veiculo = {
       marca: "Fiat",
       modelo: "Argo",
@@ -196,4 +201,42 @@ describe("CadastroCarroForm", () => {
       ));
     },
   );
+
+  it("mostra categorias com rótulo legível", () => {
+    render(<CadastroCarroForm />);
+
+    expect(screen.getByRole("option", { name: "Econômico" })).toHaveValue("ECONOMICO");
+    expect(screen.getByRole("option", { name: "Espaçoso" })).toHaveValue("ESPACOSO");
+    expect(screen.queryByRole("option", { name: "ECONOMICO" })).not.toBeInTheDocument();
+  });
+
+  it("após criar o veículo e falhar o upload, segue para a edição do veículo criado", async () => {
+    routeId = "novo";
+    veiculo = { ...veiculo, status: "DISPONIVEL" };
+    const { createObjectURL, revokeObjectURL } = URL;
+    URL.createObjectURL = vi.fn(() => "blob:preview");
+    URL.revokeObjectURL = vi.fn();
+    createVeiculo.mockResolvedValue({ id: "veiculo-novo" });
+    uploadImagemVeiculo.mockRejectedValueOnce(new Error("Imagem inválida"));
+
+    render(<CadastroCarroForm />);
+    const arquivo = new File(["x"], "foto.png", { type: "image/png" });
+    fireEvent.change(screen.getByLabelText("Imagens reais do veículo"), { target: { files: [arquivo] } });
+    fireEvent.click(screen.getByRole("button", { name: "Finalizar Cadastro" }));
+
+    await waitFor(() => expect(navigateMock).toHaveBeenCalledWith(
+      "/cadastro-carros/veiculo-novo",
+      expect.objectContaining({ replace: true, state: { aviso: expect.stringMatching(/Veículo salvo, mas algumas imagens não foram enviadas/) } }),
+    ));
+    expect(navigateMock).not.toHaveBeenCalledWith("/cadastro-carros");
+    URL.createObjectURL = createObjectURL;
+    URL.revokeObjectURL = revokeObjectURL;
+  });
+
+  it("exibe o aviso de imagens pendentes ao chegar na edição", () => {
+    aviso = "Veículo salvo, mas algumas imagens não foram enviadas.";
+    render(<CadastroCarroForm />);
+
+    expect(screen.getByText("Veículo salvo, mas algumas imagens não foram enviadas.")).toHaveAttribute("role", "status");
+  });
 });

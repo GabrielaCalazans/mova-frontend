@@ -30,6 +30,12 @@ export function vehicleTitle(vehicle) {
   return [resolveVehicleField(vehicle, "marca"), resolveVehicleField(vehicle, "modelo")].filter(Boolean).join(" ") || "Veículo";
 }
 
+// RN01 (backend, services/reserva.ts): adaptado OU categoria PCD exige
+// deficiência declarada. A UI usa o mesmo predicado.
+export function isVeiculoPcd(vehicle) {
+  return resolveVehicleField(vehicle, "adaptado") === true || resolveVehicleField(vehicle, "categoria") === "PCD";
+}
+
 export function formatCategoria(categoria) {
   return CATEGORY_LABELS[categoria] ?? "Não informado";
 }
@@ -52,7 +58,7 @@ export function getVehicleCharacteristics(vehicle) {
   }
   if (categoria) characteristics.push(formatCategoria(categoria));
   if (resolveVehicleField(vehicle, "eletrico") === true) characteristics.push("Elétrico");
-  if (resolveVehicleField(vehicle, "adaptado") === true) characteristics.push("Adaptado PCD");
+  if (isVeiculoPcd(vehicle)) characteristics.push("Adaptado PCD");
 
   return characteristics;
 }

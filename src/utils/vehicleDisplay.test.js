@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCategoria, getVehicleCharacteristics } from "./vehicleDisplay";
+import { formatCategoria, getVehicleCharacteristics, isVeiculoPcd } from "./vehicleDisplay";
 
 describe("vehicleDisplay", () => {
   it("derives characteristics only from persisted vehicle fields", () => {
@@ -35,5 +35,13 @@ describe("vehicleDisplay", () => {
     expect(formatCategoria("ESPACOSO")).toBe("Espaçoso");
     expect(formatCategoria("PCD")).toBe("PCD");
     expect(formatCategoria(null)).toBe("Não informado");
+  });
+
+  it("treats categoria PCD as adapted like the backend (RN01)", () => {
+    expect(isVeiculoPcd({ categoria: "PCD", adaptado: false })).toBe(true);
+    expect(isVeiculoPcd({ modeloVeiculo: { categoria: "PCD" } })).toBe(true);
+    expect(isVeiculoPcd({ categoria: "ECONOMICO", adaptado: true })).toBe(true);
+    expect(isVeiculoPcd({ categoria: "ECONOMICO", adaptado: false })).toBe(false);
+    expect(getVehicleCharacteristics({ categoria: "PCD", adaptado: false })).toEqual(["PCD", "Adaptado PCD"]);
   });
 });

@@ -238,6 +238,26 @@ describe("Pagamento", () => {
     expect(iniciarPagamento).not.toHaveBeenCalled();
   });
 
+  it.each([
+    [{ nome: "AB" }, /nome do titular \(mínimo 3 caracteres\)/i],
+    [{ validade: "1" }, /validade no formato MM\/AA/i],
+    [{ validade: "0120" }, /Cartão vencido/i],
+    [{ cvv: "12" }, /CVV deve ter 3 ou 4 dígitos/i],
+  ])("valida dados do cartão no cliente (%o)", async (campos, mensagem) => {
+    const dados = { nome: "FULANO", validade: "1230", cvv: "123", ...campos };
+    render(<Pagamento />);
+    await screen.findByTestId("valor-reserva");
+
+    await userEvent.type(screen.getByLabelText(/Número do Cartão/i), "4111111111111234");
+    await userEvent.type(screen.getByLabelText(/Nome do Titular/i), dados.nome);
+    await userEvent.type(screen.getByLabelText(/Validade/i), dados.validade);
+    await userEvent.type(screen.getByLabelText(/CVV/i), dados.cvv);
+    await userEvent.click(screen.getByRole("button", { name: /^Pagar$/i }));
+
+    expect(await screen.findByText(mensagem)).toBeInTheDocument();
+    expect(iniciarPagamento).not.toHaveBeenCalled();
+  });
+
   it("identifica o QR Code como simulação sem transferência real", async () => {
     render(<Pagamento />);
     await screen.findByTestId("valor-reserva");

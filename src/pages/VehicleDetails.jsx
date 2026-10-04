@@ -12,7 +12,7 @@ import { getGaragemById } from "../services/garagemService";
 import { listServicos } from "../services/servicoService";
 import { desfavoritar, favoritar, listarFavoritos } from "../services/favoritoService";
 import { cancelarInteresse, listarInteresses, registrarInteresse } from "../services/interesseService";
-import { formatCambio, formatCategoria, resolveVehicleImages } from "../utils/vehicleDisplay";
+import { formatCambio, formatCategoria, isVeiculoPcd, resolveVehicleImages } from "../utils/vehicleDisplay";
 import { formatMoneyBRL } from "../utils/reservationMath";
 import { updateJourneyStep } from "../utils/journeyStorage";
 import "../styles/vehicle.css";
@@ -130,6 +130,8 @@ export default function VehicleDetails() {
       garagemId: vehicle.garagemId || vehicle.garagem?.id || "",
       garagemName: vehicle.garagem?.nome || "",
       status: vehicle.status || "",
+      // Só a capa: as etapas da jornada mostram a mesma foto do detalhe.
+      imagens: (vehicle.imagens ?? []).filter((imagem) => imagem?.url).slice(0, 1).map(({ url, altText }) => ({ url, altText })),
     });
     navigate("/escolha-garagem-retirada");
   }
@@ -185,6 +187,7 @@ export default function VehicleDetails() {
   const precoValido = vehicle.valorDiaria != null && Number.isFinite(diaria);
   const garagemNome = garagem?.nome || vehicle.garagem?.nome || "Garagem não informada";
   const garagemAcessivel = typeof garagem?.acessibilidade === "boolean" ? garagem.acessibilidade : null;
+  const veiculoPcd = isVeiculoPcd(vehicle);
   const preco = precoValido ? formatMoneyBRL(diaria) : null;
 
   const reserveButton = (
@@ -229,9 +232,9 @@ export default function VehicleDetails() {
             <section className="vsection" aria-labelledby="acessibilidade">
               <h2 id="acessibilidade">Acessibilidade</h2>
               <ul className="access-list">
-                <AccessItem ok={Boolean(vehicle.adaptado)} icon={vehicle.adaptado ? faWheelchair : faXmark} title={vehicle.adaptado ? "Veículo adaptado para PCD" : "Veículo sem adaptação PCD"}>
-                  {vehicle.adaptado
-                    ? "Reservar um veículo adaptado exige deficiência declarada na sua conta (RN01)."
+                <AccessItem ok={veiculoPcd} icon={veiculoPcd ? faWheelchair : faXmark} title={veiculoPcd ? "Veículo adaptado para PCD" : "Veículo sem adaptação PCD"}>
+                  {veiculoPcd
+                    ? "Reservar um veículo adaptado exige deficiência declarada na sua conta ou no resumo da reserva (RN01)."
                     : "Para ver só os adaptados, use o filtro PCD no catálogo."}
                 </AccessItem>
                 {garagemAcessivel !== null && (
@@ -298,7 +301,8 @@ export default function VehicleDetails() {
                     {interesse ? "Cancelar aviso de disponibilidade" : "Avise-me quando disponível"}
                   </button>
                 )}
-                <p className="sr-only" role="status" aria-live="polite">{aviso}</p>
+                {/* Visível para quem enxerga e anunciado a leitores de tela. */}
+                <p className={aviso ? "decision__hint" : "sr-only"} role="status" aria-live="polite">{aviso}</p>
               </div>
             </div>
           </aside>

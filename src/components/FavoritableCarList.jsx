@@ -17,6 +17,8 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
   const [interesses, setInteresses] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
+  // Falha ao favoritar/avisar não invalida a lista já carregada.
+  const [erroAcao, setErroAcao] = useState(null);
 
   const crossLinkRoute = onlyFavorites ? "/carros/disponiveis" : "/carros/favoritos";
   const crossLinkLabel = onlyFavorites ? "Ver carros disponíveis" : "Ver meus favoritos";
@@ -58,22 +60,24 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
   }
 
   async function handleToggleFavorito(id) {
+    setErroAcao(null);
     try {
       if (favoritos.has(String(id))) await desfavoritar(id);
       else await favoritar(id);
       toggleIn(setFavoritos, id);
     } catch (e) {
-      setErro(e.message || "Não foi possível atualizar o favorito.");
+      setErroAcao(e.message || "Não foi possível atualizar o favorito.");
     }
   }
 
   async function handleToggleInteresse(id) {
+    setErroAcao(null);
     try {
       if (interesses.has(String(id))) await cancelarInteresse(id);
       else await registrarInteresse(id);
       toggleIn(setInteresses, id);
     } catch (e) {
-      setErro(e.message || "Não foi possível atualizar o aviso de disponibilidade.");
+      setErroAcao(e.message || "Não foi possível atualizar o aviso de disponibilidade.");
     }
   }
 
@@ -90,6 +94,7 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
       <div className="catalog-page__body">
         {loading && <p className="loading-state carro-status" role="status"><span className="spinner" aria-hidden="true" />Carregando veículos…</p>}
         {!loading && erro && <p className="alert alert--danger carro-status" role="alert">{erro}</p>}
+        {!loading && !erro && erroAcao && <p className="alert alert--danger carro-status" role="alert">{erroAcao}</p>}
 
         {!loading && !erro && listaExibida.length === 0 && (
           <div className="state-block carro-empty-state">

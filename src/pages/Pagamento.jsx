@@ -82,6 +82,19 @@ function formatValidade(value) {
   return value.replace(/\D/g, "").slice(0, 4).replace(/^(\d{2})(\d)/, "$1/$2");
 }
 
+// Espelha o schema do backend (pagamento.schema.ts) para não exibir as
+// mensagens em inglês do Zod; o cartão vale até o fim do mês de validade.
+function validarCartao({ numero, nome, validade, cvv }, hoje = new Date()) {
+  if (numero.replace(/\D/g, "").length < 13) return "Informe um número de cartão válido.";
+  if (nome.trim().length < 3) return "Informe o nome do titular (mínimo 3 caracteres).";
+  const match = /^(0[1-9]|1[0-2])\/(\d{2})$/.exec(validade);
+  if (!match) return "Informe a validade no formato MM/AA.";
+  const fimDoMes = new Date(2000 + Number(match[2]), Number(match[1]), 1);
+  if (fimDoMes <= hoje) return "Cartão vencido. Confira a validade.";
+  if (!/^\d{3,4}$/.test(cvv)) return "O CVV deve ter 3 ou 4 dígitos.";
+  return "";
+}
+
 export default function Pagamento() {
   const navigate = useNavigate();
 
@@ -225,8 +238,11 @@ export default function Pagamento() {
     }
 
     const usaCartao = METODOS_COM_CARTAO.includes(metodo);
-    if (usaCartao && numeroCartao.replace(/\D/g, "").length < 13) {
-      setErroPagamento("Informe um número de cartão válido.");
+    const erroCartao = usaCartao
+      ? validarCartao({ numero: numeroCartao, nome: nomeTitular, validade, cvv })
+      : "";
+    if (erroCartao) {
+      setErroPagamento(erroCartao);
       return;
     }
 

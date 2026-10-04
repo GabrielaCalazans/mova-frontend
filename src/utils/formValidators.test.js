@@ -1,5 +1,7 @@
 ﻿import { describe, expect, it } from "vitest";
 import {
+  isCnhValida,
+  validateCadastroDetalhesForm,
   validateForgotPasswordForm,
   validateLoginForm,
   validateLocadorRegisterForm,
@@ -72,5 +74,31 @@ describe("formValidators", () => {
     };
 
     expect(validateProfileForm(validValues)).toEqual({});
+  });
+
+  it("valida digitos verificadores da CNH como o backend", () => {
+    expect(isCnhValida("12345678900")).toBe(true);
+    expect(isCnhValida("123.456.789-00")).toBe(true);
+    expect(isCnhValida("12345678910")).toBe(false);
+    expect(isCnhValida("11111111111")).toBe(false);
+    expect(isCnhValida("1234567890")).toBe(false);
+  });
+
+  it("rejeita no cadastro CNH com 11 digitos mas DV invalido", () => {
+    const base = {
+      name: "Usuario Teste",
+      celphone: "(11) 99999-9999",
+      cpf: "123.456.789-09",
+      rg: "123456789",
+      dataNascimento: "1990-05-15",
+      cep: "12345-678",
+      address: "Rua Exemplo, 123",
+      agreeTerms: true,
+      agreePrivacy: true,
+    };
+
+    expect(validateCadastroDetalhesForm({ ...base, cnh: "12345678910" }).cnh).toBe("CNH inválida.");
+    expect(validateCadastroDetalhesForm({ ...base, cnh: "123" }).cnh).toBe("CNH deve conter 11 digitos.");
+    expect(validateCadastroDetalhesForm({ ...base, cnh: "12345678900" })).toEqual({});
   });
 });

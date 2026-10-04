@@ -24,6 +24,35 @@ function calcularDigitoCpf(base) {
   return resto < 2 ? "0" : String(11 - resto);
 }
 
+// Mesmo algoritmo de isValidCnh (mova-backend/src/shared/documentos.ts).
+export function isCnhValida(cnh) {
+  const c = onlyDigits(cnh || "");
+  if (c.length !== 11 || /^(\d)\1{10}$/.test(c)) return false;
+
+  let soma = 0;
+  for (let i = 0, peso = 9; i < 9; i += 1, peso -= 1) soma += Number(c[i]) * peso;
+  let dsc = 0;
+  let dv1 = soma % 11;
+  if (dv1 >= 10) {
+    dv1 = 0;
+    dsc = 2;
+  }
+
+  soma = 0;
+  for (let i = 0, peso = 1; i < 9; i += 1, peso += 1) soma += Number(c[i]) * peso;
+  let dv2 = soma % 11;
+  if (dv2 >= 10) dv2 = 0;
+  dv2 -= dsc;
+  if (dv2 < 0) dv2 += 11;
+
+  return dv1 === Number(c[9]) && dv2 === Number(c[10]);
+}
+
+function cnhError(cnh) {
+  if (!/^[0-9]{11}$/.test(onlyDigits(cnh || ""))) return "CNH deve conter 11 digitos.";
+  return isCnhValida(cnh) ? null : "CNH inválida.";
+}
+
 export function isCnpjValido(cnpj) {
   const digits = onlyDigits(cnpj || "");
 
@@ -184,9 +213,8 @@ export function validateCadastroDetalhesForm(values) {
     nextErrors.cpf = "CPF invalido. Confira os numeros digitados.";
   }
 
-  if (!/^[0-9]{11}$/.test(onlyDigits(values.cnh))) {
-    nextErrors.cnh = "CNH deve conter 11 digitos.";
-  }
+  const erroCnh = cnhError(values.cnh);
+  if (erroCnh) nextErrors.cnh = erroCnh;
 
   const rgNormalizado = (values.rg || "").replace(/[.\-\s]/g, "").toUpperCase();
   if (!/^[0-9]{5,13}[0-9X]$/.test(rgNormalizado)) {
@@ -254,9 +282,8 @@ export function validateLocatarioRegisterForm(values) {
     nextErrors.cpf = "CPF deve conter 11 digitos.";
   }
 
-  if (!/^[0-9]{11}$/.test(onlyDigits(values.cnh))) {
-    nextErrors.cnh = "CNH deve conter 11 digitos.";
-  }
+  const erroCnh = cnhError(values.cnh);
+  if (erroCnh) nextErrors.cnh = erroCnh;
 
   if (!values.address?.trim()) {
     nextErrors.address = "Informe seu endereco completo.";
@@ -376,9 +403,8 @@ export function validateProfileForm(values) {
     nextErrors.cpf = "CPF invalido. Confira os numeros digitados.";
   }
 
-  if (!/^[0-9]{11}$/.test(onlyDigits(values.cnh || ""))) {
-    nextErrors.cnh = "CNH deve conter 11 digitos.";
-  }
+  const erroCnh = cnhError(values.cnh);
+  if (erroCnh) nextErrors.cnh = erroCnh;
 
   if (!values.address?.trim()) {
     nextErrors.address = "Informe seu endereco completo.";

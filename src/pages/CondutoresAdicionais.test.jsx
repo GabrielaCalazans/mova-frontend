@@ -34,7 +34,7 @@ describe("CondutoresAdicionais", () => {
     await preencher();
     expect(addCondutor).toHaveBeenCalledWith("reserva-1", { nome: "João Silva", cpf: "12345678909", cnh: "12345678901" });
     expect(await screen.findByText("João Silva")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Remover" }));
+    await userEvent.click(screen.getByRole("button", { name: "Remover João Silva" }));
     expect(removeCondutor).toHaveBeenCalledWith("reserva-1", "condutor-1");
   });
 
@@ -53,5 +53,23 @@ describe("CondutoresAdicionais", () => {
     render(<CondutoresAdicionais />);
     expect(await screen.findByText(/Limite de 3/i)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Adicionar condutor" })).toBeNull();
+  });
+
+  it("nomeia o botão Remover com o condutor e o desabilita durante a remoção", async () => {
+    listCondutores.mockResolvedValue([
+      { id: "c1", nome: "Ana Souza", cnh: "12345678900" },
+      { id: "c2", nome: "Bruno Lima", cnh: "98765432100" },
+    ]);
+    removeCondutor.mockReturnValue(new Promise(() => {}));
+    render(<CondutoresAdicionais />);
+
+    const removerAna = await screen.findByRole("button", { name: "Remover Ana Souza" });
+    const removerBruno = screen.getByRole("button", { name: "Remover Bruno Lima" });
+    await userEvent.click(removerAna);
+
+    expect(removerAna).toBeDisabled();
+    expect(removerAna).toHaveAttribute("aria-busy", "true");
+    expect(removerBruno).toBeDisabled();
+    expect(removeCondutor).toHaveBeenCalledTimes(1);
   });
 });

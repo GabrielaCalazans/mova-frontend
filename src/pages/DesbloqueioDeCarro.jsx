@@ -114,7 +114,7 @@ function formatarDataHora(valor) {
     hour: "2-digit",
     minute: "2-digit",
   });
-  return `${data.toLocaleDateString("pt-BR")} as ${hora}`;
+  return `${data.toLocaleDateString("pt-BR")} às ${hora}`;
 }
 
 export default function TelaDeDesbloqueio() {

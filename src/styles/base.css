@@ -45,6 +45,11 @@ a:hover { text-decoration-thickness: 2px; }
   outline: var(--focus-width) solid var(--focus-ring);
   outline-offset: var(--focus-offset);
 }
+/* input[type=date]: o foco fica nos segmentos internos e :focus-visible não casa no Chromium. */
+input[type="date"]:is(:focus, :focus-within) {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
 :where(h1, h2, [id="conteudo-principal"])[tabindex="-1"]:focus { outline: none; }
 
 ::selection { background: var(--action-primary); color: var(--action-primary-text); }

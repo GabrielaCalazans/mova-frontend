@@ -3,6 +3,7 @@ import { rotulo, STATUS_GARAGEM_LABELS } from "../services/apiEnums";
 import { useNavigate } from "react-router-dom";
 import { CircleCheck, CircleSlash, Gauge, Pencil, Plus, Trash2, Wrench } from "lucide-react";
 import BottomNav from "../components/BottomNav";
+import ModalDialog from "../components/ui/ModalDialog";
 import { listGaragens, deleteGaragem } from "../services/garagemService";
 import { getAuthSession } from "../services/authSession";
 import "../styles/owner.css";
@@ -148,21 +149,28 @@ export default function CadastroDeGaragens() {
       </section>
 
       {garagemParaExcluir && (
-        <div className="owner-dialog" onClick={() => !excluindo && setGaragemParaExcluir(null)} onKeyDown={(event) => event.key === "Escape" && !excluindo && setGaragemParaExcluir(null)}>
-          <div className="owner-dialog__panel" role="alertdialog" aria-modal="true" aria-labelledby="excluir-garagem-title" aria-describedby="excluir-garagem-desc" onClick={(event) => event.stopPropagation()}>
-            <h2 id="excluir-garagem-title">Deseja excluir essa garagem?</h2>
-            <p id="excluir-garagem-desc">{garagemParaExcluir.nome}. Esta ação não pode ser desfeita.</p>
-            <div className="owner-dialog__actions">
-              <button type="button" className="btn btn--secondary" aria-label="Cancelar exclusão" onClick={() => setGaragemParaExcluir(null)} disabled={excluindo} autoFocus>
-                Cancelar
-              </button>
-              <button type="button" className="btn btn--danger" aria-label="Confirmar exclusão" onClick={confirmarExclusao} disabled={excluindo}>
-                <Trash2 className="icon" aria-hidden="true" />
-                {excluindo ? "Excluindo…" : "Confirmar exclusão"}
-              </button>
-            </div>
+        <ModalDialog
+          role="alertdialog"
+          className="owner-dialog"
+          panelClassName="owner-dialog__panel"
+          labelledBy="excluir-garagem-title"
+          describedBy="excluir-garagem-desc"
+          onClose={() => setGaragemParaExcluir(null)}
+          closeDisabled={excluindo}
+        >
+          <h2 id="excluir-garagem-title">Deseja excluir essa garagem?</h2>
+          {/* O backend faz exclusão lógica: a garagem vira INATIVA. */}
+          <p id="excluir-garagem-desc">{garagemParaExcluir.nome}. A garagem será desativada (status Inativa) e deixará de aparecer no catálogo público.</p>
+          <div className="owner-dialog__actions">
+            <button type="button" className="btn btn--secondary" aria-label="Cancelar exclusão" onClick={() => setGaragemParaExcluir(null)} disabled={excluindo} data-autofocus>
+              Cancelar
+            </button>
+            <button type="button" className="btn btn--danger" aria-label="Confirmar exclusão" onClick={confirmarExclusao} disabled={excluindo}>
+              <Trash2 className="icon" aria-hidden="true" />
+              {excluindo ? "Excluindo…" : "Confirmar exclusão"}
+            </button>
           </div>
-        </div>
+        </ModalDialog>
       )}
       <BottomNav />
     </main>

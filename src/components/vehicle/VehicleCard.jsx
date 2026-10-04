@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBolt, faCheck, faHeart as faHeartSolid, faLocationDot, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { faHeart } from "@fortawesome/free-regular-svg-icons";
-import { formatCambio, formatCategoria, vehicleTitle } from "../../utils/vehicleDisplay";
+import { formatCambio, formatCategoria, isVeiculoPcd, vehicleTitle } from "../../utils/vehicleDisplay";
 import { formatMoneyBRL } from "../../utils/reservationMath";
 import VehicleMedia from "./VehicleMedia";
 
@@ -40,7 +40,7 @@ export default function VehicleCard({
   const categoria = field(vehicle, "categoria");
   const cambio = field(vehicle, "cambio");
   const capacidade = field(vehicle, "capacidade");
-  const adaptado = field(vehicle, "adaptado") === true;
+  const adaptado = isVeiculoPcd(vehicle);
   const eletrico = field(vehicle, "eletrico") === true;
   const diaria = field(vehicle, "valorDiaria");
   const status = STATUS_LABEL[vehicle?.status];

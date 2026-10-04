@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { rotulo, STATUS_VEICULO_LABELS } from "../services/apiEnums";
+import { formatCategoria } from "../utils/vehicleDisplay";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { createVeiculo, listFrota, updateVeiculo, uploadImagemVeiculo, deleteImagemVeiculo, reorderImagensVeiculo, setCapaImagemVeiculo } from "../services/veiculoService";
@@ -218,16 +219,33 @@ export default function CadastroCarroForm() {
           throw new Error("Salve o veículo antes de enviar imagens.");
         }
         setEnviandoImagens(true);
-        for (const arquivo of imagensSelecionadas) {
-          const imagem = await uploadImagemVeiculo(
-            idParaUpload,
-            arquivo,
-            "",
-            (carregado, total) => {
-              if (total > 0) setProgressoImagens(Math.round((carregado / total) * 100));
-            },
-          );
-          if (imagem?.id) setImagensAtuais((atual) => [...atual, imagem]);
+        let enviadas = 0;
+        try {
+          for (const arquivo of imagensSelecionadas) {
+            const imagem = await uploadImagemVeiculo(
+              idParaUpload,
+              arquivo,
+              "",
+              (carregado, total) => {
+                if (total > 0) setProgressoImagens(Math.round((carregado / total) * 100));
+              },
+            );
+            if (imagem?.id) setImagensAtuais((atual) => [...atual, imagem]);
+            enviadas += 1;
+          }
+        } catch (erroUpload) {
+          // Só as que falharam continuam selecionadas para nova tentativa.
+          setImagensSelecionadas((atual) => atual.slice(enviadas));
+          if (isNovo && veiculoSalvo?.id) {
+            // O veículo já existe: ficar em /novo levaria a um 409 de placa
+            // duplicada no reenvio. Segue para a edição do veículo criado.
+            navigate(`/cadastro-carros/${veiculoSalvo.id}`, {
+              replace: true,
+              state: { aviso: "Veículo salvo, mas algumas imagens não foram enviadas. Elas continuam selecionadas: salve novamente para tentar outra vez." },
+            });
+            return;
+          }
+          throw erroUpload;
         }
       }
       navigate("/cadastro-carros");
@@ -275,6 +293,11 @@ export default function CadastroCarroForm() {
         <p className="page-head__lede">Dados do modelo, placa, status e garagem operacional do veículo.</p>
       </header>
       <form className="owner-form" onSubmit={handleSubmit} noValidate>
+        {location.state?.aviso && (
+          <p className="alert alert--warning" role="status">
+            {location.state.aviso}
+          </p>
+        )}
         {erro && (
           <p className="alert alert--danger" role="status" aria-live="polite">
             {erro}
@@ -317,7 +340,7 @@ export default function CadastroCarroForm() {
               <select id="categoria" className="field__control" value={values.categoria} onChange={(e) => handleChange("categoria", e.target.value)}>
                 <option value="">Sem categoria</option>
                 {CATEGORIAS.map((categoria) => (
-                  <option key={categoria} value={categoria}>{categoria}</option>
+                  <option key={categoria} value={categoria}>{formatCategoria(categoria)}</option>
                 ))}
               </select>
             </div>

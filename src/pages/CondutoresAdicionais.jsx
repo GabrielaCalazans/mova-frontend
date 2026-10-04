@@ -17,6 +17,7 @@ export default function CondutoresAdicionais() {
   const [carregando, setCarregando] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
+  const [removendoId, setRemovendoId] = useState(null);
 
   useEffect(() => {
     document.title = "MOVA - Condutores adicionais";
@@ -44,12 +45,13 @@ export default function CondutoresAdicionais() {
   }
 
   async function remover(condutor) {
-    if (!reservaId) return;
+    if (!reservaId || removendoId) return;
     setErro("");
+    setRemovendoId(condutor.id);
     try {
       await removeCondutor(reservaId, condutor.id);
       setCondutores((atual) => atual.filter((item) => item.id !== condutor.id));
-    } catch (error) { setErro(error?.message || "Não foi possível remover o condutor."); }
+    } catch (error) { setErro(error?.message || "Não foi possível remover o condutor."); } finally { setRemovendoId(null); }
   }
 
   const head = (
@@ -87,8 +89,15 @@ export default function CondutoresAdicionais() {
                   <strong>{condutor.nome}</strong>
                   <p className="line-list__desc">CPF: <span className="tabular">{condutor.cpf || "Não informado"}</span> · CNH: <span className="tabular">{condutor.cnh}</span></p>
                 </div>
-                <button type="button" className="btn btn--danger" onClick={() => remover(condutor)}>
-                  <FontAwesomeIcon icon={faTrashCan} aria-hidden="true" />Remover
+                <button
+                  type="button"
+                  className="btn btn--danger"
+                  aria-label={`Remover ${condutor.nome}`}
+                  onClick={() => remover(condutor)}
+                  disabled={removendoId !== null}
+                  aria-busy={removendoId === condutor.id || undefined}
+                >
+                  <FontAwesomeIcon icon={faTrashCan} aria-hidden="true" />{removendoId === condutor.id ? "Removendo…" : "Remover"}
                 </button>
               </li>
             ))}

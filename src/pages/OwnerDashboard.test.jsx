@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../App";
 import { saveAuthSession } from "../services/authSession";
+import { getFinanceiro, getFrota, getReservas, getUtilizacao } from "../services/dashboardService";
 
 vi.mock("../services/dashboardService", () => ({
   getFrota: vi.fn().mockResolvedValue({
@@ -29,5 +30,15 @@ describe("dashboard real do locador", () => {
     expect(screen.getByText("1")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
     expect(await screen.findByText(/50.*2 alocados/i)).toBeInTheDocument();
+  });
+
+  it("mostra carregamento (não \"Indisponível\") enquanto os blocos não respondem", async () => {
+    [getFrota, getReservas, getFinanceiro, getUtilizacao].forEach((fn) => fn.mockReturnValueOnce(new Promise(() => {})));
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: /painel do locador/i })).toBeInTheDocument();
+    expect(screen.getAllByText("Carregando…").length).toBeGreaterThanOrEqual(4);
+    expect(screen.queryByText("Indisponível")).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Resumo da operação" })).toHaveAttribute("aria-busy", "true");
   });
 });

@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
@@ -148,6 +148,7 @@ export default function GarageJourneyStep({
 
   const [amPm, setAmPm] = useState(parsedTime.amPm);
   const [calOpen, setCalOpen] = useState(false);
+  const dateInputRef = useRef(null);
   const [calDate, setCalDate] = useState(parsedDate || new Date());
   const [selDate, setSelDate] = useState(parsedDate);
   const [clockOpen, setClockOpen] = useState(false);
@@ -266,8 +267,14 @@ export default function GarageJourneyStep({
 
     setSelDate(picked);
     setData(`${padDatePart(day)}/${padDatePart(month + 1)}/${year}`);
-    setCalOpen(false);
+    fecharCalendario();
   };
+
+  // Fecha o popup e devolve o foco ao campo que o abriu.
+  function fecharCalendario() {
+    setCalOpen(false);
+    dateInputRef.current?.focus();
+  }
 
   const RADIUS = 78;
   const CX = 100;
@@ -459,6 +466,7 @@ export default function GarageJourneyStep({
             <FieldWrapper>
               <InputWithIcon
                 id={`${stepKey}-date`}
+                ref={dateInputRef}
                 type="text"
                 placeholder="Digite a data (DD/MM/AAAA)"
                 value={data}
@@ -467,7 +475,7 @@ export default function GarageJourneyStep({
                 inputMode="numeric"
                 aria-describedby={`${stepKey}-date-help`}
                 onChange={(event) => setData(event.target.value.replace(/[^\d/]/g, "").slice(0, 10))}
-                onKeyDown={(event) => abrirSeletor(event, () => {
+                onKeyDown={(event) => event.key === "Escape" ? setCalOpen(false) : abrirSeletor(event, () => {
                   if (etapaLiberada) {
                     setCalOpen(true);
                     setClockOpen(false);
@@ -496,13 +504,19 @@ export default function GarageJourneyStep({
               {calOpen && etapaLiberada && (
                 <>
                   <PopupOverlay onClick={() => setCalOpen(false)} />
-                  <Popup>
+                  <Popup
+                    onKeyDown={(event) => {
+                      if (event.key !== "Escape") return;
+                      event.preventDefault();
+                      fecharCalendario();
+                    }}
+                  >
                     <CalHeader>
-                      <NavBtn type="button" onClick={prevMonth}>‹</NavBtn>
+                      <NavBtn type="button" onClick={prevMonth} aria-label="Mês anterior">‹</NavBtn>
                       <CalTitle>
                         {MONTHS[calDate.getMonth()]} {calDate.getFullYear()}
                       </CalTitle>
-                      <NavBtn type="button" onClick={nextMonth}>›</NavBtn>
+                      <NavBtn type="button" onClick={nextMonth} aria-label="Próximo mês">›</NavBtn>
                     </CalHeader>
 
                     <DayNames>
@@ -522,6 +536,7 @@ export default function GarageJourneyStep({
                             disabled={cell.disabled}
                             today={cell.today}
                             selected={cell.selected}
+                            aria-label={`${cell.day} de ${MONTHS[calDate.getMonth()].toLowerCase()} de ${calDate.getFullYear()}`}
                             onClick={() => !cell.disabled && pickDay(cell.day)}
                           >
                             {cell.day}

@@ -88,4 +88,21 @@ describe("PendenciasFinanceiras", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Falha de API.");
     expect(screen.queryByText("Você não possui pendências financeiras.")).not.toBeInTheDocument();
   });
+
+  it("desabilita o botão durante o pagamento e mostra confirmação visível", async () => {
+    let concluir;
+    pagarCobranca.mockReturnValue(new Promise((resolve) => { concluir = resolve; }));
+    listarCobrancasPendentes
+      .mockResolvedValueOnce([pendencia()])
+      .mockResolvedValueOnce([]);
+    render(<PendenciasFinanceiras />);
+
+    await userEvent.click(await screen.findByRole("button", { name: "Pagar via Pix (sandbox)" }));
+    const botao = screen.getByRole("button", { name: "Pagando..." });
+    expect(botao).toBeDisabled();
+    expect(botao).toHaveAttribute("aria-busy", "true");
+
+    concluir({ cobranca: pendencia({ statusPagamento: "SUCESSO" }) });
+    expect(await screen.findByRole("status")).toHaveTextContent("Pagamento aprovado. Pendência quitada.");
+  });
 });
