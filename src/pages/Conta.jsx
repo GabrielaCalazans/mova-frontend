@@ -1,6 +1,6 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, ChevronDown } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import FormField from "../components/FormField";
 import { useFormState } from "../hooks/useFormState";
@@ -29,9 +29,10 @@ function ProfileMenuRow({ label, open, onToggle, tone = "default", children }) {
         aria-expanded={isExpandable ? open : undefined}
       >
         <span>{label}</span>
-        {isExpandable && (
-          <ChevronDown
-            size={18}
+        {tone === "default" && (
+          <ChevronRight
+            size={20}
+            aria-hidden="true"
             className={`profile-menu-row__chevron${open ? " profile-menu-row__chevron--open" : ""}`}
           />
         )}
@@ -290,8 +291,6 @@ function Conta() {
     return (
       <AuthenticatedLayout
         title="Minha Conta"
-
-        hideTitle
         footerText="Quer sair da conta?"
         footerLinkTo="/login"
         footerLinkLabel="Voltar ao login"
@@ -312,10 +311,9 @@ function Conta() {
     return (
       <AuthenticatedLayout
         title="Minha Conta"
-
-        hideTitle
       >
-        <p className="auth-feedback auth-feedback--warning" role="status" aria-live="polite">
+        <p className="loading-state" role="status" aria-live="polite">
+          <span className="spinner" aria-hidden="true" />
           Carregando dados da conta...
         </p>
       </AuthenticatedLayout>
@@ -326,8 +324,6 @@ function Conta() {
     return (
       <AuthenticatedLayout
         title="Minha Conta"
-
-        hideTitle
         footerText="Quer sair da conta?"
         footerLinkTo="/login"
         footerLinkLabel="Voltar ao login"
@@ -347,8 +343,6 @@ function Conta() {
   return (
     <AuthenticatedLayout
       title="Minha Conta"
-
-      hideTitle
     >
       {profileStatus === "loading" && (
         <StatusMessage role="status" aria-live="polite">
@@ -362,15 +356,11 @@ function Conta() {
         </p>
       )}
 
-      <p className="auth-profile-badge" role="status" aria-live="polite">
+      <p className="badge badge--neutral auth-profile-badge" role="status" aria-live="polite">
         {profileLabel}
       </p>
 
       <div className="profile-menu-card">
-        <div className="profile-avatar">
-          <User size={34} strokeWidth={1.75} />
-        </div>
-
         {feedback && (
           <p className={`auth-feedback auth-feedback--${feedback.type}`} role="status" aria-live="polite">
             {feedback.message}
@@ -664,7 +654,7 @@ function Conta() {
             <SuccessSubtitle>
               Tem certeza que deseja excluir sua conta? Essa acao nao pode ser desfeita.
             </SuccessSubtitle>
-            <div className="auth-actions" style={{ width: "100%" }}>
+            <div className="auth-actions auth-actions--split" style={{ width: "100%" }}>
               <button
                 type="button"
                 className="auth-button-secondary"
@@ -675,7 +665,7 @@ function Conta() {
               </button>
               <button
                 type="button"
-                className="auth-button"
+                className="auth-button auth-button--danger"
                 onClick={confirmDeleteAccount}
                 disabled={isDeletingAccount}
               >

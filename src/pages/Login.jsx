@@ -1,4 +1,4 @@
-﻿import { useEffect } from "react";
+import { useEffect } from "react";
 import { useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import AuthLayout from "../layout/AuthLayout";
@@ -118,18 +118,20 @@ function Login() {
           autoComplete="current-password"
         />
 
-        <div className="auth-actions">
-          <button type="submit" className="auth-button" disabled={isSubmitting}>
-            {isSubmitting ? "Entrando..." : "Entrar"}
-          </button>
-          <Link to="/cadastro" className="auth-button-secondary">
-            Cadastre-se
-          </Link>
-        </div>
+        <button type="submit" className="auth-button" disabled={isSubmitting}>
+          {isSubmitting ? "Entrando..." : "Entrar"}
+        </button>
 
         <p className="auth-forgot">
           <Link to="/recuperar-senha">Esqueci minha senha</Link>
         </p>
+
+        <div className="auth-actions auth-divider">
+          <p className="auth-footer">Ainda não tem conta?</p>
+          <Link to="/cadastro" className="auth-button-secondary">
+            Cadastre-se
+          </Link>
+        </div>
       </form>
     </AuthLayout>
   );

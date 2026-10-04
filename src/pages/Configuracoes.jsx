@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '../layout/AuthenticatedLayout';
-import { useTheme } from '../context/useTheme';
+import ThemeToggle from '../components/ui/ThemeToggle';
 import {
-  Title,
   Section,
   SectionTitle,
   Row,
   Label,
   Toggle,
   SmallInput,
-  SelectionButton,
-  PageFooter,
+  SecondaryButton,
 } from '../styles/authStyle';
 
 export default function Configuracoes() {
-  const { temaEscuro, toggleTemaEscuro } = useTheme();
   const [fonte, setFonte]                 = useState(12);
   const [idioma, setIdioma]               = useState('Português');
   const [notificacoes, setNotificacoes]   = useState(true);
@@ -22,23 +19,17 @@ export default function Configuracoes() {
   const [segurancaV2E, setSegurancaV2E]   = useState(true);
 
   return (
-    <AuthenticatedLayout>
+    <AuthenticatedLayout title="Configurações">
 
-      <Title>Configurações</Title>
-
-      {/* Aparência */}
-      <Section>
-        <SectionTitle>Aparência</SectionTitle>
+      <Section aria-labelledby="cfg-aparencia">
+        <SectionTitle as="h2" id="cfg-aparencia">Aparência</SectionTitle>
 
         <Row>
-          <Label>Tema Escuro</Label>
-          <Toggle
-            checked={temaEscuro}
-            onChange={toggleTemaEscuro}
-          />
+          <Label>Tema</Label>
+          <ThemeToggle labeled />
         </Row>
 
-        <Row>
+        <Row as="label">
           <Label>Fonte</Label>
           <SmallInput
             type="number"
@@ -47,21 +38,20 @@ export default function Configuracoes() {
           />
         </Row>
 
-        <Row>
+        <Row as="label">
           <Label>Idioma</Label>
           <SmallInput
             value={idioma}
             onChange={e => setIdioma(e.target.value)}
-            style={{ width: '120px' }}
+            style={{ width: '10rem' }}
           />
         </Row>
       </Section>
 
-      {/* Notificações */}
-      <Section>
-        <SectionTitle>Notificações</SectionTitle>
+      <Section aria-labelledby="cfg-notificacoes">
+        <SectionTitle as="h2" id="cfg-notificacoes">Notificações</SectionTitle>
 
-        <Row>
+        <Row as="label">
           <Label>Push</Label>
           <Toggle
             checked={notificacoes}
@@ -69,7 +59,7 @@ export default function Configuracoes() {
           />
         </Row>
 
-        <Row>
+        <Row as="label">
           <Label>Vibrar</Label>
           <Toggle
             checked={vibrar}
@@ -78,11 +68,10 @@ export default function Configuracoes() {
         </Row>
       </Section>
 
-      {/* Segurança */}
-      <Section>
-        <SectionTitle>Segurança</SectionTitle>
+      <Section aria-labelledby="cfg-seguranca">
+        <SectionTitle as="h2" id="cfg-seguranca">Segurança</SectionTitle>
 
-        <Row>
+        <Row as="label">
           <Label>V2E</Label>
           <Toggle
             checked={segurancaV2E}
@@ -90,16 +79,14 @@ export default function Configuracoes() {
           />
         </Row>
 
-        <SelectionButton style={{ width: '100%', marginTop: '0.5rem' }}>
+        <SecondaryButton type="button">
           Alterar Senha
-        </SelectionButton>
+        </SecondaryButton>
 
-        <SelectionButton style={{ width: '100%', marginTop: '0.5rem' }}>
+        <SecondaryButton type="button">
           Limpar Cache
-        </SelectionButton>
+        </SecondaryButton>
       </Section>
-
-      <PageFooter>MOVA</PageFooter>
 
     </AuthenticatedLayout>
   );

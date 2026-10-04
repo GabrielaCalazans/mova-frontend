@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import movaLogo from "../assets/mova_logo.png";
@@ -212,7 +212,7 @@ function CadastroLocador() {
         <ModalOverlay>
           <SuccessModal>
             <IconCircle>
-              <CheckCircle size={48} color="#2e7d32" strokeWidth={1.5} />
+              <CheckCircle size={48} color="currentColor" strokeWidth={1.5} aria-hidden="true" />
             </IconCircle>
             <SuccessTitle>Cadastro concluído!</SuccessTitle>
             <SuccessSubtitle>

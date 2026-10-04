@@ -21,7 +21,6 @@ import {
   SuccessTitle,
   SuccessSubtitle,
 } from "../styles/authStyle";
-import "../styles/relatorios.css";
 
 function Register() {
   const navigate = useNavigate();
@@ -153,13 +152,14 @@ function Register() {
             {isAdvancing ? "Avançando..." : "Continuar"}
           </button>
 
-          <p className="auth-footer">
-            Já tem conta? <Link to="/login">Entrar</Link>
-          </p>
-
-          <p className="auth-footer">
-            Quer alugar seu carro? <Link to="/cadastro-locador">Seja um locador</Link>
-          </p>
+          <div className="auth-divider">
+            <p className="auth-footer">
+              Já tem conta? <Link to="/login">Entrar</Link>
+            </p>
+            <p className="auth-footer">
+              Quer alugar seu carro? <Link to="/cadastro-locador">Seja um locador</Link>
+            </p>
+          </div>
         </form>
       </AuthLayout>
     );
@@ -169,18 +169,16 @@ function Register() {
     <AuthLayout
       title="Crie uma conta"
       align="left"
+      logoSrc={movaLogo}
       topBarSlot={
-        <div className="auth-step-bar">
-          <button
-            type="button"
-            className="auth-step-back"
-            onClick={() => setStep(1)}
-            aria-label="Voltar"
-          >
-            <ArrowLeft strokeWidth={2} />
-          </button>
-          <img src={movaLogo} className="auth-logo auth-logo--compact" alt="Mova Logo" />
-        </div>
+        <button
+          type="button"
+          className="auth-step-back"
+          onClick={() => setStep(1)}
+          aria-label="Voltar"
+        >
+          <ArrowLeft strokeWidth={2} aria-hidden="true" />
+        </button>
       }
     >
       <form className="auth-form" onSubmit={handleDetailsSubmit} noValidate>
@@ -319,7 +317,7 @@ function Register() {
           <label htmlFor="deficienciaId">Deficiência (opcional)</label>
           <select
             id="deficienciaId"
-            className="filtro-select"
+            className="field__control"
             value={values.deficienciaId}
             onChange={(e) => setFieldValue("deficienciaId", e.target.value)}
           >
@@ -369,7 +367,7 @@ function Register() {
         <ModalOverlay>
           <SuccessModal>
             <IconCircle>
-              <CheckCircle size={48} color="#2e7d32" strokeWidth={1.5} />
+              <CheckCircle size={48} color="currentColor" strokeWidth={1.5} aria-hidden="true" />
             </IconCircle>
             <SuccessTitle>Cadastro concluído!</SuccessTitle>
             <SuccessSubtitle>
