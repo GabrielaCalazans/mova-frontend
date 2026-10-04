@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { rotulo, STATUS_PAGAMENTO, STATUS_PAGAMENTO_LABELS, TIPO_COBRANCA_LABELS } from "../services/apiEnums";
+import { rotulo, STATUS_PAGAMENTO, STATUS_PAGAMENTO_LABELS, TIPO_COBRANCA_LABELS, PRAZO_PAGAMENTO_MINUTOS } from "../services/apiEnums";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck, faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { listarCobrancasPendentes, pagarCobranca } from "../services/cobrancaService";
@@ -87,12 +87,15 @@ export default function PendenciasFinanceiras() {
               <div className="post-item__body">
                 <p className="post-item__title tabular">{rotulo(TIPO_COBRANCA_LABELS, c.tipo)} — {formatCurrency(c.valor)}</p>
                 <p className="post-item__meta">{t("payment.pending.status", { status: rotulo(STATUS_PAGAMENTO_LABELS, c.statusPagamento) })}</p>
+                {c.statusPagamento === STATUS_PAGAMENTO.PROCESSANDO && (
+                  <p className="post-item__meta">{t("payment.pending.processingHint", { minutos: PRAZO_PAGAMENTO_MINUTOS })}</p>
+                )}
               </div>
               <button
                 type="button"
                 className="btn"
                 onClick={() => pagar(c.id)}
-                disabled={pagandoId !== null}
+                disabled={pagandoId !== null || c.statusPagamento === STATUS_PAGAMENTO.PROCESSANDO}
                 aria-busy={pagandoId === c.id || undefined}
               >
                 {pagandoId === c.id ? t("payment.pending.paying") : t("payment.pending.payPix")}

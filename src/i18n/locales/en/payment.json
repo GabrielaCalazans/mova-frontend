@@ -26,7 +26,9 @@
     "inProgressTitle": "Rental in progress",
     "cancelledText": "This reservation can't receive payment or release the vehicle.",
     "completedText": "Payment and pickup are already closed for this reservation.",
-    "inProgressText": "The payment has been confirmed and the rental is in progress."
+    "inProgressText": "The payment has been confirmed and the rental is in progress.",
+    "expiredTitle": "Booking expired",
+    "expiredText": "Payment was not confirmed within {minutos} minutes and the vehicle was released. Nothing was charged; make a new booking if you still want this car."
   },
   "summary": {
     "title": "What you're paying for",
@@ -87,6 +89,8 @@
     "emptyText": "You have no outstanding charges.",
     "status": "Status: {status}",
     "paying": "Paying...",
-    "payPix": "Pay with Pix (sandbox)"
-  }
+    "payPix": "Pay with Pix (sandbox)",
+    "processingHint": "Payment under review. If it is not confirmed within {minutos} minutes, you can pay again."
+  },
+  "deadline": "Booking held until {hora}. If payment is not confirmed within {minutos} minutes, it expires and the vehicle is released."
 }

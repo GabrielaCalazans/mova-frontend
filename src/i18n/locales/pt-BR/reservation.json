@@ -115,7 +115,8 @@
     "fee": "Multa de cancelamento:",
     "refundStatus": "Status do estorno:",
     "awaitingServer": "Aguardando consulta do servidor",
-    "refundableAmount": "Valor elegível ao estorno:"
+    "refundableAmount": "Valor elegível ao estorno:",
+    "ownerCancelRule": "A multa vale apenas quando você cancela. Se o locador cancelar, não há multa e um pagamento já confirmado é estornado integralmente."
   },
   "detail": {
     "documentTitle": "MOVA - Detalhe da reserva",
@@ -148,7 +149,8 @@
       "track": "Acompanhar viagem",
       "rate": "Avaliar reserva",
       "return": "Devolver veículo"
-    }
+    },
+    "expiredNotice": "Esta reserva expirou porque o pagamento não foi concluído em {minutos} minutos. O veículo foi liberado; faça uma nova reserva se ainda quiser este carro."
   },
   "share": {
     "copyError": "Não foi possível copiar o link.",
@@ -183,7 +185,8 @@
     "pagination": "Paginação das reservas",
     "previous": "Anterior",
     "next": "Próxima",
-    "page": "Página {page} de {totalPages} ({total})"
+    "page": "Página {page} de {totalPages} ({total})",
+    "expired": "Expirada"
   },
   "history": {
     "title": "Histórico",

@@ -26,7 +26,9 @@
     "inProgressTitle": "Alquiler en curso",
     "cancelledText": "Esta reserva no puede recibir pagos ni liberar el vehículo.",
     "completedText": "El pago y la recogida ya se cerraron para esta reserva.",
-    "inProgressText": "El pago ya se confirmó y el alquiler está en curso."
+    "inProgressText": "El pago ya se confirmó y el alquiler está en curso.",
+    "expiredTitle": "Reserva vencida",
+    "expiredText": "El pago no se confirmó en {minutos} minutos y el vehículo fue liberado. No se cobró nada; haga una nueva reserva si todavía quiere este auto."
   },
   "summary": {
     "title": "Qué estás pagando",
@@ -87,6 +89,8 @@
     "emptyText": "No tienes pagos pendientes.",
     "status": "Estado: {status}",
     "paying": "Pagando...",
-    "payPix": "Pagar con Pix (sandbox)"
-  }
+    "payPix": "Pagar con Pix (sandbox)",
+    "processingHint": "Pago en análisis. Si no se confirma en {minutos} minutos, podrá pagar de nuevo."
+  },
+  "deadline": "Reserva garantizada hasta las {hora}. Si el pago no se confirma en {minutos} minutos, vence y el vehículo se libera."
 }

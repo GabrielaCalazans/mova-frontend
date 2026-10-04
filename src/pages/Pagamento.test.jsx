@@ -168,6 +168,23 @@ describe("Pagamento", () => {
     expect(screen.queryByText(/AB12-CD34/i)).not.toBeInTheDocument();
   });
 
+  // Task 10 (BUG-05): prazo de 15 min visível e reserva expirada encerrada.
+  it("informa até quando a reserva fica garantida aguardando o pagamento", async () => {
+    getReservaById.mockResolvedValue(reserva({ criadaEm: "2026-10-05T15:00:00.000Z" }));
+    render(<Pagamento />);
+    const aviso = await screen.findByText(/garantida até/i);
+    expect(aviso).toHaveTextContent("12:15");
+    expect(aviso).toHaveTextContent(/15 minutos/);
+  });
+
+  it("reserva expirada mostra encerramento próprio, sem botão de pagar", async () => {
+    getReservaById.mockResolvedValue(reserva({ status: "CANCELADA", statusPagamento: "FALHA", expiradaEm: "2026-10-05T15:15:00.000Z" }));
+    render(<Pagamento />);
+    expect(await screen.findByRole("heading", { name: /Reserva expirada/i })).toBeInTheDocument();
+    expect(screen.getByText(/veículo foi liberado/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Pagar$/i })).not.toBeInTheDocument();
+  });
+
   // 5. Falha
   it("pagamento recusado: mostra erro e nenhum sucesso", async () => {
     iniciarPagamento.mockResolvedValue({

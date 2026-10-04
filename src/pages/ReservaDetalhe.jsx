@@ -17,6 +17,7 @@ import {
   STATUS_PAGAMENTO_LABELS,
   STATUS_RESERVA,
   rotulo,
+  PRAZO_PAGAMENTO_MINUTOS,
 } from "../services/apiEnums";
 import { contarDiarias, formatMoneyBRL } from "../utils/reservationMath";
 import { updateJourneyStep } from "../utils/journeyStorage";
@@ -211,7 +212,7 @@ export default function ReservaDetalhe() {
         <h1>{t("reservation.detail.title")}</h1>
         <div className="detail-head">
           <h2>{resolveVeiculoNome(reserva)}</h2>
-          <StatusBadge status={reserva.status} role="status" />
+          <StatusBadge status={reserva.status} expiradaEm={reserva.expiradaEm} role="status" />
         </div>
       </header>
 
@@ -316,7 +317,7 @@ export default function ReservaDetalhe() {
               {destino && <button type="button" className="btn btn--lg btn--block" onClick={() => navegarComReserva(destino.path)}>{destino.label}</button>}
               {reserva.status === STATUS_RESERVA.EM_ANDAMENTO && <button type="button" className="btn btn--secondary btn--block" onClick={() => navegarComReserva("/devolucao")}>{t("reservation.detail.actions.return")}</button>}
               {podeCancelar && <button type="button" className="btn btn--danger btn--block" onClick={() => navegarComReserva("/cancelamento")}>{t("reservation.cancel.title")}</button>}
-              {!destino && reserva.status === STATUS_RESERVA.CANCELADA && <p className="journey-muted" role="status">{t("reservation.detail.cancelledNotice")}</p>}
+              {!destino && reserva.status === STATUS_RESERVA.CANCELADA && <p className="journey-muted" role="status">{reserva.expiradaEm ? t("reservation.detail.expiredNotice", { minutos: PRAZO_PAGAMENTO_MINUTOS }) : t("reservation.detail.cancelledNotice")}</p>}
             </div>
           </section>
         </aside>

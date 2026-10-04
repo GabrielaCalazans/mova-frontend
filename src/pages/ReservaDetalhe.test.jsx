@@ -115,6 +115,15 @@ describe("ReservaDetalhe", () => {
     expect(screen.queryByRole("button", { name: "Desbloquear veículo" })).not.toBeInTheDocument();
   });
 
+  it("reserva expirada aparece como Expirada, não como ativa", async () => {
+    getReservaById.mockResolvedValueOnce(reserva({ status: "CANCELADA", expiradaEm: "2026-10-05T15:15:00.000Z", codigoDesbloqueio: null }));
+    render(<ReservaDetalhe />);
+
+    expect(await screen.findByText("Expirada")).toBeInTheDocument();
+    expect(screen.getByText(/pagamento não foi concluído em 15 minutos/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Desbloquear veículo" })).not.toBeInTheDocument();
+  });
+
   it("usa API de compartilhamento e fallback de cópia", async () => {
     criarCompartilhamentoReserva.mockResolvedValue({ url: "https://mova.test/viagem/token" });
     const user = userEvent.setup();

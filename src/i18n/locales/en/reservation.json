@@ -115,7 +115,8 @@
     "fee": "Cancellation fee:",
     "refundStatus": "Refund status:",
     "awaitingServer": "Waiting for the server",
-    "refundableAmount": "Amount eligible for refund:"
+    "refundableAmount": "Amount eligible for refund:",
+    "ownerCancelRule": "The fee applies only when you cancel. If the owner cancels, there is no fee and any confirmed payment is fully refunded."
   },
   "detail": {
     "documentTitle": "MOVA - Reservation details",
@@ -148,7 +149,8 @@
       "track": "Track trip",
       "rate": "Rate reservation",
       "return": "Return vehicle"
-    }
+    },
+    "expiredNotice": "This booking expired because payment was not completed within {minutos} minutes. The vehicle was released; make a new booking if you still want this car."
   },
   "share": {
     "copyError": "We couldn't copy the link.",
@@ -183,7 +185,8 @@
     "pagination": "Reservations pagination",
     "previous": "Previous",
     "next": "Next",
-    "page": "Page {page} of {totalPages} ({total})"
+    "page": "Page {page} of {totalPages} ({total})",
+    "expired": "Expired"
   },
   "history": {
     "title": "History",

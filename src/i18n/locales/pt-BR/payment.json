@@ -26,7 +26,9 @@
     "inProgressTitle": "Locação em andamento",
     "cancelledText": "Esta reserva não pode receber pagamento nem liberar o veículo.",
     "completedText": "O pagamento e a retirada já foram encerrados para esta reserva.",
-    "inProgressText": "O pagamento já foi confirmado e a locação está em andamento."
+    "inProgressText": "O pagamento já foi confirmado e a locação está em andamento.",
+    "expiredTitle": "Reserva expirada",
+    "expiredText": "O pagamento não foi confirmado em {minutos} minutos e o veículo foi liberado. Nenhum valor foi cobrado; faça uma nova reserva se ainda quiser este carro."
   },
   "summary": {
     "title": "O que você está pagando",
@@ -87,6 +89,8 @@
     "emptyText": "Você não possui pendências financeiras.",
     "status": "Status: {status}",
     "paying": "Pagando...",
-    "payPix": "Pagar via Pix (sandbox)"
-  }
+    "payPix": "Pagar via Pix (sandbox)",
+    "processingHint": "Pagamento em análise. Se não for confirmado em até {minutos} minutos, você poderá pagar de novo."
+  },
+  "deadline": "Reserva garantida até {hora}. Se o pagamento não for confirmado em {minutos} minutos, ela expira e o veículo é liberado."
 }

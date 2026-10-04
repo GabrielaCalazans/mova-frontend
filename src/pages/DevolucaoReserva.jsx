@@ -84,7 +84,7 @@ export default function DevolucaoReserva() {
         <section className="post-panel" aria-labelledby="devolucao-reserva">
           <div className="post-panel__head">
             <h2 id="devolucao-reserva">{t("reservation.return.reservation")}</h2>
-            <StatusBadge status={reserva.status} />
+            <StatusBadge status={reserva.status} expiradaEm={reserva.expiradaEm} />
           </div>
           <ul className="post-facts">
             <li>{t("reservation.return.vehicle")} {veiculo}{reserva.veiculo?.placa ? ` · ${reserva.veiculo.placa}` : ""}</li>

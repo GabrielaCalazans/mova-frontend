@@ -80,7 +80,7 @@ export default function CancelamentoReserva() {
         <section className="post-panel" aria-labelledby="cancelamento-reserva">
           <div className="post-panel__head">
             <h2 id="cancelamento-reserva">{t("reservation.return.reservation")}</h2>
-            <StatusBadge status={reserva.status} />
+            <StatusBadge status={reserva.status} expiradaEm={reserva.expiradaEm} />
           </div>
           <ul className="post-facts">
             <li>{t("reservation.return.vehicle")} {veiculo}</li>
@@ -94,6 +94,7 @@ export default function CancelamentoReserva() {
               <div className="alert__body">
                 <p className="alert__title">{t("reservation.cancel.feeRuleTitle")}</p>
                 <p>{t("reservation.cancel.feeRule")}</p>
+                <p>{t("reservation.cancel.ownerCancelRule")}</p>
               </div>
             </div>
           )}

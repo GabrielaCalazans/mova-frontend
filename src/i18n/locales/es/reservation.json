@@ -115,7 +115,8 @@
     "fee": "Penalización por cancelación:",
     "refundStatus": "Estado del reembolso:",
     "awaitingServer": "Esperando consulta al servidor",
-    "refundableAmount": "Importe reembolsable:"
+    "refundableAmount": "Importe reembolsable:",
+    "ownerCancelRule": "La multa se aplica solo cuando usted cancela. Si el propietario cancela, no hay multa y un pago ya confirmado se reembolsa en su totalidad."
   },
   "detail": {
     "documentTitle": "MOVA - Detalle de la reserva",
@@ -148,7 +149,8 @@
       "track": "Seguir viaje",
       "rate": "Valorar reserva",
       "return": "Devolver vehículo"
-    }
+    },
+    "expiredNotice": "Esta reserva venció porque el pago no se completó en {minutos} minutos. El vehículo fue liberado; haga una nueva reserva si todavía quiere este auto."
   },
   "share": {
     "copyError": "No se pudo copiar el enlace.",
@@ -183,7 +185,8 @@
     "pagination": "Paginación de las reservas",
     "previous": "Anterior",
     "next": "Siguiente",
-    "page": "Página {page} de {totalPages} ({total})"
+    "page": "Página {page} de {totalPages} ({total})",
+    "expired": "Vencida"
   },
   "history": {
     "title": "Historial",

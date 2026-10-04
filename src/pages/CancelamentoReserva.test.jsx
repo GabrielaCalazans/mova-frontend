@@ -31,6 +31,12 @@ describe("CancelamentoReserva", () => {
     expect(screen.getByTestId("multa-cancelamento")).toHaveTextContent("R$ 0,00");
   });
 
+  // Task 10 (BUG-02): a regra informa que só o cancelamento do locatário multa.
+  it("informa que cancelamento pelo locador não gera multa e estorna o pago", async () => {
+    render(<CancelamentoReserva />);
+    expect(await screen.findByText(/Se o locador cancelar, não há multa/)).toBeInTheDocument();
+  });
+
   it("mostra multa tardia retornada pelo backend, sem calcular no cliente", async () => {
     cancelarReserva.mockResolvedValue({ ...confirmada, status: "CANCELADA", multaCancelamento: 80 });
     render(<CancelamentoReserva />);

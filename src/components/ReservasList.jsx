@@ -34,8 +34,12 @@ const STATUS_VISUAL = {
   [STATUS_RESERVA.CANCELADA]: ["danger", STATUS_RESERVA.CANCELADA],
 };
 
-export function StatusBadge({ status, ...props }) {
-  const [tom, rotuloOuCodigo] = STATUS_VISUAL[status] ?? ["neutral", status];
+// Task 10 (BUG-05): expiração automática é CANCELADA + expiradaEm no backend,
+// mas para a pessoa é "Expirada", não um cancelamento que ela fez.
+export function StatusBadge({ status, expiradaEm, ...props }) {
+  const [tom, rotuloOuCodigo] = status === STATUS_RESERVA.CANCELADA && expiradaEm
+    ? ["neutral", () => t("reservation.list.expired")]
+    : STATUS_VISUAL[status] ?? ["neutral", status];
   const texto = typeof rotuloOuCodigo === "function"
     ? rotuloOuCodigo()
     : rotulo(STATUS_RESERVA_LABELS, rotuloOuCodigo) || t("reservation.list.statusMissing");
@@ -256,7 +260,7 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
         <div className="booking__body">
           <div className="booking__top">
             <h2 className="booking__name">{nome}</h2>
-            <StatusBadge status={reserva.status} />
+            <StatusBadge status={reserva.status} expiradaEm={reserva.expiradaEm} />
           </div>
 
           <dl className="booking__facts">

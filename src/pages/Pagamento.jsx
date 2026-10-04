@@ -12,6 +12,7 @@ import {
   STATUS_PAGAMENTO,
   STATUS_PAGAMENTO_LABELS,
   rotulo,
+  PRAZO_PAGAMENTO_MINUTOS,
 } from "../services/apiEnums";
 import { getPagamentoReserva, getReservaById, iniciarPagamento } from "../services/reservaService";
 import { formatMoneyBRL } from "../utils/reservationMath";
@@ -343,14 +344,18 @@ export default function Pagamento() {
         </header>
         <section className="state-block" role="status">
           <h2 className="state-block__title">
-            {reserva?.status === "CANCELADA"
+            {reserva?.expiradaEm
+              ? t("payment.closed.expiredTitle")
+              : reserva?.status === "CANCELADA"
               ? t("payment.closed.cancelledTitle")
               : reserva?.status === "REALIZADA"
                 ? t("payment.closed.completedTitle")
                 : t("payment.closed.inProgressTitle")}
           </h2>
           <p className="state-block__text">
-            {reserva?.status === "CANCELADA"
+            {reserva?.expiradaEm
+              ? t("payment.closed.expiredText", { minutos: PRAZO_PAGAMENTO_MINUTOS })
+              : reserva?.status === "CANCELADA"
               ? t("payment.closed.cancelledText")
               : reserva?.status === "REALIZADA"
                 ? t("payment.closed.completedText")
@@ -365,6 +370,10 @@ export default function Pagamento() {
   }
 
   const veiculo = reserva?.veiculo;
+  // Task 10: a reserva não paga segura o veículo só até criadaEm + 15 min.
+  const prazoPagamento = reserva?.status === "AGUARDANDO_PAGAMENTO" && reserva?.criadaEm
+    ? new Date(new Date(reserva.criadaEm).getTime() + PRAZO_PAGAMENTO_MINUTOS * 60 * 1000)
+    : null;
   const tomPagamento = TOM_PAGAMENTO[statusPagamento] ?? "neutral";
 
   const resumo = (
@@ -559,6 +568,14 @@ export default function Pagamento() {
                   </div>
                 )}
 
+                {prazoPagamento && (
+                  <p className="journey-muted">
+                    {t("payment.deadline", {
+                      hora: formatDate(prazoPagamento, { timeStyle: "short", timeZone: TIMEZONE_EXIBICAO }),
+                      minutos: PRAZO_PAGAMENTO_MINUTOS,
+                    })}
+                  </p>
+                )}
                 <button
                   type="submit"
                   className="btn btn--lg btn--block"

@@ -25,6 +25,13 @@ export const STATUS_RESERVA = {
 
 export const STATUS_RESERVA_LABELS = labels("statusReserva", Object.values(STATUS_RESERVA));
 
+/**
+ * Task 10 (D10-02/D10-03): espelho do prazo de pagamento do backend
+ * (mova-backend/src/shared/prazo-pagamento.ts). Só para exibição: quem expira
+ * a reserva e a tentativa é sempre o backend.
+ */
+export const PRAZO_PAGAMENTO_MINUTOS = 15;
+
 /** enum StatusPagamento — schema.prisma. Somente leitura: o cliente nunca envia. */
 export const STATUS_PAGAMENTO = {
   AGUARDANDO_PAGAMENTO: "AGUARDANDO_PAGAMENTO",

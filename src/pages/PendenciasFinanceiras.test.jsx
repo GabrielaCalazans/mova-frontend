@@ -46,6 +46,14 @@ describe("PendenciasFinanceiras", () => {
     expect(screen.getByRole("button", { name: "Pagar via Pix (sandbox)" })).toBeInTheDocument();
   });
 
+  it("pagamento em análise explica o prazo de 15 minutos e não oferece pagar de novo", async () => {
+    listarCobrancasPendentes.mockResolvedValue([pendencia({ statusPagamento: "PROCESSANDO" })]);
+    render(<PendenciasFinanceiras />);
+
+    expect(await screen.findByText(/15 minutos/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Pagar via Pix (sandbox)" })).toBeDisabled();
+  });
+
   it("mostra múltiplas pendências", async () => {
     listarCobrancasPendentes.mockResolvedValue([
       pendencia(),
