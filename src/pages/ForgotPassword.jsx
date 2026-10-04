@@ -1,4 +1,4 @@
-﻿import { useEffect } from "react";
+import { useEffect } from "react";
 import movaLogo from "../assets/mova_logo.png";
 import FormField from "../components/FormField";
 import { useFormState } from "../hooks/useFormState";
@@ -6,6 +6,7 @@ import { useFormSubmit } from "../hooks/useFormSubmit";
 import AuthLayout from "../layout/AuthLayout";
 import { requestPasswordReset } from "../services/authService";
 import { validateForgotPasswordForm } from "../utils/formValidators";
+import { t } from "../i18n";
 
 function ForgotPassword() {
   const {
@@ -20,7 +21,7 @@ function ForgotPassword() {
   });
 
   useEffect(() => {
-    document.title = "MOVA - Recuperar Senha";
+    document.title = t("auth.forgot.documentTitle");
   }, []);
 
   const { handleSubmit, isSubmitting } = useFormSubmit({
@@ -30,7 +31,7 @@ function ForgotPassword() {
     setFeedback,
     getInvalidFeedback: () => ({
       type: "error",
-      message: "Informe um e-mail valido para continuar.",
+      message: t("auth.forgot.invalid"),
     }),
     getValidFeedback: (_validValues, submitResult) => ({
       type: "success",
@@ -45,14 +46,14 @@ function ForgotPassword() {
 
   return (
     <AuthLayout
-      title="Recuperar Senha"
+      title={t("auth.forgot.title")}
       logoSrc={movaLogo}
-      logoAlt="Mova Logo"
+      logoAlt={t("auth.logoAlt")}
       wordmark="MOVA"
       compactLogo
-      footerText="Lembrou sua senha?"
+      footerText={t("auth.rememberedPassword")}
       footerLinkTo="/login"
-      footerLinkLabel="Entrar"
+      footerLinkLabel={t("auth.signIn")}
     >
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         {feedback && (
@@ -65,8 +66,8 @@ function ForgotPassword() {
           id="email"
           name="email"
           type="email"
-          placeholder="seuemail@exemplo.com"
-          ariaLabel="E-mail"
+          placeholder={t("auth.forgot.placeholder")}
+          ariaLabel={t("auth.email")}
           value={values.email}
           onChange={(event) => setFieldValue("email", event.target.value)}
           required
@@ -75,7 +76,7 @@ function ForgotPassword() {
         />
 
         <button type="submit" className="auth-button" disabled={isSubmitting}>
-          {isSubmitting ? "Enviando..." : "Enviar Link de Recuperacao"}
+          {isSubmitting ? t("auth.forgot.sending") : t("auth.forgot.submit")}
         </button>
       </form>
     </AuthLayout>

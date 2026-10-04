@@ -7,26 +7,23 @@ import CursorGlowArea from "../components/ui/CursorGlowArea";
 import VehicleCard from "../components/vehicle/VehicleCard";
 import { vehicleTitle } from "../utils/vehicleDisplay";
 import { listVeiculos } from "../services/veiculoService";
+import { t } from "../i18n";
 import "../styles/vehicle.css";
 import "../styles/home.css";
 
-const CATEGORIAS = [
-  ["ECONOMICO", "Econômicos"],
-  ["ESPACOSO", "Espaçosos"],
-  ["EXECUTIVO", "Executivos"],
-  ["PCD", "Adaptados PCD"],
-  ["ELETRICO", "Elétricos"],
-];
+// Rótulo traduzido na hora do render (o idioma pode mudar depois do import).
+const CATEGORIAS = ["ECONOMICO", "ESPACOSO", "EXECUTIVO", "PCD", "ELETRICO"];
+const categoriaLabel = (value) => t(`catalog.categories.${value.toLowerCase()}`);
 
 function CategoryCarousel({ categoria, onChange }) {
   return (
     <section className="category-strip public-home__category-carousel" role="group" aria-labelledby="categorias-title" data-capture="carousel">
-      <h2 id="categorias-title">Filtrar por categoria</h2>
+      <h2 id="categorias-title">{t("catalog.home.filterByCategory")}</h2>
       <div className="category-strip__list">
-        <button type="button" className="chip" aria-pressed={!categoria} onClick={() => onChange("")}>Todos</button>
-        {CATEGORIAS.map(([value, label]) => (
+        <button type="button" className="chip" aria-pressed={!categoria} onClick={() => onChange("")}>{t("catalog.home.all")}</button>
+        {CATEGORIAS.map((value) => (
           <button key={value} type="button" className="chip" aria-pressed={categoria === value} onClick={() => onChange(categoria === value ? "" : value)}>
-            {label}
+            {categoriaLabel(value)}
           </button>
         ))}
       </div>
@@ -73,7 +70,7 @@ function Home() {
   }, [categoria, filtroEletrico, filtroMarca, filtroModelo, filtroPcd]);
 
   useEffect(() => {
-    document.title = "MOVA - Veículos disponíveis agora";
+    document.title = t("catalog.home.documentTitle");
     let ativo = true;
     // Cada combinação de filtros inicia um novo request.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -81,13 +78,13 @@ function Home() {
     setErro("");
     listVeiculos(filtros)
       .then((resultado) => { if (ativo) setVeiculos(resultado); })
-      .catch((error) => { if (ativo) setErro(error?.message || "Não foi possível carregar os veículos."); })
+      .catch((error) => { if (ativo) setErro(error?.message || t("catalog.home.loadError")); })
       .finally(() => { if (ativo) setLoading(false); });
     return () => { ativo = false; };
   }, [filtros, tentativa]);
 
   const filtrando = Object.keys(filtros).length > 0;
-  const nomeCategoria = CATEGORIAS.find(([value]) => value === categoria)?.[1];
+  const nomeCategoria = categoria ? categoriaLabel(categoria) : "";
 
   function limparFiltros() {
     setCategoria("");
@@ -101,42 +98,42 @@ function Home() {
     <PublicAppShell>
       <section className="public-home" aria-labelledby="home-title">
         <header className="page-head">
-          <h1 id="home-title">Veículos disponíveis agora</h1>
-          <p className="page-head__lede">Veja os veículos, filtre por categoria e abra os detalhes sem criar conta.</p>
+          <h1 id="home-title">{t("catalog.home.title")}</h1>
+          <p className="page-head__lede">{t("catalog.home.lede")}</p>
         </header>
 
         <section className="public-home__catalog" aria-labelledby="catalog-title">
-          <h2 id="catalog-title" className="sr-only">Buscar veículos</h2>
-          <form className="catalog-search" role="search" aria-label="Buscar veículos" onSubmit={(event) => event.preventDefault()}>
+          <h2 id="catalog-title" className="sr-only">{t("catalog.home.searchTitle")}</h2>
+          <form className="catalog-search" role="search" aria-label={t("catalog.home.searchTitle")} onSubmit={(event) => event.preventDefault()}>
             <div className="field">
-              <label className="field__label" htmlFor="catalog-marca">Marca</label>
-              <input id="catalog-marca" className="field__control" value={filtroMarca} onChange={(event) => setFiltroMarca(event.target.value)} placeholder="Ex.: Fiat" autoComplete="off" />
+              <label className="field__label" htmlFor="catalog-marca">{t("catalog.home.brand")}</label>
+              <input id="catalog-marca" className="field__control" value={filtroMarca} onChange={(event) => setFiltroMarca(event.target.value)} placeholder={t("catalog.home.brandPlaceholder")} autoComplete="off" />
             </div>
             <div className="field">
-              <label className="field__label" htmlFor="catalog-modelo">Modelo</label>
-              <input id="catalog-modelo" className="field__control" value={filtroModelo} onChange={(event) => setFiltroModelo(event.target.value)} placeholder="Ex.: Argo" autoComplete="off" />
+              <label className="field__label" htmlFor="catalog-modelo">{t("catalog.home.model")}</label>
+              <input id="catalog-modelo" className="field__control" value={filtroModelo} onChange={(event) => setFiltroModelo(event.target.value)} placeholder={t("catalog.home.modelPlaceholder")} autoComplete="off" />
             </div>
             <div className="catalog-search__toggles">
               <label className="toggle-chip">
                 <input type="checkbox" checked={filtroPcd} onChange={(event) => setFiltroPcd(event.target.checked)} />
-                <span><FontAwesomeIcon icon={faWheelchair} aria-hidden="true" />PCD</span>
+                <span><FontAwesomeIcon icon={faWheelchair} aria-hidden="true" />{t("catalog.home.pcd")}</span>
               </label>
               <label className="toggle-chip">
                 <input type="checkbox" checked={filtroEletrico} onChange={(event) => setFiltroEletrico(event.target.checked)} />
-                <span><FontAwesomeIcon icon={faBolt} aria-hidden="true" />Elétrico</span>
+                <span><FontAwesomeIcon icon={faBolt} aria-hidden="true" />{t("catalog.home.electric")}</span>
               </label>
             </div>
           </form>
 
           <p className="resultbar" role="status" aria-live="polite">
             {loading ? (
-              <span>Carregando veículos…</span>
+              <span>{t("catalog.home.loading")}</span>
             ) : erro ? (
-              <span>Catálogo indisponível</span>
+              <span>{t("catalog.home.unavailable")}</span>
             ) : (
               <>
-                <span><strong className="tabular">{veiculos.length}</strong> {veiculos.length === 1 ? "veículo disponível" : "veículos disponíveis"}</span>
-                <span>{nomeCategoria ? `Categoria ${nomeCategoria}` : "Todas as categorias"}</span>
+                <span><strong className="tabular">{veiculos.length}</strong> {t(veiculos.length === 1 ? "catalog.home.availableOne" : "catalog.home.availableOther")}</span>
+                <span>{nomeCategoria ? t("catalog.home.categoryName", { name: nomeCategoria }) : t("catalog.home.allCategories")}</span>
               </>
             )}
           </p>
@@ -146,22 +143,22 @@ function Home() {
 
             {!loading && erro && (
               <div className="state-block state-block--error" role="alert">
-                <h3 className="state-block__title">Não conseguimos carregar os veículos</h3>
-                <p className="state-block__text">{erro} Verifique sua conexão e tente de novo.</p>
-                <button type="button" className="btn btn--secondary" onClick={() => setTentativa((valor) => valor + 1)}>Tentar novamente</button>
+                <h3 className="state-block__title">{t("catalog.home.errorTitle")}</h3>
+                <p className="state-block__text">{erro} {t("catalog.home.errorHint")}</p>
+                <button type="button" className="btn btn--secondary" onClick={() => setTentativa((valor) => valor + 1)}>{t("catalog.home.retry")}</button>
               </div>
             )}
 
             {!loading && !erro && veiculos.length === 0 && (
               <>
                 <div className="state-block public-home__message">
-                  <h3 className="state-block__title">{filtrando ? "Nenhum veículo para este filtro" : "Nenhum veículo publicado agora"}</h3>
+                  <h3 className="state-block__title">{filtrando ? t("catalog.home.emptyFilteredTitle") : t("catalog.home.emptyTitle")}</h3>
                   <p className="state-block__text">
                     {filtrando
-                      ? "Nenhum veículo publicado para este filtro. Limpe os filtros para ver a lista completa."
-                      : "Novos veículos aparecem aqui assim que um locador os publica."}
+                      ? t("catalog.home.emptyFilteredText")
+                      : t("catalog.home.emptyText")}
                   </p>
-                  {filtrando && <button type="button" className="btn btn--secondary" onClick={limparFiltros}>Limpar filtros</button>}
+                  {filtrando && <button type="button" className="btn btn--secondary" onClick={limparFiltros}>{t("catalog.home.clearFilters")}</button>}
                 </div>
                 <CategoryCarousel categoria={categoria} onChange={setCategoria} />
               </>
@@ -179,7 +176,7 @@ function Home() {
                         titleTo={`/carros/${veiculo.id}`}
                         actions={(
                           <Link className="btn btn--secondary" to={`/carros/${veiculo.id}`}>
-                            Ver detalhes<span className="sr-only"> de {nome}</span>
+                            {t("catalog.home.viewDetails")}<span className="sr-only">{t("catalog.home.viewDetailsOf", { name: nome })}</span>
                           </Link>
                         )}
                       />

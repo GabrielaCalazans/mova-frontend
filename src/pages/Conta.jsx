@@ -18,6 +18,7 @@ import {
 import { maskCelphone, maskCep, maskCpf, maskCnpj } from "../utils/inputMasks";
 import { validateProfileForm, isSenhaForte } from "../utils/formValidators";
 import { anonimizarMinhaConta, exportarMeusDados } from "../services/lgpdService";
+import { t } from "../i18n";
 import "../styles/owner.css";
 
 function baixarJson(dados, nomeArquivo) {
@@ -124,7 +125,7 @@ function Conta() {
         setProfileStatus("error");
         setProfileFeedback({
           type: "error",
-          message: "Sua sessao expirou. Entre novamente para acessar a conta.",
+          message: t("account.sessionExpired"),
         });
       });
       return () => {
@@ -171,9 +172,9 @@ function Conta() {
 
         setProfileStatus("ready");
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Nao foi possivel carregar os dados da conta.";
+        const message = error instanceof Error ? error.message : t("account.loadError");
 
-        if (/sessao expirada|faca login novamente/i.test(message)) {
+        if (message === t("errors.sessionExpired")) {
           clearAuthSession();
           if (isMounted) {
             navigate("/login", { replace: true });
@@ -223,20 +224,20 @@ function Conta() {
     event.preventDefault();
 
     if (!passwordValues.senhaAtual || !passwordValues.novaSenha) {
-      setPasswordFeedback({ type: "error", message: "Informe senha atual e nova senha." });
+      setPasswordFeedback({ type: "error", message: t("account.password.missing") });
       return;
     }
 
     if (!isSenhaForte(passwordValues.novaSenha)) {
       setPasswordFeedback({
         type: "error",
-        message: "Nova senha deve ter 8+ caracteres, com maiuscula, minuscula, numero e caractere especial.",
+        message: t("account.password.weak"),
       });
       return;
     }
 
     if (passwordValues.novaSenha !== passwordValues.confirmarNovaSenha) {
-      setPasswordFeedback({ type: "error", message: "As senhas devem ser iguais." });
+      setPasswordFeedback({ type: "error", message: t("account.password.mismatch") });
       return;
     }
 
@@ -252,7 +253,7 @@ function Conta() {
     } catch (error) {
       setPasswordFeedback({
         type: "error",
-        message: error instanceof Error ? error.message : "Nao foi possivel alterar a senha.",
+        message: error instanceof Error ? error.message : t("account.password.error"),
       });
     } finally {
       setIsChangingPassword(false);
@@ -275,13 +276,13 @@ function Conta() {
         // A mensagem crua do backend cita a rota da API; o usuário precisa do caminho na tela.
         setFeedback({
           type: "error",
-          message: "Sua conta tem histórico de reservas e não pode ser excluída. Você pode anonimizar seus dados em Privacidade (LGPD), logo abaixo.",
+          message: t("account.delete.hasHistory"),
         });
         setOpenSection("lgpd");
       } else {
         setFeedback({
           type: "error",
-          message: error instanceof Error ? error.message : "Nao foi possivel deletar a conta.",
+          message: error instanceof Error ? error.message : t("account.delete.error"),
         });
       }
       setIsDeleteModalOpen(false);
@@ -295,9 +296,9 @@ function Conta() {
     try {
       setIsExporting(true);
       baixarJson(await exportarMeusDados(), "meus-dados-mova.json");
-      setLgpdFeedback({ type: "success", message: "Download dos seus dados iniciado (meus-dados-mova.json)." });
+      setLgpdFeedback({ type: "success", message: t("account.lgpd.exportSuccess", { file: "meus-dados-mova.json" }) });
     } catch (error) {
-      setLgpdFeedback({ type: "error", message: error?.message || "Não foi possível exportar seus dados." });
+      setLgpdFeedback({ type: "error", message: error?.message || t("account.lgpd.exportError") });
     } finally {
       setIsExporting(false);
     }
@@ -312,7 +313,7 @@ function Conta() {
       navigate("/", { replace: true });
     } catch (error) {
       setIsAnonymizeModalOpen(false);
-      setLgpdFeedback({ type: "error", message: error?.message || "Não foi possível anonimizar a conta." });
+      setLgpdFeedback({ type: "error", message: error?.message || t("account.lgpd.anonymizeError") });
     } finally {
       setIsAnonymizing(false);
     }
@@ -325,7 +326,7 @@ function Conta() {
     setFeedback,
     getInvalidFeedback: () => ({
       type: "error",
-      message: "Existem campos invalidos. Revise os avisos abaixo.",
+      message: t("account.invalidFields"),
     }),
     getValidFeedback: (_validValues, submitResult) => ({
       type: submitResult.mode === "api" ? "success" : "warning",
@@ -339,23 +340,23 @@ function Conta() {
   });
 
   const isLocador = getUserCargo(values) === "LOCADOR";
-  const nameLabel = isLocador ? "Nome do Proprietário" : "Nome Completo";
-  const profileLabel = isLocador ? "Perfil: Locador" : "Perfil: Locatário";
+  const nameLabel = isLocador ? t("account.fields.ownerName") : t("account.fields.fullName");
+  const profileLabel = isLocador ? t("account.profileOwner") : t("account.profileRenter");
 
   if (!authToken) {
     return (
       <AuthenticatedLayout
-        title="Minha Conta"
-        footerText="Quer sair da conta?"
+        title={t("account.title")}
+        footerText={t("account.logoutPrompt")}
         footerLinkTo="/login"
-        footerLinkLabel="Voltar ao login"
+        footerLinkLabel={t("account.backToLogin")}
       >
         <p className="auth-feedback auth-feedback--error" role="status" aria-live="polite">
-          {profileFeedback?.message || "Sua sessao expirou. Entre novamente para acessar a conta."}
+          {profileFeedback?.message || t("account.sessionExpired")}
         </p>
         <div className="auth-actions">
           <button type="button" className="auth-button" onClick={handleLogout}>
-            Voltar ao login
+            {t("account.backToLogin")}
           </button>
         </div>
       </AuthenticatedLayout>
@@ -365,11 +366,11 @@ function Conta() {
   if (profileStatus === "loading" && !sessionUser) {
     return (
       <AuthenticatedLayout
-        title="Minha Conta"
+        title={t("account.title")}
       >
         <p className="loading-state" role="status" aria-live="polite">
           <span className="spinner" aria-hidden="true" />
-          Carregando dados da conta...
+          {t("account.loading")}
         </p>
       </AuthenticatedLayout>
     );
@@ -378,17 +379,17 @@ function Conta() {
   if (profileStatus === "error" && !sessionUser) {
     return (
       <AuthenticatedLayout
-        title="Minha Conta"
-        footerText="Quer sair da conta?"
+        title={t("account.title")}
+        footerText={t("account.logoutPrompt")}
         footerLinkTo="/login"
-        footerLinkLabel="Voltar ao login"
+        footerLinkLabel={t("account.backToLogin")}
       >
         <p className="auth-feedback auth-feedback--error" role="status" aria-live="polite">
-          {profileFeedback?.message || "Nao foi possivel carregar os dados da conta."}
+          {profileFeedback?.message || t("account.loadError")}
         </p>
         <div className="auth-actions">
           <button type="button" className="auth-button" onClick={handleLogout}>
-            Voltar ao login
+            {t("account.backToLogin")}
           </button>
         </div>
       </AuthenticatedLayout>
@@ -397,11 +398,11 @@ function Conta() {
 
   return (
     <AuthenticatedLayout
-      title="Minha Conta"
+      title={t("account.title")}
     >
       {profileStatus === "loading" && (
         <StatusMessage role="status" aria-live="polite">
-          Atualizando dados da conta...
+          {t("account.refreshing")}
         </StatusMessage>
       )}
 
@@ -423,7 +424,7 @@ function Conta() {
         )}
 
         <ProfileMenuRow
-          label="Alterar Nome"
+          label={t("account.sections.name")}
           open={openSection === "name"}
           onToggle={() => toggleSection("name")}
         >
@@ -442,13 +443,13 @@ function Conta() {
               disabled={profileStatus === "loading"}
             />
             <button type="submit" className="auth-button" disabled={isSubmitting || profileStatus === "loading"}>
-              {isSubmitting ? "Salvando..." : "Salvar"}
+              {isSubmitting ? t("account.saving") : t("account.save")}
             </button>
           </form>
         </ProfileMenuRow>
 
         <ProfileMenuRow
-          label="Alterar senha"
+          label={t("account.sections.password")}
           open={openSection === "password"}
           onToggle={() => toggleSection("password")}
         >
@@ -462,8 +463,8 @@ function Conta() {
               id="senhaAtual"
               name="senhaAtual"
               type="password"
-              placeholder="Senha atual"
-              ariaLabel="Senha atual"
+              placeholder={t("account.password.current")}
+              ariaLabel={t("account.password.current")}
               value={passwordValues.senhaAtual}
               onChange={(e) => handlePasswordFieldChange("senhaAtual", e.target.value)}
               required
@@ -474,8 +475,8 @@ function Conta() {
               id="novaSenha"
               name="novaSenha"
               type="password"
-              placeholder="Nova senha"
-              ariaLabel="Nova senha"
+              placeholder={t("account.password.new")}
+              ariaLabel={t("account.password.new")}
               value={passwordValues.novaSenha}
               onChange={(e) => handlePasswordFieldChange("novaSenha", e.target.value)}
               required
@@ -486,8 +487,8 @@ function Conta() {
               id="confirmarNovaSenha"
               name="confirmarNovaSenha"
               type="password"
-              placeholder="Confirmar nova senha"
-              ariaLabel="Confirmar nova senha"
+              placeholder={t("account.password.confirm")}
+              ariaLabel={t("account.password.confirm")}
               value={passwordValues.confirmarNovaSenha}
               onChange={(e) => handlePasswordFieldChange("confirmarNovaSenha", e.target.value)}
               required
@@ -495,13 +496,13 @@ function Conta() {
               disabled={profileStatus === "loading"}
             />
             <button type="submit" className="auth-button" disabled={isChangingPassword || profileStatus === "loading"}>
-              {isChangingPassword ? "Alterando..." : "Alterar senha"}
+              {isChangingPassword ? t("account.password.submitting") : t("account.password.submit")}
             </button>
           </form>
         </ProfileMenuRow>
 
         <ProfileMenuRow
-          label="E-mail"
+          label={t("account.sections.email")}
           open={openSection === "email"}
           onToggle={() => toggleSection("email")}
         >
@@ -511,18 +512,18 @@ function Conta() {
               id="email"
               name="email"
               type="email"
-              placeholder="E-mail"
-              ariaLabel="E-mail"
+              placeholder={t("account.fields.email")}
+              ariaLabel={t("account.fields.email")}
               value={values.email}
               readOnly
-              helperText="O e-mail não pode ser alterado."
+              helperText={t("account.fields.emailReadOnly")}
               autoComplete="email"
             />
           </div>
         </ProfileMenuRow>
 
         <ProfileMenuRow
-          label="Alterar Celular"
+          label={t("account.sections.celphone")}
           open={openSection === "celphone"}
           onToggle={() => toggleSection("celphone")}
         >
@@ -531,8 +532,8 @@ function Conta() {
               id="celphone"
               name="celphone"
               type="text"
-              placeholder="Numero de Celular"
-              ariaLabel="Numero de Celular"
+              placeholder={t("account.fields.celphone")}
+              ariaLabel={t("account.fields.celphone")}
               value={values.celphone}
               onChange={(e) => handleChange("celphone", e.target.value)}
               required
@@ -542,13 +543,13 @@ function Conta() {
               disabled={profileStatus === "loading"}
             />
             <button type="submit" className="auth-button" disabled={isSubmitting || profileStatus === "loading"}>
-              {isSubmitting ? "Salvando..." : "Salvar"}
+              {isSubmitting ? t("account.saving") : t("account.save")}
             </button>
           </form>
         </ProfileMenuRow>
 
         <ProfileMenuRow
-          label="Alterar Endereço"
+          label={t("account.sections.address")}
           open={openSection === "address"}
           onToggle={() => toggleSection("address")}
         >
@@ -557,8 +558,8 @@ function Conta() {
               id="address"
               name="address"
               type="text"
-              placeholder="Endereco Completo"
-              ariaLabel="Endereco Completo"
+              placeholder={t("account.fields.address")}
+              ariaLabel={t("account.fields.address")}
               value={values.address}
               onChange={(e) => handleChange("address", e.target.value)}
               required
@@ -570,8 +571,8 @@ function Conta() {
               id="cep"
               name="cep"
               type="text"
-              placeholder="CEP"
-              ariaLabel="CEP"
+              placeholder={t("account.fields.cep")}
+              ariaLabel={t("account.fields.cep")}
               value={values.cep}
               onChange={(e) => handleChange("cep", e.target.value)}
               required
@@ -581,14 +582,14 @@ function Conta() {
               disabled={profileStatus === "loading"}
             />
             <button type="submit" className="auth-button" disabled={isSubmitting || profileStatus === "loading"}>
-              {isSubmitting ? "Salvando..." : "Salvar"}
+              {isSubmitting ? t("account.saving") : t("account.save")}
             </button>
           </form>
         </ProfileMenuRow>
 
         {isLocador ? (
           <ProfileMenuRow
-            label="Alterar Empresa e CNPJ"
+            label={t("account.sections.company")}
             open={openSection === "empresa"}
             onToggle={() => toggleSection("empresa")}
           >
@@ -597,8 +598,8 @@ function Conta() {
                 id="empresa"
                 name="empresa"
                 type="text"
-                placeholder="Empresa"
-                ariaLabel="Empresa"
+                placeholder={t("account.fields.company")}
+                ariaLabel={t("account.fields.company")}
                 value={values.empresa}
                 onChange={(e) => handleChange("empresa", e.target.value)}
                 required
@@ -610,8 +611,8 @@ function Conta() {
                 id="cnpj"
                 name="cnpj"
                 type="text"
-                placeholder="CNPJ"
-                ariaLabel="CNPJ"
+                placeholder={t("account.fields.cnpj")}
+                ariaLabel={t("account.fields.cnpj")}
                 value={values.cnpj}
                 onChange={(e) => handleChange("cnpj", e.target.value)}
                 required
@@ -620,13 +621,13 @@ function Conta() {
                 disabled={profileStatus === "loading"}
               />
               <button type="submit" className="auth-button" disabled={isSubmitting || profileStatus === "loading"}>
-                {isSubmitting ? "Salvando..." : "Salvar"}
+                {isSubmitting ? t("account.saving") : t("account.save")}
               </button>
             </form>
           </ProfileMenuRow>
         ) : (
           <ProfileMenuRow
-            label="Alterar CNH"
+            label={t("account.sections.cnh")}
             open={openSection === "cnh"}
             onToggle={() => toggleSection("cnh")}
           >
@@ -635,8 +636,8 @@ function Conta() {
                 id="cpf"
                 name="cpf"
                 type="text"
-                placeholder="Numero de CPF"
-                ariaLabel="Numero de CPF"
+                placeholder={t("account.fields.cpf")}
+                ariaLabel={t("account.fields.cpf")}
                 value={values.cpf}
                 onChange={(e) => handleChange("cpf", e.target.value)}
                 required
@@ -648,8 +649,8 @@ function Conta() {
                 id="cnh"
                 name="cnh"
                 type="text"
-                placeholder="Numero de CNH"
-                ariaLabel="Numero de CNH"
+                placeholder={t("account.fields.cnh")}
+                ariaLabel={t("account.fields.cnh")}
                 value={values.cnh}
                 onChange={(e) => handleChange("cnh", e.target.value)}
                 required
@@ -658,7 +659,7 @@ function Conta() {
                 disabled={profileStatus === "loading"}
               />
               <button type="submit" className="auth-button" disabled={isSubmitting || profileStatus === "loading"}>
-                {isSubmitting ? "Salvando..." : "Salvar"}
+                {isSubmitting ? t("account.saving") : t("account.save")}
               </button>
             </form>
           </ProfileMenuRow>
@@ -667,12 +668,12 @@ function Conta() {
         {isLocador && (
           <>
             <ProfileMenuRow
-              label="Meus Veículos"
+              label={t("account.sections.vehicles")}
               open={false}
               onToggle={() => navigate("/cadastro-carros")}
             />
             <ProfileMenuRow
-              label="Minhas Garagens"
+              label={t("account.sections.garages")}
               open={false}
               onToggle={() => navigate("/cadastro-garagens")}
             />
@@ -680,7 +681,7 @@ function Conta() {
         )}
 
         <ProfileMenuRow
-          label="Privacidade (LGPD)"
+          label={t("account.sections.privacy")}
           open={openSection === "lgpd"}
           onToggle={() => toggleSection("lgpd")}
         >
@@ -691,26 +692,26 @@ function Conta() {
               </p>
             )}
             <p className="auth-message auth-message--warning">
-              Baixe uma cópia dos seus dados pessoais ou anonimize a conta. A anonimização mantém o histórico de reservas sem identificar você e encerra o acesso.
+              {t("account.lgpd.intro")}
             </p>
             <button type="button" className="auth-button-secondary" onClick={handleExportarDados} disabled={isExporting}>
-              {isExporting ? "Preparando arquivo..." : "Baixar meus dados"}
+              {isExporting ? t("account.lgpd.exporting") : t("account.lgpd.export")}
             </button>
             <button type="button" className="auth-button auth-button--danger" onClick={() => setIsAnonymizeModalOpen(true)}>
-              Anonimizar minha conta
+              {t("account.lgpd.anonymize")}
             </button>
           </div>
         </ProfileMenuRow>
 
         <ProfileMenuRow
-          label="Sair"
+          label={t("account.sections.logout")}
           tone="muted"
           open={false}
           onToggle={handleLogout}
         />
 
         <ProfileMenuRow
-          label="Deletar conta"
+          label={t("account.sections.delete")}
           tone="danger"
           open={false}
           onToggle={handleDeleteAccount}
@@ -727,14 +728,14 @@ function Conta() {
           onClose={() => setIsDeleteModalOpen(false)}
           closeDisabled={isDeletingAccount}
         >
-          <h2 id="excluir-conta-title">Excluir conta</h2>
-          <p id="excluir-conta-desc">Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita.</p>
+          <h2 id="excluir-conta-title">{t("account.delete.title")}</h2>
+          <p id="excluir-conta-desc">{t("account.delete.description")}</p>
           <div className="owner-dialog__actions">
             <button type="button" className="auth-button-secondary" onClick={() => setIsDeleteModalOpen(false)} disabled={isDeletingAccount} data-autofocus>
-              Cancelar
+              {t("account.cancel")}
             </button>
             <button type="button" className="auth-button auth-button--danger" onClick={confirmDeleteAccount} disabled={isDeletingAccount}>
-              {isDeletingAccount ? "Deletando..." : "Excluir conta"}
+              {isDeletingAccount ? t("account.delete.submitting") : t("account.delete.submit")}
             </button>
           </div>
         </ModalDialog>
@@ -750,14 +751,14 @@ function Conta() {
           onClose={() => setIsAnonymizeModalOpen(false)}
           closeDisabled={isAnonymizing}
         >
-          <h2 id="anonimizar-conta-title">Anonimizar conta</h2>
-          <p id="anonimizar-conta-desc">Seus dados pessoais serão substituídos por valores anônimos e você não poderá mais entrar com esta conta. Essa ação não pode ser desfeita.</p>
+          <h2 id="anonimizar-conta-title">{t("account.lgpd.title")}</h2>
+          <p id="anonimizar-conta-desc">{t("account.lgpd.description")}</p>
           <div className="owner-dialog__actions">
             <button type="button" className="auth-button-secondary" onClick={() => setIsAnonymizeModalOpen(false)} disabled={isAnonymizing} data-autofocus>
-              Cancelar
+              {t("account.cancel")}
             </button>
             <button type="button" className="auth-button auth-button--danger" onClick={confirmAnonimizar} disabled={isAnonymizing}>
-              {isAnonymizing ? "Anonimizando..." : "Anonimizar conta"}
+              {isAnonymizing ? t("account.lgpd.submitting") : t("account.lgpd.submit")}
             </button>
           </div>
         </ModalDialog>

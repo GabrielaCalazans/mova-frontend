@@ -3,13 +3,14 @@ import { useSearchParams } from "react-router-dom";
 import { Download } from "lucide-react";
 import BottomNav from "../components/BottomNav";
 import { getAvaliacaoDashboard } from "../services/dashboardService";
+import { t } from "../i18n";
 import "../styles/owner.css";
 import "../styles/relatorios.css";
 
 const csvValue = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
 
 function csvAvaliacoes(rows) {
-  return [["Veículo", "Quantidade", "Nota média", "Maior nota", "Menor nota"], ...rows.map(({ veiculo, quantidade, media, maior, menor }) => [veiculo?.placa, quantidade, media, maior, menor])]
+  return [[t("reports.vehicles.csvVehicle"), t("reports.ratings.csvCount"), t("reports.ratings.csvAverage"), t("reports.ratings.csvMax"), t("reports.ratings.csvMin")], ...rows.map(({ veiculo, quantidade, media, maior, menor }) => [veiculo?.placa, quantidade, media, maior, menor])]
     .map((row) => row.map(csvValue).join(";"))
     .join("\n");
 }
@@ -19,7 +20,7 @@ function downloadCsv(rows) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "relatorio-avaliacoes.csv";
+  link.download = t("reports.ratings.file");
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -44,7 +45,7 @@ export default function RelatoriosAvaliacoes() {
     try {
       setRelatorio(await getAvaliacaoDashboard(filtrosAtuais));
     } catch {
-      setErro("Não foi possível carregar o relatório de avaliações.");
+      setErro(t("reports.ratings.loadError"));
       setRelatorio(null);
     } finally {
       setCarregando(false);
@@ -52,7 +53,7 @@ export default function RelatoriosAvaliacoes() {
   };
 
   useEffect(() => {
-    document.title = "MOVA - Relatórios de Avaliações";
+    document.title = t("reports.ratings.docTitle");
     queueMicrotask(() => {
       void carregar();
     });
@@ -77,38 +78,38 @@ export default function RelatoriosAvaliacoes() {
   return (
     <main className="owner-page" aria-labelledby="relatorio-avaliacoes-title">
       <header className="page-head">
-        <h1 id="relatorio-avaliacoes-title">Relatórios | Avaliações</h1>
-        <p className="page-head__lede">Notas recebidas pelos veículos da sua frota, por período, veículo e nota mínima.</p>
+        <h1 id="relatorio-avaliacoes-title">{t("reports.ratings.title")}</h1>
+        <p className="page-head__lede">{t("reports.ratings.lede")}</p>
       </header>
       <div className="owner-section">
         <form className="owner-filter" onSubmit={aplicarFiltros}>
           <fieldset className="fieldset">
-            <legend>Filtrar avaliações</legend>
+            <legend>{t("reports.ratings.filterLegend")}</legend>
             <div className="owner-filter__grid">
-              <div className="field"><label className="field__label" htmlFor="dataInicio">Data inicial</label><input className="field__control" id="dataInicio" type="date" value={filtros.dataInicio} onChange={(e) => atualizarFiltro("dataInicio", e.target.value)} /></div>
-              <div className="field"><label className="field__label" htmlFor="dataFim">Data final</label><input className="field__control" id="dataFim" type="date" value={filtros.dataFim} onChange={(e) => atualizarFiltro("dataFim", e.target.value)} /></div>
-              <div className="field"><label className="field__label" htmlFor="idVeiculo">Veículo</label><select className="field__control" id="idVeiculo" value={filtros.idVeiculo} onChange={(e) => atualizarFiltro("idVeiculo", e.target.value)}><option value="">Todos</option>{veiculos.map(({ veiculo }) => <option key={veiculo.id} value={veiculo.id}>{veiculo.placa} — {veiculo.marca} {veiculo.modelo}</option>)}</select></div>
-              <div className="field"><label className="field__label" htmlFor="notaMin">Nota mínima</label><select className="field__control" id="notaMin" value={filtros.notaMin} onChange={(e) => atualizarFiltro("notaMin", e.target.value)}><option value="">Todas</option>{[1, 2, 3, 4, 5].map((nota) => <option key={nota} value={nota}>{nota}</option>)}</select></div>
+              <div className="field"><label className="field__label" htmlFor="dataInicio">{t("owner.common.startDate")}</label><input className="field__control" id="dataInicio" type="date" value={filtros.dataInicio} onChange={(e) => atualizarFiltro("dataInicio", e.target.value)} /></div>
+              <div className="field"><label className="field__label" htmlFor="dataFim">{t("owner.common.endDate")}</label><input className="field__control" id="dataFim" type="date" value={filtros.dataFim} onChange={(e) => atualizarFiltro("dataFim", e.target.value)} /></div>
+              <div className="field"><label className="field__label" htmlFor="idVeiculo">{t("owner.common.vehicle")}</label><select className="field__control" id="idVeiculo" value={filtros.idVeiculo} onChange={(e) => atualizarFiltro("idVeiculo", e.target.value)}><option value="">{t("reports.ratings.all")}</option>{veiculos.map(({ veiculo }) => <option key={veiculo.id} value={veiculo.id}>{veiculo.placa} — {veiculo.marca} {veiculo.modelo}</option>)}</select></div>
+              <div className="field"><label className="field__label" htmlFor="notaMin">{t("reports.ratings.minRating")}</label><select className="field__control" id="notaMin" value={filtros.notaMin} onChange={(e) => atualizarFiltro("notaMin", e.target.value)}><option value="">{t("reports.ratings.allRatings")}</option>{[1, 2, 3, 4, 5].map((nota) => <option key={nota} value={nota}>{nota}</option>)}</select></div>
             </div>
           </fieldset>
           <div className="owner-filter__actions">
-            <button type="submit" className="btn">Aplicar filtros</button>
+            <button type="submit" className="btn">{t("owner.common.applyFilters")}</button>
           </div>
         </form>
-        {carregando && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando relatórios…</p>}
+        {carregando && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />{t("reports.vehicles.loading")}</p>}
         {erro && <p className="alert alert--danger" role="alert">{erro}</p>}
       </div>
       {!carregando && !erro && relatorio && (
         <section className="report-block" aria-labelledby="rel-aval-resumo">
           <div className="report-block__head">
-            <h2 id="rel-aval-resumo">Avaliações por veículo</h2>
-            <p className="report-block__source">Dados reais das avaliações recebidas.</p>
+            <h2 id="rel-aval-resumo">{t("reports.ratings.byVehicle")}</h2>
+            <p className="report-block__source">{t("reports.ratings.source")}</p>
           </div>
-          <p className="report-block__figure"><strong>{relatorio.resumo?.total ?? 0} avaliações · média {relatorio.resumo?.media ?? 0}</strong></p>
-          {!linhas.length && <p className="report-empty">Nenhuma avaliação encontrada para os filtros selecionados.</p>}
-          {linhas.length > 0 && <ul className="report-list">{linhas.map(({ veiculo, quantidade, media }) => <li key={veiculo.id}>{veiculo.placa}: {media} ({quantidade} avaliações)</li>)}</ul>}
+          <p className="report-block__figure"><strong>{t("reports.vehicles.ratingsSummary", { count: relatorio.resumo?.total ?? 0, average: relatorio.resumo?.media ?? 0 })}</strong></p>
+          {!linhas.length && <p className="report-empty">{t("reports.ratings.empty")}</p>}
+          {linhas.length > 0 && <ul className="report-list">{linhas.map(({ veiculo, quantidade, media }) => <li key={veiculo.id}>{t("reports.ratings.item", { plate: veiculo.placa, average: media, count: quantidade })}</li>)}</ul>}
           <div className="report-block__foot">
-            <button type="button" className="btn btn--secondary" disabled={!linhas.length} onClick={() => downloadCsv(linhas)}><Download aria-hidden="true" />Baixar relatório de avaliações</button>
+            <button type="button" className="btn btn--secondary" disabled={!linhas.length} onClick={() => downloadCsv(linhas)}><Download aria-hidden="true" />{t("reports.ratings.download")}</button>
           </div>
         </section>
       )}

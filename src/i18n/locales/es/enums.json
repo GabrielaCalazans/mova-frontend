@@ -1,0 +1,55 @@
+{
+  "statusReserva": {
+    "AGUARDANDO_PAGAMENTO": "Pendiente de pago",
+    "CONFIRMADA": "Confirmada",
+    "EM_ANDAMENTO": "En curso",
+    "REALIZADA": "Completada",
+    "CANCELADA": "Cancelada"
+  },
+  "statusPagamento": {
+    "AGUARDANDO_PAGAMENTO": "Pendiente de pago",
+    "PROCESSANDO": "Procesando",
+    "SUCESSO": "Pagado",
+    "FALHA": "No aprobado"
+  },
+  "metodoPagamento": {
+    "CARTAO_CREDITO": "Tarjeta de crédito",
+    "CARTAO_DEBITO": "Tarjeta de débito",
+    "PIX": "Pix",
+    "CARTEIRA_DIGITAL": "Monedero digital"
+  },
+  "statusVeiculo": {
+    "DISPONIVEL": "Disponible",
+    "RESERVADO": "Reservado",
+    "MANUTENCAO": "En mantenimiento",
+    "INATIVO": "Inactivo"
+  },
+  "statusGaragem": {
+    "ATIVA": "Activo",
+    "INATIVA": "Inactivo",
+    "MANUTENCAO": "En mantenimiento"
+  },
+  "statusEstorno": {
+    "NAO_SOLICITADO": "No solicitado",
+    "SOLICITADO": "Solicitado",
+    "CONCLUIDO": "Completado",
+    "FALHOU": "Fallido"
+  },
+  "tipoCobranca": {
+    "CANCELAMENTO": "Penalización por cancelación",
+    "ATRASO_DEVOLUCAO": "Retraso en la devolución",
+    "PAGAMENTO_RESERVA": "Pago de la reserva"
+  },
+  "statusNotificacao": {
+    "PENDENTE": "Pendiente",
+    "ENVIADA": "Enviada",
+    "FALHA": "Fallida"
+  },
+  "categoria": {
+    "ECONOMICO": "Económico",
+    "ESPACOSO": "Espacioso",
+    "EXECUTIVO": "Ejecutivo",
+    "PCD": "PMR",
+    "ELETRICO": "Eléctrico"
+  }
+}

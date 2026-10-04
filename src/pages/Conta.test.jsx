@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { setLocale } from "../i18n";
 
 const {
   navigateMock,
@@ -80,7 +81,8 @@ describe("Conta - sessao expirada", () => {
       user: { id: "conta-1", name: "Locatario", cargo: "LOCATARIO" },
     });
     fetchCurrentUserProfileMock.mockRejectedValue(
-      new Error("sessao expirada. faca login novamente."),
+      // Mesma mensagem que o authService lança (traduzida no idioma ativo).
+      new Error("Sessão expirada. Faça login novamente."),
     );
   });
 
@@ -176,5 +178,42 @@ describe("Conta - exclusão, LGPD e e-mail", () => {
 
     expect(screen.getByLabelText("E-mail")).toHaveAttribute("readonly");
     expect(screen.getByText("O e-mail não pode ser alterado.")).toBeInTheDocument();
+  });
+});
+
+describe("Conta - idiomas (RNF08)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getAuthSessionMock.mockReturnValue({
+      token: "jwt-token",
+      user: { id: "conta-1", name: "Locatario", email: "loc@mova.com", cargo: "LOCATARIO" },
+    });
+    fetchCurrentUserProfileMock.mockResolvedValue(null);
+  });
+  afterEach(() => setLocale("pt-BR"));
+
+  it("traduz menu, LGPD e modal de exclusão para inglês", async () => {
+    setLocale("en");
+    const user = userEvent.setup();
+    render(<Conta />);
+
+    expect(screen.getByText("Profile: Renter")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Privacy (LGPD)" }));
+    expect(screen.getByRole("button", { name: "Download my data" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Delete account" }));
+    expect(screen.getByRole("alertdialog", { name: "Delete account" })).toHaveAccessibleDescription(
+      "Are you sure you want to delete your account? This can't be undone.",
+    );
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
+  });
+
+  it("traduz a seção de senha para espanhol", async () => {
+    setLocale("es");
+    const user = userEvent.setup();
+    render(<Conta />);
+
+    await user.click(screen.getByRole("button", { name: "Cambiar contraseña" }));
+    expect(screen.getByLabelText("Contraseña actual")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Eliminar cuenta" })).toBeInTheDocument();
   });
 });

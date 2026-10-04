@@ -1,14 +1,15 @@
-﻿import GarageJourneyStep from "../components/GarageJourneyStep";
+import GarageJourneyStep from "../components/GarageJourneyStep";
+import { t } from "../i18n";
 
 export default function EscolhaGaragemRetirada() {
   return (
     <GarageJourneyStep
       stepKey="retirada"
-      title="Escolha a Garagem para Retirada"
-      subtitle="Selecione a garagem, a data e o horário para retirar o veículo."
+      title={t("journey.pickup.title")}
+      subtitle={t("journey.pickup.subtitle")}
       nextPath="/escolha-garagem-devolucao"
-      nextButtonLabel="Ir para devolução"
-      documentTitle="MOVA - Retirada"
+      nextButtonLabel={t("journey.pickup.next")}
+      documentTitle={t("journey.pickup.documentTitle")}
     />
   );
 }

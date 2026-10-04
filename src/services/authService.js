@@ -1,4 +1,5 @@
-﻿import { apiRequest, isApiConfigured } from "./apiClient";
+import { t } from "../i18n";
+import { apiRequest, isApiConfigured } from "./apiClient";
 import { normalizeCargo } from "./authIdentity";
 import {
   clearAuthSession,
@@ -422,7 +423,7 @@ function persistUserProfile(user, token) {
 
 export async function loginUser({ email, senha }) {
   if (!isApiConfigured()) {
-    throw new Error("API_BASE_URL nao configurada.");
+    throw new Error(t("errors.apiNotConfigured"));
   }
 
   try {
@@ -436,7 +437,7 @@ export async function loginUser({ email, senha }) {
     const token = extractToken(result);
 
     if (!token) {
-      throw new Error("Token de autenticacao nao retornado pela API.");
+      throw new Error(t("errors.tokenMissing"));
     }
 
     const apiUser = normalizeApiUser(result, email);
@@ -471,7 +472,7 @@ export async function loginUser({ email, senha }) {
 
     return {
       mode: "api",
-      message: "Login realizado com sucesso.",
+      message: t("common.feedback.loginSuccess"),
       token,
       user,
       ...result,
@@ -479,11 +480,11 @@ export async function loginUser({ email, senha }) {
   } catch (error) {
     const normalized = normalizeError(
       error,
-      "Nao foi possivel realizar login.",
+      t("errors.loginFailed"),
     );
 
-    if (/credenciais|unauthorized|401/i.test(normalized.message)) {
-      throw new Error("Usuario ou senha inválidos.");
+    if (/credenciais|credentials|credenciales|unauthorized|401/i.test(normalized.message)) {
+      throw new Error(t("errors.invalidCredentials"));
     }
 
     throw normalized;
@@ -492,7 +493,7 @@ export async function loginUser({ email, senha }) {
 
 export async function registerUser(values) {
   if (!isApiConfigured()) {
-    throw new Error("API_BASE_URL nao configurada.");
+    throw new Error(t("errors.apiNotConfigured"));
   }
 
   const payload = {
@@ -509,17 +510,17 @@ export async function registerUser(values) {
 
     return {
       mode: "api",
-      message: "Cadastrado com sucesso.",
+      message: t("common.feedback.registered"),
       ...result,
     };
   } catch (error) {
-    throw normalizeError(error, "Nao foi possivel concluir o cadastro.");
+    throw normalizeError(error, t("errors.registerFailed"));
   }
 }
 
 export async function registerLocatario(values) {
   if (!isApiConfigured()) {
-    throw new Error("API_BASE_URL nao configurada.");
+    throw new Error(t("errors.apiNotConfigured"));
   }
 
   try {
@@ -533,7 +534,7 @@ export async function registerLocatario(values) {
 
     const token = extractToken(contaResult);
     if (!token) {
-      throw new Error("Nao foi possivel autenticar o cadastro do locatario.");
+      throw new Error(t("errors.renterAuthFailed"));
     }
 
     const locatarioResult = await apiRequest("/locatario/", {
@@ -550,21 +551,21 @@ export async function registerLocatario(values) {
 
     return {
       mode: "api",
-      message: "Cadastro de locatario realizado com sucesso.",
+      message: t("common.feedback.renterRegistered"),
       conta: contaResult,
       locatario: locatarioResult,
     };
   } catch (error) {
     throw normalizeError(
       error,
-      "Nao foi possivel concluir o cadastro de locatario.",
+      t("errors.renterRegisterFailed"),
     );
   }
 }
 
 export async function registerLocador(values) {
   if (!isApiConfigured()) {
-    throw new Error("API_BASE_URL nao configurada.");
+    throw new Error(t("errors.apiNotConfigured"));
   }
 
   try {
@@ -581,11 +582,11 @@ export async function registerLocador(values) {
     const token = contaResult?.result?.token;
 
     if (!contaId) {
-      throw new Error("Nao foi possivel identificar a conta do locador.");
+      throw new Error(t("errors.ownerAccountMissing"));
     }
 
     if (!token) {
-      throw new Error("Nao foi possivel autenticar o cadastro do locador.");
+      throw new Error(t("errors.ownerAuthFailed"));
     }
 
     const result = await apiRequest("/locador", {
@@ -600,14 +601,14 @@ export async function registerLocador(values) {
 
     return {
       mode: "api",
-      message: "Cadastro de locador realizado com sucesso.",
+      message: t("common.feedback.ownerRegistered"),
       conta: contaResult,
       ...result,
     };
   } catch (error) {
     throw normalizeError(
       error,
-      "Nao foi possivel concluir o cadastro de locador.",
+      t("errors.ownerRegisterFailed"),
     );
   }
 }
@@ -632,11 +633,11 @@ export async function updateUserProfile(values) {
   );
 
   if (!isApiConfigured()) {
-    throw new Error("API_BASE_URL nao configurada.");
+    throw new Error(t("errors.apiNotConfigured"));
   }
 
   if (!token) {
-    throw new Error("Sessao expirada. Faca login novamente.");
+    throw new Error(t("errors.sessionExpired"));
   }
 
   if ((cargo === "LOCATARIO" || cargo === "LOCADOR") && !profileId) {
@@ -676,7 +677,7 @@ export async function updateUserProfile(values) {
     if (cargo === "LOCATARIO") {
       if (!profileId) {
         throw new Error(
-          "Nao foi possivel identificar o perfil vinculado da conta autenticada.",
+          t("errors.profileMissing"),
         );
       }
 
@@ -688,7 +689,7 @@ export async function updateUserProfile(values) {
         });
       } catch {
         throw new Error(
-          "Dados da conta atualizados, mas falha ao atualizar dados de perfil.",
+          t("errors.profilePartialUpdate"),
         );
       }
     }
@@ -696,7 +697,7 @@ export async function updateUserProfile(values) {
     if (cargo === "LOCADOR") {
       if (!profileId) {
         throw new Error(
-          "Nao foi possivel identificar o perfil vinculado da conta autenticada.",
+          t("errors.profileMissing"),
         );
       }
 
@@ -708,7 +709,7 @@ export async function updateUserProfile(values) {
         });
       } catch {
         throw new Error(
-          "Dados da conta atualizados, mas falha ao atualizar dados de perfil.",
+          t("errors.profilePartialUpdate"),
         );
       }
     }
@@ -734,18 +735,18 @@ export async function updateUserProfile(values) {
 
     return {
       mode: "api",
-      message: "Dados atualizados com sucesso.",
+      message: t("common.feedback.dataUpdated"),
       user: mergedUser,
       ...result,
     };
   } catch (error) {
-    throw normalizeError(error, "Nao foi possivel atualizar os dados.");
+    throw normalizeError(error, t("errors.updateFailed"));
   }
 }
 
 export async function requestPasswordReset({ email }) {
   if (!isApiConfigured()) {
-    throw new Error("API_BASE_URL nao configurada.");
+    throw new Error(t("errors.apiNotConfigured"));
   }
 
   try {
@@ -759,20 +760,20 @@ export async function requestPasswordReset({ email }) {
       mode: "api",
       message:
         payload.message ||
-        "Se existir uma conta associada a este e-mail, enviaremos as instruções de recuperação.",
+        t("common.feedback.recoveryRequested"),
       ...result,
     };
   } catch (error) {
     throw normalizeError(
       error,
-      "Nao foi possivel solicitar recuperacao de senha.",
+      t("errors.recoveryFailed"),
     );
   }
 }
 
 export async function resetPassword({ token, novaSenha }) {
   if (!isApiConfigured()) {
-    throw new Error("API_BASE_URL nao configurada.");
+    throw new Error(t("errors.apiNotConfigured"));
   }
 
   try {
@@ -783,11 +784,11 @@ export async function resetPassword({ token, novaSenha }) {
 
     return {
       mode: "api",
-      message: "Senha redefinida com sucesso.",
+      message: t("common.feedback.passwordReset"),
       ...result,
     };
   } catch (error) {
-    throw normalizeError(error, "Nao foi possivel redefinir a senha.");
+    throw normalizeError(error, t("errors.resetFailed"));
   }
 }
 
@@ -797,7 +798,7 @@ export async function fetchUserProfileByEmail(email, options = {}) {
   }
 
   if (!isApiConfigured()) {
-    throw new Error("API_BASE_URL nao configurada.");
+    throw new Error(t("errors.apiNotConfigured"));
   }
 
   authDebug("fetchUserProfileByEmail.request", {
@@ -822,13 +823,13 @@ export async function fetchUserProfileByEmail(email, options = {}) {
 
 export async function changePassword({ senhaAtual, novaSenha }) {
   if (!isApiConfigured()) {
-    throw new Error("API_BASE_URL nao configurada.");
+    throw new Error(t("errors.apiNotConfigured"));
   }
 
   const token = getAuthSession()?.token;
 
   if (!token) {
-    throw new Error("Sessao expirada. Faca login novamente.");
+    throw new Error(t("errors.sessionExpired"));
   }
 
   const result = await apiRequest("/conta/auth/change-password", {
@@ -839,20 +840,20 @@ export async function changePassword({ senhaAtual, novaSenha }) {
 
   return {
     mode: "api",
-    message: "Senha alterada com sucesso.",
+    message: t("common.feedback.passwordChanged"),
     ...result,
   };
 }
 
 export async function deleteAccount() {
   if (!isApiConfigured()) {
-    throw new Error("API_BASE_URL nao configurada.");
+    throw new Error(t("errors.apiNotConfigured"));
   }
 
   const token = getAuthSession()?.token;
 
   if (!token) {
-    throw new Error("Sessao expirada. Faca login novamente.");
+    throw new Error(t("errors.sessionExpired"));
   }
 
   await apiRequest("/conta/auth/delete-account", {
@@ -864,7 +865,7 @@ export async function deleteAccount() {
 
   return {
     mode: "api",
-    message: "Conta deletada com sucesso.",
+    message: t("common.feedback.accountDeleted"),
   };
 }
 
@@ -872,11 +873,11 @@ export async function fetchCurrentUserProfile(options = {}) {
   const token = options.authToken || getAuthSession()?.token;
 
   if (!isApiConfigured()) {
-    throw new Error("API_BASE_URL nao configurada.");
+    throw new Error(t("errors.apiNotConfigured"));
   }
 
   if (!token) {
-    throw new Error("Sessao expirada. Faca login novamente.");
+    throw new Error(t("errors.sessionExpired"));
   }
 
   authDebug("fetchCurrentUserProfile.request", {

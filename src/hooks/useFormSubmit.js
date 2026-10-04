@@ -1,4 +1,5 @@
-﻿import { useCallback, useState } from "react";
+import { t } from "../i18n";
+import { useCallback, useState } from "react";
 
 export function useFormSubmit({
   values,
@@ -42,7 +43,7 @@ export function useFormSubmit({
       } catch (error) {
         const fallbackFeedback = {
           type: "error",
-          message: "Nao foi possivel concluir a operacao. Tente novamente.",
+          message: t("errors.generic"),
         };
 
         if (getSubmitErrorFeedback) {

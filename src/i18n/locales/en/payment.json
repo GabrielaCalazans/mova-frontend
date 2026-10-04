@@ -1,0 +1,92 @@
+{
+  "documentTitle": "MOVA - Payment",
+  "title": "Payment",
+  "sandboxLede": "Test environment: no real money is charged.",
+  "loading": "Loading your reservation...",
+  "dateMissing": "Date not provided",
+  "backToCheckout": "Back to checkout",
+  "myReservations": "View my reservations",
+  "pay": "Pay",
+  "afterConfirmation": "Once confirmed, the unlock code appears here and in My reservations.",
+  "questions": "Questions?",
+  "contactSupport": "Contact support",
+  "close": "Close",
+  "errors": {
+    "load": "We couldn't load your reservation.",
+    "stillProcessing": "The payment is still under review. Follow it in your reservation history.",
+    "verify": "We couldn't verify the payment.",
+    "declined": "Payment declined. Check your details and try again.",
+    "noReservation": "We couldn't find your reservation. Go back to checkout and confirm the reservation before paying.",
+    "start": "We couldn't start the payment.",
+    "openTitle": "We couldn't open the payment"
+  },
+  "closed": {
+    "cancelledTitle": "Reservation cancelled",
+    "completedTitle": "Reservation completed",
+    "inProgressTitle": "Rental in progress",
+    "cancelledText": "This reservation can't receive payment or release the vehicle.",
+    "completedText": "Payment and pickup are already closed for this reservation.",
+    "inProgressText": "The payment has been confirmed and the rental is in progress."
+  },
+  "summary": {
+    "title": "What you're paying for",
+    "vehicleFallback": "Reserved vehicle",
+    "plate": "Plate",
+    "pickup": "Pickup",
+    "return": "Return",
+    "garageMissing": "Garage not provided",
+    "payment": "Payment",
+    "total": "Total",
+    "sandboxNote": "Simulated payment and refund — no real money is moved.",
+    "refund": "Refund: {status}. Amount paid:"
+  },
+  "success": {
+    "title": "Payment approved",
+    "text": "Your reservation is confirmed.",
+    "unlockCode": "Unlock code",
+    "unlock": "Unlock vehicle"
+  },
+  "method": {
+    "title": "How do you want to pay",
+    "label": "Payment method"
+  },
+  "processing": {
+    "title": "Processing payment",
+    "text": "Waiting for gateway confirmation. No need to pay again.",
+    "button": "Processing..."
+  },
+  "card": {
+    "sandboxHint": "Test environment: use any fake card. Ending in 0000 simulates a decline and ending in 0001 simulates a review.",
+    "number": "Card number",
+    "holder": "Cardholder name",
+    "expiry": "Expiry (MM/YY)",
+    "cvv": "CVV",
+    "errors": {
+      "number": "Enter a valid card number.",
+      "holder": "Enter the cardholder name (at least 3 characters).",
+      "expiryFormat": "Enter the expiry date as MM/YY.",
+      "expired": "Card expired. Check the expiry date.",
+      "cvv": "The CVV must have 3 or 4 digits."
+    }
+  },
+  "pix": {
+    "title": "Pix",
+    "sandboxNote": "Pix in test environment. The QR code is for illustration only.",
+    "show": "Show QR code",
+    "dialogNote": "Illustrative QR code; no transfer is made."
+  },
+  "pending": {
+    "loadError": "We couldn't load outstanding charges.",
+    "sent": "Payment sent. Status: {status}.",
+    "approved": "Payment approved. Charge settled.",
+    "declined": "Payment declined.",
+    "title": "Outstanding charges",
+    "sandboxLede": "Payment in test environment (sandbox): no real money is charged.",
+    "loading": "Loading outstanding charges...",
+    "emptyTitle": "All caught up",
+    "emptyText": "You have no outstanding charges.",
+    "status": "Status: {status}",
+    "paying": "Paying...",
+    "payPix": "Pay with Pix (sandbox)"
+  }
+}

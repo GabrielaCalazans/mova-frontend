@@ -5,6 +5,7 @@ import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import JourneySteps from "../components/reservation/JourneySteps";
 import { getJourneyStep } from "../utils/journeyStorage";
 import { addCondutor, listCondutores, removeCondutor } from "../services/condutorService";
+import { t } from "../i18n";
 import "../styles/journey.css";
 
 const VAZIO = { nome: "", cpf: "", cnh: "" };
@@ -20,10 +21,10 @@ export default function CondutoresAdicionais() {
   const [removendoId, setRemovendoId] = useState(null);
 
   useEffect(() => {
-    document.title = "MOVA - Condutores adicionais";
+    document.title = t("journey.drivers.documentTitle");
     if (!reservaId) return;
     listCondutores(reservaId).then(setCondutores).catch((error) => {
-      setErro(error?.message || "Não foi possível carregar os condutores.");
+      setErro(error?.message || t("journey.drivers.loadError"));
     }).finally(() => setCarregando(false));
   }, [reservaId]);
 
@@ -40,7 +41,7 @@ export default function CondutoresAdicionais() {
       setCondutores((atual) => [...atual, condutor]);
       setForm(VAZIO);
     } catch (error) {
-      setErro(error?.message || "Não foi possível adicionar o condutor.");
+      setErro(error?.message || t("journey.drivers.addError"));
     } finally { setEnviando(false); }
   }
 
@@ -51,15 +52,15 @@ export default function CondutoresAdicionais() {
     try {
       await removeCondutor(reservaId, condutor.id);
       setCondutores((atual) => atual.filter((item) => item.id !== condutor.id));
-    } catch (error) { setErro(error?.message || "Não foi possível remover o condutor."); } finally { setRemovendoId(null); }
+    } catch (error) { setErro(error?.message || t("journey.drivers.removeError")); } finally { setRemovendoId(null); }
   }
 
   const head = (
     <>
       <JourneySteps current="condutores" />
       <header className="journey-head">
-        <h1>Condutores adicionais</h1>
-        <p className="page-head__lede">Inclua até 3 pessoas autorizadas a dirigir. Você pode continuar sem adicionar condutores.</p>
+        <h1>{t("journey.drivers.title")}</h1>
+        <p className="page-head__lede">{t("journey.drivers.lede")}</p>
       </header>
     </>
   );
@@ -68,7 +69,7 @@ export default function CondutoresAdicionais() {
     return (
       <main className="journey-page">
         {head}
-        <p className="alert alert--warning" role="alert">Não encontramos uma reserva para configurar.</p>
+        <p className="alert alert--warning" role="alert">{t("journey.drivers.noReservation")}</p>
       </main>
     );
   }
@@ -76,28 +77,28 @@ export default function CondutoresAdicionais() {
   return (
     <main className="journey-page">
       {head}
-      {carregando && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando condutores…</p>}
+      {carregando && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />{t("journey.drivers.loading")}</p>}
       {erro && <p className="alert alert--danger" role="alert">{erro}</p>}
 
       {condutores.length > 0 && (
         <section className="journey-section" aria-labelledby="condutores-lista">
-          <h2 id="condutores-lista">Autorizados a dirigir <span className="journey-muted tabular">({condutores.length} de 3)</span></h2>
+          <h2 id="condutores-lista">{t("journey.drivers.listTitle")} <span className="journey-muted tabular">{t("journey.drivers.countOf", { count: condutores.length })}</span></h2>
           <ul className="line-list">
             {condutores.map((condutor) => (
               <li className="line-list__item" key={condutor.id}>
                 <div>
                   <strong>{condutor.nome}</strong>
-                  <p className="line-list__desc">CPF: <span className="tabular">{condutor.cpf || "Não informado"}</span> · CNH: <span className="tabular">{condutor.cnh}</span></p>
+                  <p className="line-list__desc">{t("journey.drivers.cpf")} <span className="tabular">{condutor.cpf || t("journey.drivers.notInformed")}</span> · {t("journey.drivers.cnh")} <span className="tabular">{condutor.cnh}</span></p>
                 </div>
                 <button
                   type="button"
                   className="btn btn--danger"
-                  aria-label={`Remover ${condutor.nome}`}
+                  aria-label={t("journey.drivers.removeLabel", { name: condutor.nome })}
                   onClick={() => remover(condutor)}
                   disabled={removendoId !== null}
                   aria-busy={removendoId === condutor.id || undefined}
                 >
-                  <FontAwesomeIcon icon={faTrashCan} aria-hidden="true" />{removendoId === condutor.id ? "Removendo…" : "Remover"}
+                  <FontAwesomeIcon icon={faTrashCan} aria-hidden="true" />{removendoId === condutor.id ? t("journey.drivers.removing") : t("journey.drivers.remove")}
                 </button>
               </li>
             ))}
@@ -107,30 +108,30 @@ export default function CondutoresAdicionais() {
 
       {!carregando && condutores.length < 3 && (
         <form onSubmit={adicionar} className="journey-section form-panel" aria-labelledby="condutor-form-title">
-          <h2 id="condutor-form-title">Adicionar condutor</h2>
+          <h2 id="condutor-form-title">{t("journey.drivers.formTitle")}</h2>
           <div className="field">
-            <label className="field__label" htmlFor="condutor-nome">Nome</label>
+            <label className="field__label" htmlFor="condutor-nome">{t("journey.drivers.name")}</label>
             <input id="condutor-nome" className="field__control" autoComplete="name" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} required />
           </div>
           <div className="datetime-grid">
             <div className="field">
-              <label className="field__label" htmlFor="condutor-cpf">CPF (opcional)</label>
+              <label className="field__label" htmlFor="condutor-cpf">{t("journey.drivers.cpfOptional")}</label>
               <input id="condutor-cpf" className="field__control" inputMode="numeric" value={form.cpf} onChange={(e) => setForm({ ...form, cpf: e.target.value })} />
             </div>
             <div className="field">
-              <label className="field__label" htmlFor="condutor-cnh">CNH</label>
+              <label className="field__label" htmlFor="condutor-cnh">{t("journey.drivers.cnhLabel")}</label>
               <input id="condutor-cnh" className="field__control" inputMode="numeric" value={form.cnh} onChange={(e) => setForm({ ...form, cnh: e.target.value })} required />
             </div>
           </div>
           <div>
-            <button type="submit" className="btn btn--secondary" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? "Adicionando…" : "Adicionar condutor"}</button>
+            <button type="submit" className="btn btn--secondary" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? t("journey.drivers.adding") : t("journey.drivers.add")}</button>
           </div>
         </form>
       )}
-      {condutores.length >= 3 && <p className="alert alert--info">Limite de 3 condutores adicionais atingido.</p>}
+      {condutores.length >= 3 && <p className="alert alert--info">{t("journey.drivers.limit")}</p>}
 
       <div className="journey-footer">
-        <button type="button" className="btn btn--lg" onClick={() => navigate("/pagamento")}>Continuar para pagamento</button>
+        <button type="button" className="btn btn--lg" onClick={() => navigate("/pagamento")}>{t("journey.drivers.next")}</button>
       </div>
     </main>
   );

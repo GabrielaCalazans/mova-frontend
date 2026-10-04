@@ -7,10 +7,10 @@ import VehicleMedia from "../components/vehicle/VehicleMedia";
 import { getJourneyStep, updateJourneyStep } from "../utils/journeyStorage";
 import { formatCambio, formatCategoria } from "../utils/vehicleDisplay";
 import {
-  formatMoneyBRL,
   parseJourneyDateTime,
   validarPeriodoReserva,
 } from "../utils/reservationMath";
+import { formatCurrency, t } from "../i18n";
 import { getVeiculoById } from "../services/veiculoService";
 import { getReservationPricing } from "../services/reservationPricing";
 import { createReserva } from "../services/reservaService";
@@ -29,7 +29,7 @@ function resolveVehicleField(vehicle, fallbackVehicle, field) {
     vehicle?.[field] ??
     modeloVeiculo?.[field] ??
     fallbackVehicle?.[field] ??
-    "Não informado"
+    t("journey.checkout.notInformed")
   );
 }
 
@@ -42,13 +42,13 @@ function resolveVehicleName(vehicle) {
       .trim() ||
     [vehicle?.marca, vehicle?.modelo].filter(Boolean).join(" ").trim() ||
     vehicle?.modelo ||
-    "Veículo selecionado"
+    t("journey.checkout.selectedVehicle")
   );
 }
 
 function yesNo(value) {
-  if (value === undefined || value === null || value === "") return "Não informado";
-  return value ? "Sim" : "Não";
+  if (value === undefined || value === null || value === "") return t("journey.checkout.notInformed");
+  return value ? t("journey.checkout.yes") : t("journey.checkout.no");
 }
 
 function Leg({ icon, label, garage, address, date, time }) {
@@ -57,13 +57,13 @@ function Leg({ icon, label, garage, address, date, time }) {
       <span className="itinerary__icon"><FontAwesomeIcon icon={icon} aria-hidden="true" /></span>
       <div className="itinerary__body">
         <p className="itinerary__label">{label}</p>
-        <p className="itinerary__garage">{garage || "Garagem não informada"}</p>
+        <p className="itinerary__garage">{garage || t("journey.checkout.garageMissing")}</p>
         {address && address !== garage ? <p className="itinerary__address">{address}</p> : null}
         <p className="itinerary__when">
           <FontAwesomeIcon icon={faCalendarDay} aria-hidden="true" />
-          <span className="tabular">{date || "Data não informada"}</span>
+          <span className="tabular">{date || t("journey.checkout.dateMissing")}</span>
           <span aria-hidden="true">·</span>
-          <span className="tabular">{time || "Horário não informado"}</span>
+          <span className="tabular">{time || t("journey.checkout.timeMissing")}</span>
         </p>
       </div>
     </li>
@@ -119,11 +119,11 @@ export default function CheckoutReserva() {
 
     const idLocatario = getAuthSession()?.user?.id;
     if (!idLocatario) {
-      setConfirmError("Sessão inválida. Faça login novamente.");
+      setConfirmError(t("journey.checkout.invalidSession"));
       return;
     }
     if (!veiculoSalvo?.id) {
-      setConfirmError("Selecione um veículo para continuar.");
+      setConfirmError(t("journey.checkout.selectVehicle"));
       return;
     }
     // Espelha RN05 antes do POST: mesma mensagem que o backend devolveria,
@@ -136,11 +136,11 @@ export default function CheckoutReserva() {
     // A retirada é derivada do veículo (pode não existir, se ele não estiver
     // alocado em nenhuma garagem). A devolução é escolha do usuário.
     if (!devolucao?.garageId) {
-      setConfirmError("Selecione a garagem de devolução.");
+      setConfirmError(t("journey.checkout.selectReturnGarage"));
       return;
     }
     if (exigeDeclaracao && !deficienciaDeclarada) {
-      setConfirmError("Veículo adaptado: informe sua deficiência para reservar (RN01).");
+      setConfirmError(t("journey.checkout.pcdRequired"));
       document.getElementById("checkout-deficiencia")?.focus();
       return;
     }
@@ -182,14 +182,14 @@ export default function CheckoutReserva() {
       });
       navigate("/condutores-adicionais");
     } catch (caughtError) {
-      setConfirmError(caughtError?.message || "Não foi possível confirmar a reserva.");
+      setConfirmError(caughtError?.message || t("journey.checkout.confirmError"));
     } finally {
       setConfirmando(false);
     }
   }
 
   useEffect(() => {
-    document.title = "MOVA - Checkout da Reserva";
+    document.title = t("journey.checkout.documentTitle");
   }, []);
 
   useEffect(() => {
@@ -201,11 +201,11 @@ export default function CheckoutReserva() {
 
       try {
         if (!veiculoSalvo?.id) {
-          throw new Error("Selecione um veículo para continuar.");
+          throw new Error(t("journey.checkout.selectVehicle"));
         }
 
         const sessionUser = getAuthSession()?.user;
-        if (!sessionUser?.id) throw new Error("Sessão inválida. Faça login novamente.");
+        if (!sessionUser?.id) throw new Error(t("journey.checkout.invalidSession"));
         const [vehicleDetails, pricingDetails] = await Promise.all([
           getVeiculoById(veiculoSalvo.id),
           getReservationPricing({
@@ -233,7 +233,7 @@ export default function CheckoutReserva() {
 
         setError(
           caughtError?.message ||
-            "Não foi possível carregar o checkout da reserva.",
+            t("journey.checkout.loadError"),
         );
       } finally {
         if (active) {
@@ -260,26 +260,26 @@ export default function CheckoutReserva() {
     <>
       <JourneySteps current="resumo" />
       <header className="journey-head">
-        <h1>Checkout da Reserva</h1>
-        <p className="page-head__lede">Confira o que você está alugando, quando, onde e quanto custa antes de pagar.</p>
+        <h1>{t("journey.checkout.title")}</h1>
+        <p className="page-head__lede">{t("journey.checkout.lede")}</p>
       </header>
     </>
   );
 
   let content;
   if (loading) {
-    content = <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando informações da reserva…</p>;
+    content = <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />{t("journey.checkout.loading")}</p>;
   } else if (error) {
     content = (
       <div className="state-block state-block--error" role="alert">
-        <h2 className="state-block__title">Não foi possível montar o resumo</h2>
+        <h2 className="state-block__title">{t("journey.checkout.errorTitle")}</h2>
         <p className="state-block__text">{error}</p>
         <div className="journey-actions">
           <button type="button" className="btn btn--secondary" onClick={() => navigate("/escolha-garagem-devolucao")}>
-            Voltar para devolução
+            {t("journey.checkout.backToReturn")}
           </button>
           <button type="button" className="btn" onClick={() => navigate("/carros")}>
-            Escolher outro veículo
+            {t("journey.checkout.otherVehicle")}
           </button>
         </div>
       </div>
@@ -308,18 +308,18 @@ export default function CheckoutReserva() {
       <div className="journey-layout">
         <div className="journey-layout__main">
           <section className="journey-section" aria-labelledby="checkout-veiculo">
-            <h2 id="checkout-veiculo">O que você está alugando</h2>
+            <h2 id="checkout-veiculo">{t("journey.checkout.whatTitle")}</h2>
             <div className="summary-vehicle">
               <VehicleMedia vehicle={vehicle ?? veiculoSalvo} className="summary-vehicle__media" />
               <div className="summary-vehicle__body">
                 <p className="summary-vehicle__name">{vehicleName}</p>
                 <p className="summary-vehicle__meta">{vehicleCategory}</p>
                 <ul className="summary-vehicle__facts">
-                  <li>Transmissão: {vehicleTransmission}</li>
-                  <li>Capacidade: {vehicleCapacity} pessoas</li>
-                  <li>Elétrico: {yesNo(vehicleEletrico)}</li>
-                  <li>Acessibilidade: {yesNo(vehicleAdaptado)}</li>
-                  {placa ? <li>Placa: <span className="tabular">{placa}</span></li> : null}
+                  <li>{t("journey.checkout.transmission", { value: vehicleTransmission })}</li>
+                  <li>{t("journey.checkout.capacity", { value: vehicleCapacity })}</li>
+                  <li>{t("journey.checkout.electric", { value: yesNo(vehicleEletrico) })}</li>
+                  <li>{t("journey.checkout.accessibility", { value: yesNo(vehicleAdaptado) })}</li>
+                  {placa ? <li>{t("journey.checkout.plate")} <span className="tabular">{placa}</span></li> : null}
                 </ul>
               </div>
             </div>
@@ -327,11 +327,11 @@ export default function CheckoutReserva() {
 
           {exigeDeclaracao && (
             <section className="journey-section" aria-labelledby="checkout-pcd">
-              <h2 id="checkout-pcd">Acessibilidade</h2>
+              <h2 id="checkout-pcd">{t("journey.checkout.accessibilityTitle")}</h2>
               <p className="journey-muted" id="checkout-deficiencia-ajuda">
-                Este veículo é adaptado. Para reservá-lo, informe sua deficiência; ela fica registrada no seu perfil.
+                {t("journey.checkout.pcdHelp")}
               </p>
-              <label className="field__label" htmlFor="checkout-deficiencia">Deficiência declarada (obrigatório)</label>
+              <label className="field__label" htmlFor="checkout-deficiencia">{t("journey.checkout.pcdLabel")}</label>
               <select
                 id="checkout-deficiencia"
                 className="field__control"
@@ -340,7 +340,7 @@ export default function CheckoutReserva() {
                 value={deficienciaDeclarada}
                 onChange={(event) => setDeficienciaDeclarada(event.target.value)}
               >
-                <option value="">Selecione</option>
+                <option value="">{t("journey.checkout.selectOption")}</option>
                 {deficiencias.map((item) => (
                   <option key={item.id} value={item.id}>{item.descricao}</option>
                 ))}
@@ -349,18 +349,18 @@ export default function CheckoutReserva() {
           )}
 
           <section className="journey-section" aria-labelledby="checkout-quando">
-            <h2 id="checkout-quando">Quando e onde</h2>
+            <h2 id="checkout-quando">{t("journey.checkout.whenWhere")}</h2>
             <ol className="itinerary">
-              <Leg icon={faArrowRightFromBracket} label="Retirada" garage={retirada.garageName} address={retirada.garageAddress} date={retirada.date} time={retirada.time} />
-              <Leg icon={faArrowRightToBracket} label="Devolução" garage={devolucao.garageName} address={devolucao.garageAddress} date={devolucao.date} time={devolucao.time} />
+              <Leg icon={faArrowRightFromBracket} label={t("journey.checkout.pickup")} garage={retirada.garageName} address={retirada.garageAddress} date={retirada.date} time={retirada.time} />
+              <Leg icon={faArrowRightToBracket} label={t("journey.checkout.return")} garage={devolucao.garageName} address={devolucao.garageAddress} date={devolucao.date} time={devolucao.time} />
             </ol>
             <button type="button" className="btn btn--quiet journey-edit" onClick={() => navigate("/escolha-garagem-devolucao")}>
-              Editar devolução
+              {t("journey.checkout.editReturn")}
             </button>
           </section>
 
           <section className="journey-section" aria-labelledby="checkout-servicos">
-            <h2 id="checkout-servicos">Serviços selecionados</h2>
+            <h2 id="checkout-servicos">{t("journey.checkout.servicesTitle")}</h2>
             {servicosContratados.length > 0 ? (
               <ul className="line-list">
                 {servicosContratados.map((servico) => (
@@ -370,38 +370,38 @@ export default function CheckoutReserva() {
                       {servico.descricao && <p className="line-list__desc">{servico.descricao}</p>}
                       {servico.detalhesCobertura && (
                         <details className="line-list__details">
-                          <summary>Ver detalhes da cobertura</summary>
+                          <summary>{t("journey.checkout.coverage")}</summary>
                           <p>{servico.detalhesCobertura}</p>
                         </details>
                       )}
                     </div>
-                    <span className="tabular">{formatMoneyBRL(servico.valor)}</span>
+                    <span className="tabular">{formatCurrency(servico.valor)}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="journey-muted">Nenhum serviço opcional selecionado.</p>
+              <p className="journey-muted">{t("journey.checkout.noServices")}</p>
             )}
           </section>
         </div>
 
         <aside className="journey-layout__aside" aria-labelledby="checkout-total-title">
           <section className="price-summary" data-capture="total">
-            <h2 id="checkout-total-title">Resumo financeiro</h2>
+            <h2 id="checkout-total-title">{t("journey.checkout.summaryTitle")}</h2>
             <dl className="price-summary__rows">
-              <div><dt>Diárias</dt><dd className="tabular">{totalDiarias}</dd></div>
-              <div><dt>Valor da diária</dt><dd className="tabular">{formatMoneyBRL(diariaValue)}</dd></div>
+              <div><dt>{t("journey.checkout.dailies")}</dt><dd className="tabular">{totalDiarias}</dd></div>
+              <div><dt>{t("journey.checkout.dailyRate")}</dt><dd className="tabular">{formatCurrency(diariaValue)}</dd></div>
               {servicesValue > 0 && (
-                <div><dt>Serviços adicionais</dt><dd className="tabular">{formatMoneyBRL(servicesValue)}</dd></div>
+                <div><dt>{t("journey.checkout.extraServices")}</dt><dd className="tabular">{formatCurrency(servicesValue)}</dd></div>
               )}
             </dl>
             <div className="price-summary__total">
-              <span>Total</span>
-              <strong className="tabular">{formatMoneyBRL(totalValue)}</strong>
+              <span>{t("journey.checkout.total")}</span>
+              <strong className="tabular">{formatCurrency(totalValue)}</strong>
             </div>
-            <p className="price-summary__note">Valor calculado pelo servidor para este período. O pagamento é a próxima etapa.</p>
+            <p className="price-summary__note">{t("journey.checkout.totalNote")}</p>
             <button type="button" className="btn btn--lg btn--block" onClick={handleConfirmar} disabled={confirmando} aria-busy={confirmando || undefined}>
-              {confirmando ? "Confirmando..." : "Confirmar e seguir para pagamento"}
+              {confirmando ? t("journey.checkout.confirming") : t("journey.checkout.confirm")}
             </button>
             {confirmError && (
               <p className="alert alert--danger" role="alert">{confirmError}</p>

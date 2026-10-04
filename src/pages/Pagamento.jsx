@@ -16,6 +16,7 @@ import {
 import { getPagamentoReserva, getReservaById, iniciarPagamento } from "../services/reservaService";
 import { formatMoneyBRL } from "../utils/reservationMath";
 import { vehicleTitle } from "../utils/vehicleDisplay";
+import { formatDate, t } from "../i18n";
 import "../styles/vehicle.css";
 import "../styles/journey.css";
 import "../styles/payment.css";
@@ -24,10 +25,7 @@ import "../styles/postcompra.css";
 const TIMEZONE_EXIBICAO = import.meta.env.VITE_TIMEZONE_EXIBICAO || "America/Sao_Paulo";
 
 function formatarDataHora(valor) {
-  if (!valor) return "Data não informada";
-  const data = new Date(valor);
-  if (Number.isNaN(data.getTime())) return "Data não informada";
-  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: TIMEZONE_EXIBICAO }).format(data);
+  return formatDate(valor, { dateStyle: "short", timeStyle: "short", timeZone: TIMEZONE_EXIBICAO }) || t("payment.dateMissing");
 }
 
 const TOM_PAGAMENTO = {
@@ -85,13 +83,13 @@ function formatValidade(value) {
 // Espelha o schema do backend (pagamento.schema.ts) para não exibir as
 // mensagens em inglês do Zod; o cartão vale até o fim do mês de validade.
 function validarCartao({ numero, nome, validade, cvv }, hoje = new Date()) {
-  if (numero.replace(/\D/g, "").length < 13) return "Informe um número de cartão válido.";
-  if (nome.trim().length < 3) return "Informe o nome do titular (mínimo 3 caracteres).";
+  if (numero.replace(/\D/g, "").length < 13) return t("payment.card.errors.number");
+  if (nome.trim().length < 3) return t("payment.card.errors.holder");
   const match = /^(0[1-9]|1[0-2])\/(\d{2})$/.exec(validade);
-  if (!match) return "Informe a validade no formato MM/AA.";
+  if (!match) return t("payment.card.errors.expiryFormat");
   const fimDoMes = new Date(2000 + Number(match[2]), Number(match[1]), 1);
-  if (fimDoMes <= hoje) return "Cartão vencido. Confira a validade.";
-  if (!/^\d{3,4}$/.test(cvv)) return "O CVV deve ter 3 ou 4 dígitos.";
+  if (fimDoMes <= hoje) return t("payment.card.errors.expired");
+  if (!/^\d{3,4}$/.test(cvv)) return t("payment.card.errors.cvv");
   return "";
 }
 
@@ -121,7 +119,7 @@ export default function Pagamento() {
   const reservaId = getJourneyStep("reserva")?.id;
 
   useEffect(() => {
-    document.title = "MOVA - Pagamento";
+    document.title = t("payment.documentTitle");
   }, []);
 
   useEffect(() => {
@@ -158,7 +156,7 @@ export default function Pagamento() {
       .catch((error) => {
         if (!montado.current) return;
         setErroCarregamento(
-          error?.message || "Não foi possível carregar sua reserva.",
+          error?.message || t("payment.errors.load"),
         );
       })
       .finally(() => {
@@ -176,7 +174,7 @@ export default function Pagamento() {
     if (tentativasRestantes <= 0) {
       setProcessando(false);
       setErroPagamento(
-        "O pagamento ainda está em análise. Acompanhe pelo histórico de reservas.",
+        t("payment.errors.stillProcessing"),
       );
       return;
     }
@@ -205,7 +203,7 @@ export default function Pagamento() {
           if (!montado.current) return;
           setProcessando(false);
           setErroPagamento(
-            error?.message || "Não foi possível verificar o pagamento.",
+            error?.message || t("payment.errors.verify"),
           );
         });
     }, INTERVALO_POLLING_MS);
@@ -222,7 +220,7 @@ export default function Pagamento() {
       return;
     }
     setErroPagamento(
-      "Pagamento não aprovado. Confira os dados e tente novamente.",
+      t("payment.errors.declined"),
     );
   }
 
@@ -232,7 +230,7 @@ export default function Pagamento() {
 
     if (!reservaId) {
       setErroPagamento(
-        "Não encontramos sua reserva. Volte para o checkout e confirme a reserva antes de pagar.",
+        t("payment.errors.noReservation"),
       );
       return;
     }
@@ -286,7 +284,7 @@ export default function Pagamento() {
         if (!montado.current) return;
         setProcessando(false);
         setErroPagamento(
-          error?.message || "Não foi possível iniciar o pagamento.",
+          error?.message || t("payment.errors.start"),
         );
       });
   }
@@ -297,15 +295,15 @@ export default function Pagamento() {
 
   const semReserva = !reservaId;
   const mensagemDeErro = semReserva
-    ? "Não encontramos sua reserva. Volte para o checkout e confirme a reserva antes de pagar."
+    ? t("payment.errors.noReservation")
     : erroCarregamento;
 
   const head = (
     <>
       <JourneySteps current="pagamento" />
       <header className="journey-head">
-        <h1>Pagamento</h1>
-        <p className="page-head__lede">Ambiente de teste: nenhum valor é cobrado de verdade.</p>
+        <h1>{t("payment.title")}</h1>
+        <p className="page-head__lede">{t("payment.sandboxLede")}</p>
       </header>
     </>
   );
@@ -316,7 +314,7 @@ export default function Pagamento() {
         {head}
         <p className="loading-state" role="status" aria-live="polite">
           <span className="spinner" aria-hidden="true" />
-          Carregando sua reserva...
+          {t("payment.loading")}
         </p>
       </main>
     );
@@ -327,10 +325,10 @@ export default function Pagamento() {
       <main className="journey-page">
         {head}
         <div className="state-block state-block--error" role="status" aria-live="polite">
-          <h2 className="state-block__title">Não foi possível abrir o pagamento</h2>
+          <h2 className="state-block__title">{t("payment.errors.openTitle")}</h2>
           <p className="state-block__text">{mensagemDeErro}</p>
           <button type="button" className="btn" onClick={() => navigate("/checkout-reserva")}>
-            Voltar ao checkout
+            {t("payment.backToCheckout")}
           </button>
         </div>
       </main>
@@ -341,25 +339,25 @@ export default function Pagamento() {
     return (
       <main className="journey-page">
         <header className="journey-head">
-          <h1>Pagamento</h1>
+          <h1>{t("payment.title")}</h1>
         </header>
         <section className="state-block" role="status">
           <h2 className="state-block__title">
             {reserva?.status === "CANCELADA"
-              ? "Reserva cancelada"
+              ? t("payment.closed.cancelledTitle")
               : reserva?.status === "REALIZADA"
-                ? "Reserva concluída"
-                : "Locação em andamento"}
+                ? t("payment.closed.completedTitle")
+                : t("payment.closed.inProgressTitle")}
           </h2>
           <p className="state-block__text">
             {reserva?.status === "CANCELADA"
-              ? "Esta reserva não pode receber pagamento nem liberar o veículo."
+              ? t("payment.closed.cancelledText")
               : reserva?.status === "REALIZADA"
-                ? "O pagamento e a retirada já foram encerrados para esta reserva."
-                : "O pagamento já foi confirmado e a locação está em andamento."}
+                ? t("payment.closed.completedText")
+                : t("payment.closed.inProgressText")}
           </p>
           <button type="button" className="btn" onClick={() => navigate("/historico")}>
-            Ver minhas reservas
+            {t("payment.myReservations")}
           </button>
         </section>
       </main>
@@ -371,46 +369,46 @@ export default function Pagamento() {
 
   const resumo = (
     <section className="price-summary pay-summary" aria-labelledby="pay-summary-title">
-      <h2 id="pay-summary-title">O que você está pagando</h2>
+      <h2 id="pay-summary-title">{t("payment.summary.title")}</h2>
       <div className="vehicle-strip pay-summary__vehicle">
         <VehicleMedia vehicle={veiculo} />
         <div>
-          <p className="vehicle-strip__name">{veiculo ? vehicleTitle(veiculo) : "Veículo da reserva"}</p>
-          {veiculo?.placa ? <p className="journey-muted">Placa <span className="tabular">{veiculo.placa}</span></p> : null}
+          <p className="vehicle-strip__name">{veiculo ? vehicleTitle(veiculo) : t("payment.summary.vehicleFallback")}</p>
+          {veiculo?.placa ? <p className="journey-muted">{t("payment.summary.plate")} <span className="tabular">{veiculo.placa}</span></p> : null}
         </div>
       </div>
       <dl className="price-summary__rows">
         <div>
-          <dt>Retirada</dt>
+          <dt>{t("payment.summary.pickup")}</dt>
           <dd>
-            <span className="pay-summary__garage">{reserva?.garagemRetirada?.nome || "Garagem não informada"}</span>
+            <span className="pay-summary__garage">{reserva?.garagemRetirada?.nome || t("payment.summary.garageMissing")}</span>
             <span className="tabular">{formatarDataHora(reserva?.dataHoraInicio)}</span>
           </dd>
         </div>
         <div>
-          <dt>Devolução</dt>
+          <dt>{t("payment.summary.return")}</dt>
           <dd>
-            <span className="pay-summary__garage">{reserva?.garagemDevolucao?.nome || "Garagem não informada"}</span>
+            <span className="pay-summary__garage">{reserva?.garagemDevolucao?.nome || t("payment.summary.garageMissing")}</span>
             <span className="tabular">{formatarDataHora(reserva?.dataHoraFim)}</span>
           </dd>
         </div>
         {statusPagamento ? (
           <div>
-            <dt>Pagamento</dt>
+            <dt>{t("payment.summary.payment")}</dt>
             <dd><span className={`badge badge--${tomPagamento}`}>{rotulo(STATUS_PAGAMENTO_LABELS, statusPagamento)}</span></dd>
           </div>
         ) : null}
       </dl>
       <div className="price-summary__total">
-        <span>Total</span>
+        <span>{t("payment.summary.total")}</span>
         {/* Valor calculado pelo backend — o frontend só exibe. */}
         <strong className="tabular" data-testid="valor-reserva">{formatMoneyBRL(reserva?.valorTotal)}</strong>
       </div>
-      <p className="price-summary__note">Pagamento e estorno simulados — nenhum dinheiro real movimentado.</p>
+      <p className="price-summary__note">{t("payment.summary.sandboxNote")}</p>
       {/* Só quando há estorno em curso: antes de pagar, "Não solicitado" é ruído. */}
       {pagamento?.statusEstorno && pagamento.statusEstorno !== "NAO_SOLICITADO" && (
         <p className="price-summary__note">
-          Estorno: {rotulo(STATUS_ESTORNO_LABELS, pagamento.statusEstorno)}. Valor pago: <span className="tabular">{formatMoneyBRL(pagamento.valorPago)}</span>.
+          {t("payment.summary.refund", { status: rotulo(STATUS_ESTORNO_LABELS, pagamento.statusEstorno) })} <span className="tabular">{formatMoneyBRL(pagamento.valorPago)}</span>.
         </p>
       )}
     </section>
@@ -427,41 +425,41 @@ export default function Pagamento() {
             <section className="pay-success" aria-labelledby="pay-success-title" role="status">
               <h2 className="pay-success__title" id="pay-success-title">
                 <FontAwesomeIcon icon={faCircleCheck} aria-hidden="true" />
-                Pagamento aprovado
+                {t("payment.success.title")}
               </h2>
-              <p>Sua reserva está confirmada.</p>
+              <p>{t("payment.success.text")}</p>
               {reserva?.codigoDesbloqueio ? (
                 <div className="pay-success__code">
-                  <span className="journey-muted">Código de desbloqueio</span>
+                  <span className="journey-muted">{t("payment.success.unlockCode")}</span>
                   <strong className="unlock-code">{reserva.codigoDesbloqueio}</strong>
                 </div>
               ) : null}
               <div className="journey-actions">
                 <button type="button" className="btn btn--lg" onClick={() => navigate("/desbloqueio")}>
-                  Desbloquear veículo
+                  {t("payment.success.unlock")}
                 </button>
                 <button type="button" className="btn btn--secondary btn--lg" onClick={() => navigate("/historico")}>
-                  Ver minhas reservas
+                  {t("payment.myReservations")}
                 </button>
               </div>
             </section>
           ) : (
             <section className="journey-section" aria-labelledby="pay-method-title">
-              <h2 id="pay-method-title">Como você quer pagar</h2>
+              <h2 id="pay-method-title">{t("payment.method.title")}</h2>
 
               {processando && (
                 <div className="pay-status" role="status" aria-live="polite">
                   <span className="spinner" aria-hidden="true" />
                   <div>
-                    <h3 className="pay-status__title">Processando pagamento</h3>
-                    <p className="journey-muted">Aguardando a confirmação do gateway. Não é preciso pagar de novo.</p>
+                    <h3 className="pay-status__title">{t("payment.processing.title")}</h3>
+                    <p className="journey-muted">{t("payment.processing.text")}</p>
                   </div>
                 </div>
               )}
 
               <form className="pay-form" onSubmit={handleFinalizar} noValidate aria-busy={processando || undefined}>
                 <div className="field">
-                  <label className="field__label" htmlFor="metodoPagamento">Método de pagamento</label>
+                  <label className="field__label" htmlFor="metodoPagamento">{t("payment.method.label")}</label>
                   <select
                     id="metodoPagamento"
                     className="field__control"
@@ -481,12 +479,11 @@ export default function Pagamento() {
                   <fieldset className="fieldset form-panel pay-card" disabled={processando}>
                     <legend>{METODO_PAGAMENTO_LABELS[metodo]}</legend>
                     <p className="field__hint">
-                      Ambiente de teste: use qualquer cartão fictício. Final 0000
-                      simula recusa e final 0001 simula análise.
+                      {t("payment.card.sandboxHint")}
                     </p>
 
                     <div className="field">
-                      <label className="field__label" htmlFor="numeroCartao">Número do cartão</label>
+                      <label className="field__label" htmlFor="numeroCartao">{t("payment.card.number")}</label>
                       <input
                         id="numeroCartao"
                         className="field__control tabular"
@@ -500,7 +497,7 @@ export default function Pagamento() {
                     </div>
 
                     <div className="field">
-                      <label className="field__label" htmlFor="nomeTitular">Nome do titular</label>
+                      <label className="field__label" htmlFor="nomeTitular">{t("payment.card.holder")}</label>
                       <input
                         id="nomeTitular"
                         className="field__control"
@@ -514,7 +511,7 @@ export default function Pagamento() {
 
                     <div className="pay-card__row">
                       <div className="field">
-                        <label className="field__label" htmlFor="validade">Validade (MM/AA)</label>
+                        <label className="field__label" htmlFor="validade">{t("payment.card.expiry")}</label>
                         <input
                           id="validade"
                           className="field__control tabular"
@@ -527,7 +524,7 @@ export default function Pagamento() {
                       </div>
 
                       <div className="field">
-                        <label className="field__label" htmlFor="cvv">CVV</label>
+                        <label className="field__label" htmlFor="cvv">{t("payment.card.cvv")}</label>
                         <input
                           id="cvv"
                           className="field__control tabular"
@@ -546,9 +543,9 @@ export default function Pagamento() {
 
                 {metodo === METODO_PAGAMENTO.PIX && (
                   <div className="form-panel pay-pix">
-                    <p>Pix em ambiente de teste. O QR Code é ilustrativo.</p>
+                    <p>{t("payment.pix.sandboxNote")}</p>
                     <button type="button" className="btn btn--secondary" ref={pixTrigger} onClick={() => setPixModalOpen(true)} disabled={processando}>
-                      Ver QR Code
+                      {t("payment.pix.show")}
                     </button>
                   </div>
                 )}
@@ -568,17 +565,17 @@ export default function Pagamento() {
                   disabled={processando}
                   aria-busy={processando || undefined}
                 >
-                  {processando ? "Processando..." : "Pagar"}
+                  {processando ? t("payment.processing.button") : t("payment.pay")}
                 </button>
                 <p className="journey-muted">
-                  Depois da confirmação, o código de desbloqueio aparece aqui e em Minhas reservas.
+                  {t("payment.afterConfirmation")}
                 </p>
               </form>
 
               <p className="journey-muted">
-                Dúvidas?{" "}
+                {t("payment.questions")}{" "}
                 <button type="button" className="btn btn--quiet" onClick={() => navigate("/suporte")}>
-                  Fale com o suporte
+                  {t("payment.contactSupport")}
                 </button>
               </p>
             </section>
@@ -612,7 +609,7 @@ function PixDialog({ onClose }) {
           if (event.key === "Tab") event.preventDefault();
         }}
       >
-        <h2 id="pix-dialog-title">Pix</h2>
+        <h2 id="pix-dialog-title">{t("payment.pix.title")}</h2>
         <div className="pay-qr" aria-hidden="true">
           {QR_PATTERN.map((filled, i) => (
             <span key={i} className={filled ? "pay-qr__cell pay-qr__cell--on" : "pay-qr__cell"} />
@@ -620,10 +617,10 @@ function PixDialog({ onClose }) {
         </div>
         <p className="alert alert--info">
           <FontAwesomeIcon icon={faCircleInfo} aria-hidden="true" />
-          <span className="alert__body">QR Code ilustrativo; nenhuma transferência é feita.</span>
+          <span className="alert__body">{t("payment.pix.dialogNote")}</span>
         </p>
         <button type="button" className="btn btn--block" ref={closeRef} onClick={onClose}>
-          Fechar
+          {t("payment.close")}
         </button>
       </div>
     </div>

@@ -5,6 +5,7 @@ import CursorGlowArea from "../components/ui/CursorGlowArea";
 import VehicleCard from "../components/vehicle/VehicleCard";
 import { listVeiculos } from "../services/veiculoService";
 import { updateJourneyStep } from "../utils/journeyStorage";
+import { t } from "../i18n";
 import "../styles/vehicle.css";
 
 function resolveModeloVeiculo(veiculo) {
@@ -15,11 +16,12 @@ function resolveVeiculoField(veiculo, modeloVeiculo, field) {
   return veiculo?.[field] ?? modeloVeiculo?.[field] ?? "";
 }
 
+// Rótulos traduzidos no render: o idioma pode mudar depois do import.
 const FILTROS_CATEGORIA = [
-  { id: "economico", label: "Econômicos" },
-  { id: "espacoso", label: "Espaçosos" },
-  { id: "executivo", label: "Executivos" },
-  { id: "adaptado", label: "Adaptados PCD" },
+  { id: "economico", labelKey: "catalog.categories.economico" },
+  { id: "espacoso", labelKey: "catalog.categories.espacoso" },
+  { id: "executivo", labelKey: "catalog.categories.executivo" },
+  { id: "adaptado", labelKey: "catalog.categories.pcd" },
 ];
 
 function veiculoSelecionavel(veiculo) {
@@ -52,14 +54,14 @@ function CarrosScreen() {
       const resultado = await listVeiculos(filtrosPorTipo[tipoFiltro] ?? {});
       setVeiculos(resultado);
     } catch (e) {
-      setErro(e.message || "Não foi possível carregar os veículos.");
+      setErro(e.message || t("catalog.list.loadError"));
     } finally {
       setLoading(false);
     }
   }, [tipoFiltro]);
 
   useEffect(() => {
-    document.title = "MOVA - Escolha seu Carro";
+    document.title = t("catalog.list.documentTitle");
     queueMicrotask(() => {
       void buscar();
     });
@@ -101,15 +103,15 @@ function CarrosScreen() {
   return (
     <main className="carro-page catalog-page">
       <header className="page-head">
-        <h1>Escolha seu carro</h1>
-        <p className="page-head__lede">Selecione o veículo; em seguida você confirma a garagem de retirada e o período.</p>
+        <h1>{t("catalog.list.title")}</h1>
+        <p className="page-head__lede">{t("catalog.list.lede")}</p>
       </header>
 
       <div className="catalog-page__body">
-        <fieldset className="fieldset category-strip carro-filters" aria-label="Filtros de categoria">
-          <legend>Filtrar por categoria</legend>
+        <fieldset className="fieldset category-strip carro-filters" aria-label={t("catalog.list.filtersLabel")}>
+          <legend>{t("catalog.home.filterByCategory")}</legend>
           <div className="category-strip__list">
-            {FILTROS_CATEGORIA.map(({ id, label }) => (
+            {FILTROS_CATEGORIA.map(({ id, labelKey }) => (
               <button
                 key={id}
                 type="button"
@@ -117,33 +119,33 @@ function CarrosScreen() {
                 aria-pressed={tipoFiltro === id}
                 onClick={() => setTipoFiltro((atual) => atual === id ? null : id)}
               >
-                {label}
+                {t(labelKey)}
               </button>
             ))}
             <button type="button" className="btn btn--quiet" onClick={() => setTipoFiltro(null)}>
-              Limpar filtros
+              {t("catalog.home.clearFilters")}
             </button>
           </div>
         </fieldset>
 
-        {loading && <p className="loading-state carro-status" role="status"><span className="spinner" aria-hidden="true" />Carregando veículos…</p>}
+        {loading && <p className="loading-state carro-status" role="status"><span className="spinner" aria-hidden="true" />{t("catalog.home.loading")}</p>}
 
         {!loading && erro && (
           <div className="state-block state-block--error carro-status" role="alert">
-            <h2 className="state-block__title">Não conseguimos carregar os veículos</h2>
+            <h2 className="state-block__title">{t("catalog.home.errorTitle")}</h2>
             <p className="state-block__text">{erro}</p>
-            <button type="button" className="btn btn--secondary" onClick={() => void buscar()}>Tentar novamente</button>
+            <button type="button" className="btn btn--secondary" onClick={() => void buscar()}>{t("catalog.home.retry")}</button>
           </div>
         )}
 
         {!loading && !erro && veiculos.length === 0 && (
           <div className="state-block carro-empty-state">
-            <h2 className="state-block__title">Nenhum veículo encontrado</h2>
+            <h2 className="state-block__title">{t("catalog.list.emptyTitle")}</h2>
             <p className="state-block__text">
-              {tipoFiltro ? "Nenhum veículo cadastrado nesta categoria no momento." : "Nenhum veículo cadastrado no momento. Volte mais tarde."}
+              {tipoFiltro ? t("catalog.list.emptyCategory") : t("catalog.list.empty")}
             </p>
             {tipoFiltro && (
-              <button type="button" className="btn btn--secondary" onClick={() => setTipoFiltro(null)}>Ver todos os veículos</button>
+              <button type="button" className="btn btn--secondary" onClick={() => setTipoFiltro(null)}>{t("catalog.list.seeAll")}</button>
             )}
           </div>
         )}
@@ -161,7 +163,7 @@ function CarrosScreen() {
                   key={veiculo.id}
                   vehicle={veiculo}
                   className="carro-list-card"
-                  note={garagemIndisponivel ? "Local indisponível para reserva." : undefined}
+                  note={garagemIndisponivel ? t("catalog.list.garageUnavailable") : undefined}
                   noteId={noteId}
                   actions={(
                     <button
@@ -171,7 +173,7 @@ function CarrosScreen() {
                       aria-describedby={garagemIndisponivel ? noteId : undefined}
                       onClick={() => selecionarVeiculo(veiculo)}
                     >
-                      {selecionavel ? "Selecionar" : "Indisponível"}
+                      {selecionavel ? t("catalog.list.select") : t("catalog.list.unavailable")}
                     </button>
                   )}
                 />

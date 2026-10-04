@@ -4,6 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import VehicleMedia from "../components/vehicle/VehicleMedia";
 import BottomNav from "../components/BottomNav";
 import { getGaragemById, listVeiculosDaGaragem } from "../services/garagemService";
+import { t } from "../i18n";
 import "../styles/vehicle.css";
 import "../styles/owner.css";
 
@@ -17,8 +18,8 @@ function VeiculoLista({ veiculos, vazio }) {
           <div className="owner-row__body">
             <h3 className="owner-row__title">{veiculo.marca} {veiculo.modelo}</h3>
             <p className="owner-row__meta">
-              <span>Placa: <span className="owner-plate">{veiculo.placa}</span></span>
-              <span className="tabular">ID: {veiculo.id.slice(0, 8)}</span>
+              <span>{t("owner.capacity.plate")} <span className="owner-plate">{veiculo.placa}</span></span>
+              <span className="tabular">{t("owner.capacity.id", { id: veiculo.id.slice(0, 8) })}</span>
             </p>
           </div>
         </li>
@@ -35,7 +36,7 @@ export default function CapacidadeGaragem() {
   const [erro, setErro] = useState(null);
 
   useEffect(() => {
-    document.title = "MOVA - Capacidade Atual";
+    document.title = t("owner.capacity.docTitle");
 
     let active = true;
     async function carregar() {
@@ -51,7 +52,7 @@ export default function CapacidadeGaragem() {
         setVeiculos(veiculosResult);
       } catch (e) {
         if (!active) return;
-        setErro(e.message || "Não foi possível carregar a capacidade da garagem.");
+        setErro(e.message || t("owner.capacity.loadError"));
       } finally {
         if (active) setLoading(false);
       }
@@ -66,32 +67,32 @@ export default function CapacidadeGaragem() {
   return (
     <main className="owner-page" aria-labelledby="capacidade-title">
       <header className="page-head">
-        <Link className="page-head__back" to="/cadastro-garagens"><ChevronLeft className="icon" aria-hidden="true" />Garagens</Link>
-        <h1 id="capacidade-title">Capacidade Atual</h1>
+        <Link className="page-head__back" to="/cadastro-garagens"><ChevronLeft className="icon" aria-hidden="true" />{t("owner.capacity.back")}</Link>
+        <h1 id="capacidade-title">{t("owner.capacity.title")}</h1>
         {garagem && (
           <p className="page-head__lede">
-            {garagem.nome} — {garagem.endereco} — Capacidade {garagem.capacidade - (garagem.veiculosAlocados ?? 0)}/{garagem.capacidade}
+            {t("owner.capacity.summary", { name: garagem.nome, address: garagem.endereco, free: garagem.capacidade - (garagem.veiculosAlocados ?? 0), total: garagem.capacidade })}
           </p>
         )}
       </header>
 
-      {loading && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando…</p>}
+      {loading && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />{t("owner.common.loading")}</p>}
       {!loading && erro && <p className="alert alert--danger" role="alert">{erro}</p>}
 
       {!loading && !erro && (
         <>
           <section className="owner-section" aria-labelledby="capacidade-reserva">
             <div className="owner-section__head">
-              <h2 id="capacidade-reserva">Veículos em reserva <span className="badge badge--info tabular">{emReserva.length}</span></h2>
+              <h2 id="capacidade-reserva">{t("owner.capacity.reservedTitle")} <span className="badge badge--info tabular">{emReserva.length}</span></h2>
             </div>
-            <VeiculoLista veiculos={emReserva} vazio="Nenhum veículo reservado nesta garagem." />
+            <VeiculoLista veiculos={emReserva} vazio={t("owner.capacity.reservedEmpty")} />
           </section>
 
           <section className="owner-section" aria-labelledby="capacidade-garagem">
             <div className="owner-section__head">
-              <h2 id="capacidade-garagem">Veículos em garagem <span className="badge badge--neutral tabular">{disponiveisNaGaragem.length}</span></h2>
+              <h2 id="capacidade-garagem">{t("owner.capacity.parkedTitle")} <span className="badge badge--neutral tabular">{disponiveisNaGaragem.length}</span></h2>
             </div>
-            <VeiculoLista veiculos={disponiveisNaGaragem} vazio="Nenhum veículo alocado nesta garagem." />
+            <VeiculoLista veiculos={disponiveisNaGaragem} vazio={t("owner.capacity.parkedEmpty")} />
           </section>
         </>
       )}

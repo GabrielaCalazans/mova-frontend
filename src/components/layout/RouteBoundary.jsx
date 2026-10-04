@@ -1,11 +1,13 @@
 import { Component, createElement, Suspense } from "react";
 import BrandLogo from "../brand/BrandLogo";
+import { t } from "../../i18n";
 
-export function RouteLoading({ label = "Carregando tela…" }) {
+// `label` é o nome da tela ("o login"); `text` substitui a frase inteira.
+export function RouteLoading({ label, text }) {
   return (
     <div className="route-loading" aria-busy="true">
       <BrandLogo variant="icon" className="route-loading__mark" decorative />
-      <p role="status">{label.startsWith("Abrindo") ? label : `Abrindo ${label}…`}</p>
+      <p role="status">{text ?? (label ? t("common.route.opening", { label }) : t("common.route.loading"))}</p>
     </div>
   );
 }
@@ -22,10 +24,10 @@ export class RouteErrorBoundary extends Component {
 
     return (
       <main className="route-error" role="alert">
-        <h1>Não foi possível carregar esta tela</h1>
-        <p>O recurso pode ter sido atualizado. Tente carregar a tela novamente.</p>
+        <h1>{t("common.route.errorTitle")}</h1>
+        <p>{t("common.route.errorText")}</p>
         <button type="button" className="btn" onClick={() => window.location.reload()}>
-          Recarregar tela
+          {t("common.route.reload")}
         </button>
       </main>
     );

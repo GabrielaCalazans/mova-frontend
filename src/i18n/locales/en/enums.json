@@ -1,0 +1,55 @@
+{
+  "statusReserva": {
+    "AGUARDANDO_PAGAMENTO": "Awaiting payment",
+    "CONFIRMADA": "Confirmed",
+    "EM_ANDAMENTO": "In progress",
+    "REALIZADA": "Completed",
+    "CANCELADA": "Canceled"
+  },
+  "statusPagamento": {
+    "AGUARDANDO_PAGAMENTO": "Awaiting payment",
+    "PROCESSANDO": "Processing",
+    "SUCESSO": "Paid",
+    "FALHA": "Declined"
+  },
+  "metodoPagamento": {
+    "CARTAO_CREDITO": "Credit card",
+    "CARTAO_DEBITO": "Debit card",
+    "PIX": "Pix",
+    "CARTEIRA_DIGITAL": "Digital wallet"
+  },
+  "statusVeiculo": {
+    "DISPONIVEL": "Available",
+    "RESERVADO": "Booked",
+    "MANUTENCAO": "Under maintenance",
+    "INATIVO": "Inactive"
+  },
+  "statusGaragem": {
+    "ATIVA": "Active",
+    "INATIVA": "Inactive",
+    "MANUTENCAO": "Under maintenance"
+  },
+  "statusEstorno": {
+    "NAO_SOLICITADO": "Not requested",
+    "SOLICITADO": "Requested",
+    "CONCLUIDO": "Completed",
+    "FALHOU": "Failed"
+  },
+  "tipoCobranca": {
+    "CANCELAMENTO": "Cancellation fee",
+    "ATRASO_DEVOLUCAO": "Late return",
+    "PAGAMENTO_RESERVA": "Booking payment"
+  },
+  "statusNotificacao": {
+    "PENDENTE": "Pending",
+    "ENVIADA": "Sent",
+    "FALHA": "Failed"
+  },
+  "categoria": {
+    "ECONOMICO": "Economy",
+    "ESPACOSO": "Spacious",
+    "EXECUTIVO": "Executive",
+    "PCD": "Accessible (PwD)",
+    "ELETRICO": "Electric"
+  }
+}

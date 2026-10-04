@@ -16,24 +16,29 @@ import {
   STATUS_RESERVA_LABELS,
   rotulo,
 } from "../services/apiEnums";
+import { formatDate, t } from "../i18n";
 import "../styles/vehicle.css";
 import "../styles/journey.css";
 import "../styles/postcompra.css";
 
 // Tom e rótulo do status da reserva: sempre texto, nunca só cor.
 // PENDENTE/FINALIZADA são grafias antigas que ainda aparecem em dados legados.
+// Rótulos resolvidos no render (não no import) para acompanhar o idioma.
 const STATUS_VISUAL = {
-  [STATUS_RESERVA.AGUARDANDO_PAGAMENTO]: ["warning", "Pagamento pendente"],
-  PENDENTE: ["warning", "Pagamento pendente"],
-  [STATUS_RESERVA.CONFIRMADA]: ["success", STATUS_RESERVA_LABELS.CONFIRMADA],
-  [STATUS_RESERVA.EM_ANDAMENTO]: ["info", STATUS_RESERVA_LABELS.EM_ANDAMENTO],
-  [STATUS_RESERVA.REALIZADA]: ["neutral", STATUS_RESERVA_LABELS.REALIZADA],
-  FINALIZADA: ["neutral", STATUS_RESERVA_LABELS.REALIZADA],
-  [STATUS_RESERVA.CANCELADA]: ["danger", STATUS_RESERVA_LABELS.CANCELADA],
+  [STATUS_RESERVA.AGUARDANDO_PAGAMENTO]: ["warning", () => t("reservation.list.paymentPending")],
+  PENDENTE: ["warning", () => t("reservation.list.paymentPending")],
+  [STATUS_RESERVA.CONFIRMADA]: ["success", STATUS_RESERVA.CONFIRMADA],
+  [STATUS_RESERVA.EM_ANDAMENTO]: ["info", STATUS_RESERVA.EM_ANDAMENTO],
+  [STATUS_RESERVA.REALIZADA]: ["neutral", STATUS_RESERVA.REALIZADA],
+  FINALIZADA: ["neutral", STATUS_RESERVA.REALIZADA],
+  [STATUS_RESERVA.CANCELADA]: ["danger", STATUS_RESERVA.CANCELADA],
 };
 
 export function StatusBadge({ status, ...props }) {
-  const [tom, texto] = STATUS_VISUAL[status] ?? ["neutral", rotulo(STATUS_RESERVA_LABELS, status) || "Status não informado"];
+  const [tom, rotuloOuCodigo] = STATUS_VISUAL[status] ?? ["neutral", status];
+  const texto = typeof rotuloOuCodigo === "function"
+    ? rotuloOuCodigo()
+    : rotulo(STATUS_RESERVA_LABELS, rotuloOuCodigo) || t("reservation.list.statusMissing");
   return <span className={`badge badge--${tom}`} {...props}>{texto}</span>;
 }
 
@@ -45,22 +50,19 @@ function resolveVeiculoNome(reserva) {
   const modelo = modeloVeiculo.modelo ?? "";
   const nome = `${marca} ${modelo}`.trim();
 
-  return nome || "Veículo";
+  return nome || t("reservation.common.vehicle");
 }
 
 function formatarDataHora(valor) {
-  if (!valor) return "Data não informada";
-  const data = new Date(valor);
-  if (Number.isNaN(data.getTime())) return "Data não informada";
-  return new Intl.DateTimeFormat("pt-BR", {
+  return formatDate(valor, {
     dateStyle: "short",
     timeStyle: "short",
     timeZone: import.meta.env.VITE_TIMEZONE_EXIBICAO || "America/Sao_Paulo",
-  }).format(data);
+  }) || t("payment.dateMissing");
 }
 
 function nomeGaragem(garagem, fallback) {
-  return garagem?.nome || fallback || "Não informada";
+  return garagem?.nome || fallback || t("reservation.detail.garageMissing");
 }
 
 // Reserva paga e ainda nao desbloqueada leva para o desbloqueio; as demais,
@@ -68,16 +70,16 @@ function nomeGaragem(garagem, fallback) {
 // real com o backend.
 function acaoDaReserva(reserva) {
   if (reserva.status === STATUS_RESERVA.AGUARDANDO_PAGAMENTO) {
-    return { rota: "/pagamento", rotulo: "Pagar" };
+    return { rota: "/pagamento", rotulo: t("payment.pay") };
   }
   if (reserva.status === STATUS_RESERVA.CONFIRMADA && reserva.statusPagamento === STATUS_PAGAMENTO.SUCESSO) {
-    return { rota: "/desbloqueio", rotulo: "Desbloquear veículo" };
+    return { rota: "/desbloqueio", rotulo: t("reservation.unlock.submit") };
   }
   if (reserva.status === STATUS_RESERVA.EM_ANDAMENTO) {
-    return { rota: "/devolucao", rotulo: "Devolver veículo" };
+    return { rota: "/devolucao", rotulo: t("reservation.detail.actions.return") };
   }
   if (reserva.status === STATUS_RESERVA.REALIZADA) {
-    return { rota: "/avaliacao", rotulo: "Avaliar" };
+    return { rota: "/avaliacao", rotulo: t("reservation.list.rate") };
   }
   return null;
 }
@@ -111,7 +113,7 @@ async function copiarLink(link) {
   area.select();
   const copiado = typeof document.execCommand === "function" && document.execCommand("copy");
   area.remove();
-  if (!copiado) throw new Error("Não foi possível copiar o link.");
+  if (!copiado) throw new Error(t("reservation.share.copyError"));
 }
 
 /**
@@ -148,7 +150,7 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
       })
       .catch((error) => {
         if (!active) return;
-        setErro(error.message || "Não foi possível carregar suas reservas.");
+        setErro(error.message || t("reservation.list.loadError"));
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -167,7 +169,7 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
     [reservas, somenteConcluidas]
   );
 
-  const erroExibido = !idLocatario ? "Sessão inválida. Faça login novamente." : erro;
+  const erroExibido = !idLocatario ? t("reservation.common.invalidSession") : erro;
 
   const compartilhar = async (reserva) => {
     setCompartilhamentos((atual) => ({
@@ -176,24 +178,24 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
     }));
     try {
       const resultado = await criarCompartilhamentoReserva(reserva.id);
-      let mensagem = "Link pronto para compartilhar.";
+      let mensagem = t("reservation.share.ready");
       let nativoConcluido = false;
       if (typeof navigator.share === "function") {
         try {
           await navigator.share({
-            title: `Viagem MOVA — ${resolveVeiculoNome(reserva)}`,
-            text: "Confira os detalhes desta viagem.",
+            title: t("reservation.share.nativeTitle", { vehicle: resolveVeiculoNome(reserva) }),
+            text: t("reservation.share.nativeText"),
             url: resultado.url,
           });
           nativoConcluido = true;
-          mensagem = "Compartilhamento aberto.";
+          mensagem = t("reservation.share.opened");
         } catch {
           // Cancelamento/indisponibilidade do share nativo segue para cópia.
         }
       }
       if (!nativoConcluido) {
         await copiarLink(resultado.url);
-        mensagem = "Link copiado.";
+        mensagem = t("reservation.share.copied");
       }
       setCompartilhamentos((atual) => ({
         ...atual,
@@ -202,7 +204,7 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
     } catch (error) {
       setCompartilhamentos((atual) => ({
         ...atual,
-        [reserva.id]: { ...(atual[reserva.id] ?? {}), loading: false, erro: error.message || "Não foi possível compartilhar." },
+        [reserva.id]: { ...(atual[reserva.id] ?? {}), loading: false, erro: error.message || t("reservation.share.error") },
       }));
     }
   };
@@ -216,12 +218,12 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
       await revogarCompartilhamentoReserva(reserva.id);
       setCompartilhamentos((atual) => ({
         ...atual,
-        [reserva.id]: { loading: false, mensagem: "Compartilhamento revogado.", erro: null },
+        [reserva.id]: { loading: false, mensagem: t("reservation.share.revoked"), erro: null },
       }));
     } catch (error) {
       setCompartilhamentos((atual) => ({
         ...atual,
-        [reserva.id]: { ...(atual[reserva.id] ?? {}), loading: false, erro: error.message || "Não foi possível revogar." },
+        [reserva.id]: { ...(atual[reserva.id] ?? {}), loading: false, erro: error.message || t("reservation.list.revokeError") },
       }));
     }
   };
@@ -259,28 +261,28 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
 
           <dl className="booking__facts">
             <div>
-              <dt>Retirada</dt>
+              <dt>{t("payment.summary.pickup")}</dt>
               <dd>
                 <span className="tabular">{formatarDataHora(reserva.dataHoraInicio)}</span>
                 <span className="booking__garage">{nomeGaragem(reserva.garagemRetirada, reserva.idGaragemRetirada)}</span>
               </dd>
             </div>
             <div>
-              <dt>Devolução</dt>
+              <dt>{t("payment.summary.return")}</dt>
               <dd>
                 <span className="tabular">{formatarDataHora(reserva.dataHoraFim)}</span>
                 <span className="booking__garage">{nomeGaragem(reserva.garagemDevolucao, reserva.idGaragemDevolucao)}</span>
               </dd>
             </div>
             <div>
-              <dt>Pagamento</dt>
-              <dd>{rotulo(STATUS_PAGAMENTO_LABELS, reserva.statusPagamento) || "Não informado"}</dd>
+              <dt>{t("payment.summary.payment")}</dt>
+              <dd>{rotulo(STATUS_PAGAMENTO_LABELS, reserva.statusPagamento) || t("reservation.tracking.notProvided")}</dd>
             </div>
           </dl>
 
           {reserva.servicos?.length > 0 && (
-            <div className="booking__services" aria-label="Serviços contratados">
-              <p className="journey-muted">Serviços contratados</p>
+            <div className="booking__services" aria-label={t("reservation.detail.services")}>
+              <p className="journey-muted">{t("reservation.detail.services")}</p>
               <ul className="line-list">
                 {reserva.servicos.map((servico) => (
                   <li key={servico.idServico} className="line-list__item">
@@ -289,7 +291,7 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
                       {servico.descricao && <p className="line-list__desc">{servico.descricao}</p>}
                       {servico.detalhesCobertura && (
                         <details className="line-list__details">
-                          <summary>Ver detalhes da cobertura</summary>
+                          <summary>{t("reservation.detail.coverageDetails")}</summary>
                           <p>{servico.detalhesCobertura}</p>
                         </details>
                       )}
@@ -301,9 +303,9 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
           )}
 
           <div className="booking__total">
-            <span>Total</span>
+            <span>{t("payment.summary.total")}</span>
             <strong className="tabular">
-              {reserva.valorTotal != null ? formatMoneyBRL(reserva.valorTotal) : "Valor não informado"}
+              {reserva.valorTotal != null ? formatMoneyBRL(reserva.valorTotal) : t("reservation.detail.amountMissing")}
             </strong>
           </div>
 
@@ -322,10 +324,10 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
                   navigate(`/reserva/${reserva.id}/localizacao`);
                 }}
               >
-                Acompanhar veículo
+                {t("reservation.tracking.title")}
               </button>
             )}
-            <button type="button" className="btn btn--secondary" onClick={abrirDetalhe}>Ver detalhes da reserva</button>
+            <button type="button" className="btn btn--secondary" onClick={abrirDetalhe}>{t("reservation.list.viewDetails")}</button>
             <button
               type="button"
               className="btn btn--quiet"
@@ -336,7 +338,7 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
                 void compartilhar(reserva);
               }}
             >
-              {compartilhamento.loading ? "Gerando link…" : "Compartilhar viagem"}
+              {compartilhamento.loading ? t("reservation.share.generating") : t("reservation.share.title")}
             </button>
             {(reserva.status === STATUS_RESERVA.AGUARDANDO_PAGAMENTO || reserva.status === STATUS_RESERVA.CONFIRMADA) && (
               <button
@@ -347,23 +349,23 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
                   navigate("/cancelamento", { state: { reservaId: reserva.id } });
                 }}
               >
-                Cancelar reserva
+                {t("reservation.cancel.title")}
               </button>
             )}
           </div>
 
           {(compartilhamento.url || compartilhamento.mensagem || compartilhamento.erro) && (
-            <div className="booking__share" aria-label="Compartilhamento da viagem">
+            <div className="booking__share" aria-label={t("reservation.list.shareRegion")}>
               {compartilhamento.url && (
                 <>
                   <a
                     href={compartilhamento.url}
                     target="_blank"
                     rel="noreferrer"
-                    aria-label="Link da viagem"
+                    aria-label={t("reservation.list.tripLink")}
                     onClick={(event) => event.stopPropagation()}
                   >
-                    Link da viagem
+                    {t("reservation.list.tripLink")}
                   </a>
                   <button
                     type="button"
@@ -373,7 +375,7 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
                       void copiarLink(compartilhamento.url)
                         .then(() => setCompartilhamentos((atual) => ({
                           ...atual,
-                          [reserva.id]: { ...atual[reserva.id], mensagem: "Link copiado." },
+                          [reserva.id]: { ...atual[reserva.id], mensagem: t("reservation.share.copied") },
                         })))
                         .catch((error) => setCompartilhamentos((atual) => ({
                           ...atual,
@@ -381,7 +383,7 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
                         })));
                     }}
                   >
-                    Copiar link
+                    {t("reservation.share.copy")}
                   </button>
                   <button
                     type="button"
@@ -391,7 +393,7 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
                       void revogar(reserva);
                     }}
                   >
-                    Revogar compartilhamento
+                    {t("reservation.share.revoke")}
                   </button>
                 </>
               )}
@@ -413,23 +415,23 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
       {loading && (
         <p className="loading-state" role="status">
           <span className="spinner" aria-hidden="true" />
-          Carregando…
+          {t("reservation.list.loading")}
         </p>
       )}
 
       {!loading && erroExibido && (
         <div className="state-block state-block--error" role="alert">
-          <p className="state-block__title">Não foi possível carregar as reservas</p>
+          <p className="state-block__title">{t("reservation.list.errorTitle")}</p>
           <p className="state-block__text">{erroExibido}</p>
         </div>
       )}
 
       {!loading && !erroExibido && reservasExibidas.length === 0 && (
         <div className="state-block">
-          <p className="state-block__title">Nenhuma reserva por aqui</p>
+          <p className="state-block__title">{t("reservation.list.emptyTitle")}</p>
           <p className="state-block__text">{emptyMessage}</p>
           <button type="button" className="btn" onClick={() => navigate("/carros")}>
-            Ver carros disponíveis
+            {t("reservation.list.browseCars")}
           </button>
         </div>
       )}
@@ -439,13 +441,13 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
       )}
 
       {!loading && !erroExibido && paginacao.totalPages > 1 && (
-        <nav className="booking-pager" aria-label="Paginação das reservas">
+        <nav className="booking-pager" aria-label={t("reservation.list.pagination")}>
           <button type="button" className="btn btn--secondary" disabled={pagina <= 1} onClick={() => setPagina((atual) => atual - 1)}>
-            Anterior
+            {t("reservation.list.previous")}
           </button>
-          <span className="tabular">Página {paginacao.page} de {paginacao.totalPages} ({paginacao.total})</span>
+          <span className="tabular">{t("reservation.list.page", { page: paginacao.page, totalPages: paginacao.totalPages, total: paginacao.total })}</span>
           <button type="button" className="btn btn--secondary" disabled={pagina >= paginacao.totalPages} onClick={() => setPagina((atual) => atual + 1)}>
-            Próxima
+            {t("reservation.list.next")}
           </button>
         </nav>
       )}

@@ -5,12 +5,9 @@ import { faHeart } from "@fortawesome/free-regular-svg-icons";
 import { formatCambio, formatCategoria, isVeiculoPcd, vehicleTitle } from "../../utils/vehicleDisplay";
 import { formatMoneyBRL } from "../../utils/reservationMath";
 import VehicleMedia from "./VehicleMedia";
+import { t } from "../../i18n";
 
-const STATUS_LABEL = {
-  RESERVADO: "Reservado",
-  MANUTENCAO: "Em manutenção",
-  INATIVO: "Indisponível",
-};
+const UNAVAILABLE = new Set(["RESERVADO", "MANUTENCAO", "INATIVO"]);
 
 function field(vehicle, name) {
   return vehicle?.[name] ?? vehicle?.modeloVeiculo?.[name];
@@ -43,8 +40,8 @@ export default function VehicleCard({
   const adaptado = isVeiculoPcd(vehicle);
   const eletrico = field(vehicle, "eletrico") === true;
   const diaria = field(vehicle, "valorDiaria");
-  const status = STATUS_LABEL[vehicle?.status];
-  const garagem = garageLabel ?? vehicle?.garagem?.nome ?? vehicle?.garagemNome ?? "Local não informado";
+  const status = UNAVAILABLE.has(vehicle?.status) ? t(`common.vehicle.status.${vehicle.status}`) : null;
+  const garagem = garageLabel ?? vehicle?.garagem?.nome ?? vehicle?.garagemNome ?? t("common.vehicle.unknownLocation");
 
   return (
     <article className={`vcard cursor-card${status ? " vcard--unavailable" : ""} ${className}`.trim()}>
@@ -59,7 +56,7 @@ export default function VehicleCard({
             disabled={favorite.busy}
           >
             <FontAwesomeIcon icon={favorite.active ? faHeartSolid : faHeart} aria-hidden="true" />
-            <span className="sr-only">{favorite.active ? `Remover ${nome} dos favoritos` : `Adicionar ${nome} aos favoritos`}</span>
+            <span className="sr-only">{t(favorite.active ? "common.vehicle.removeFavorite" : "common.vehicle.addFavorite", { name: nome })}</span>
           </button>
         )}
       </div>
@@ -76,31 +73,31 @@ export default function VehicleCard({
           </p>
         </div>
 
-        <ul className="vcard__specs" aria-label="Características">
+        <ul className="vcard__specs" aria-label={t("common.vehicle.features")}>
           {cambio ? <li>{formatCambio(cambio)}</li> : null}
-          {capacidade ? <li>{capacidade} lugares</li> : null}
+          {capacidade ? <li>{t("common.vehicle.seats", { count: capacidade })}</li> : null}
         </ul>
 
         <p className="vcard__access">
           {adaptado ? (
-            <span className="vcard__access-yes"><FontAwesomeIcon icon={faCheck} aria-hidden="true" />Adaptado PCD</span>
+            <span className="vcard__access-yes"><FontAwesomeIcon icon={faCheck} aria-hidden="true" />{t("common.vehicle.adapted")}</span>
           ) : (
-            <span className="vcard__access-no"><FontAwesomeIcon icon={faXmark} aria-hidden="true" />Sem adaptação PCD</span>
+            <span className="vcard__access-no"><FontAwesomeIcon icon={faXmark} aria-hidden="true" />{t("common.vehicle.notAdapted")}</span>
           )}
-          {eletrico ? <span className="vcard__access-energy"><FontAwesomeIcon icon={faBolt} aria-hidden="true" />Elétrico</span> : null}
+          {eletrico ? <span className="vcard__access-energy"><FontAwesomeIcon icon={faBolt} aria-hidden="true" />{t("common.vehicle.electric")}</span> : null}
         </p>
 
         <p className="vcard__garage">
           <FontAwesomeIcon icon={faLocationDot} aria-hidden="true" />
-          <span><span className="sr-only">Retirada: </span>{garagem}</span>
+          <span><span className="sr-only">{t("common.vehicle.pickupAt")}</span>{garagem}</span>
         </p>
 
         <div className="vcard__foot">
           <p className="vcard__price">
             {diaria != null && Number.isFinite(Number(diaria)) ? (
-              <><strong className="tabular">{formatMoneyBRL(Number(diaria))}</strong> <span>/dia</span></>
+              <><strong className="tabular">{formatMoneyBRL(Number(diaria))}</strong> <span>{t("common.vehicle.perDay")}</span></>
             ) : (
-              <span>Diária indisponível</span>
+              <span>{t("common.vehicle.dailyUnavailable")}</span>
             )}
           </p>
           {actions ? <div className="vcard__actions">{actions}</div> : null}

@@ -1,24 +1,23 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getCompartilhamentoPublico } from "../services/compartilhamentoService";
+import { formatDate, t } from "../i18n";
 import "../styles/journey.css";
 import "../styles/postcompra.css";
 
-const STATUS_LABELS = {
-  AGUARDANDO_PAGAMENTO: "Aguardando pagamento",
-  CONFIRMADA: "Confirmada",
-  EM_ANDAMENTO: "Em andamento",
-  REALIZADA: "Realizada",
-  CANCELADA: "Cancelada",
-};
+const STATUS_CONHECIDOS = ["AGUARDANDO_PAGAMENTO", "CONFIRMADA", "EM_ANDAMENTO", "REALIZADA", "CANCELADA"];
+
+function rotuloStatus(status) {
+  if (STATUS_CONHECIDOS.includes(status)) return t(`tenant.sharedTrip.status.${status}`);
+  return status ?? t("tenant.sharedTrip.notProvided");
+}
 
 function formatarDataHora(valor) {
-  const data = new Date(valor);
-  return Number.isNaN(data.getTime()) ? "Não informado" : data.toLocaleString("pt-BR");
+  return formatDate(valor, { dateStyle: "short", timeStyle: "medium" }) || t("tenant.sharedTrip.notProvided");
 }
 
 function localLabel(local) {
-  return local ? `${local.nome} — ${local.endereco}` : "Não informado";
+  return local ? `${local.nome} — ${local.endereco}` : t("tenant.sharedTrip.notProvided");
 }
 
 export default function CompartilhamentoViagem() {
@@ -40,7 +39,7 @@ export default function CompartilhamentoViagem() {
       })
       .catch((error) => {
         if (!ativo) return;
-        setErro(error?.message || "Compartilhamento não encontrado.");
+        setErro(error?.message || t("tenant.sharedTrip.notFound"));
       })
       .finally(() => {
         if (ativo) setCarregando(false);
@@ -53,10 +52,10 @@ export default function CompartilhamentoViagem() {
   return (
     <main className="journey-page">
       <header className="journey-head">
-        <h1>Viagem compartilhada</h1>
+        <h1>{t("tenant.sharedTrip.title")}</h1>
       </header>
       {carregando && (
-        <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando viagem…</p>
+        <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />{t("tenant.sharedTrip.loading")}</p>
       )}
       {!carregando && erro && (
         <div className="state-block state-block--error">
@@ -64,14 +63,14 @@ export default function CompartilhamentoViagem() {
         </div>
       )}
       {!carregando && !erro && dados && (
-        <section className="post-panel" aria-label="Detalhes públicos da viagem">
+        <section className="post-panel" aria-label={t("tenant.sharedTrip.sectionLabel")}>
           <h2>{dados.veiculo?.marca} {dados.veiculo?.modelo}</h2>
           <ul className="post-facts">
-            <li>Status: {STATUS_LABELS[dados.viagem?.status] ?? dados.viagem?.status ?? "Não informado"}</li>
-            <li>Retirada: {localLabel(dados.retirada)}</li>
-            <li>Devolução: {localLabel(dados.devolucao)}</li>
-            <li>Início: <span className="tabular">{formatarDataHora(dados.viagem?.dataHoraInicio)}</span></li>
-            <li>Fim: <span className="tabular">{formatarDataHora(dados.viagem?.dataHoraFim)}</span></li>
+            <li>{t("tenant.sharedTrip.statusLabel")} {rotuloStatus(dados.viagem?.status)}</li>
+            <li>{t("tenant.sharedTrip.pickup")} {localLabel(dados.retirada)}</li>
+            <li>{t("tenant.sharedTrip.return")} {localLabel(dados.devolucao)}</li>
+            <li>{t("reservation.review.start")} <span className="tabular">{formatarDataHora(dados.viagem?.dataHoraInicio)}</span></li>
+            <li>{t("reservation.review.end")} <span className="tabular">{formatarDataHora(dados.viagem?.dataHoraFim)}</span></li>
           </ul>
         </section>
       )}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav";
 import FiltroDataPicker from "../components/FiltroDataPicker";
+import { t } from "../i18n";
 import "../styles/owner.css";
 import "../styles/relatorios.css";
 
@@ -13,7 +14,7 @@ export default function RelatoriosAvaliacoesFiltro() {
   const [avaliacao, setAvaliacao] = useState("4");
 
   useEffect(() => {
-    document.title = "MOVA - Filtro de Relatórios de Avaliações";
+    document.title = t("reports.ratingsFilter.docTitle");
   }, []);
 
   function handleAplicar(event) {
@@ -35,29 +36,29 @@ export default function RelatoriosAvaliacoesFiltro() {
   return (
     <main className="owner-page" aria-labelledby="filtro-avaliacoes-title">
       <header className="page-head">
-        <h1 id="filtro-avaliacoes-title">Relatórios | Avaliações</h1>
-        <p className="page-head__lede">Escolha a data, o veículo e a nota mínima para abrir o relatório de avaliações.</p>
+        <h1 id="filtro-avaliacoes-title">{t("reports.ratings.title")}</h1>
+        <p className="page-head__lede">{t("reports.ratingsFilter.lede")}</p>
       </header>
 
       <form className="owner-filter owner-form" onSubmit={handleAplicar}>
         <fieldset className="fieldset">
-          <legend>Filtro</legend>
+          <legend>{t("reports.ratingsFilter.legend")}</legend>
           <FiltroDataPicker dataSelecionada={dataSelecionada} onChange={setDataSelecionada} />
 
           <div className="field">
-            <label className="field__label" htmlFor="veiculo">Veículo</label>
+            <label className="field__label" htmlFor="veiculo">{t("owner.common.vehicle")}</label>
             <input
               id="veiculo"
               className="field__control"
               type="text"
-              placeholder="Veículo"
+              placeholder={t("owner.common.vehicle")}
               value={veiculo}
               onChange={(e) => setVeiculo(e.target.value)}
             />
           </div>
 
           <div className="field">
-            <label className="field__label" htmlFor="avaliacao">Avaliação</label>
+            <label className="field__label" htmlFor="avaliacao">{t("reports.ratingsFilter.rating")}</label>
             <select
               id="avaliacao"
               className="field__control"
@@ -75,7 +76,7 @@ export default function RelatoriosAvaliacoesFiltro() {
 
         <div className="owner-filter__actions">
           <button type="submit" className="btn">
-            Aplicar
+            {t("reports.ratingsFilter.apply")}
           </button>
         </div>
       </form>

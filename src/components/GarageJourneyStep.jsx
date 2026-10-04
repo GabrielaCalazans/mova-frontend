@@ -37,6 +37,7 @@ import {
 import { getJourneyStep, updateJourneyStep } from "../utils/journeyStorage";
 import { parseJourneyDateTime, validarPeriodoReserva } from "../utils/reservationMath";
 import { getGaragemById, listGaragens } from "../services/garagemService";
+import { formatDate, t } from "../i18n";
 
 // As garagens vêm da API (GET /api/garagem). O locatário enxerga apenas as
 // ATIVAS — o escopo é aplicado no backend, não aqui.
@@ -46,13 +47,19 @@ function descreverCapacidade(garagem) {
   if (typeof garagem.capacidade !== "number") return "";
   const alocados = garagem.veiculosAlocados ?? 0;
   const livres = Math.max(garagem.capacidade - alocados, 0);
-  return `${livres} de ${garagem.capacidade} vagas livres`;
+  return t("journey.garage.capacity", { free: livres, total: garagem.capacidade });
 }
 
-const MONTHS = [
-  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
-];
+// Mês e dias da semana no idioma ativo (Intl), nunca listas fixas em pt-BR.
+function monthTitle(date) {
+  const month = formatDate(date, { month: "long" });
+  return `${month.charAt(0).toUpperCase()}${month.slice(1)} ${date.getFullYear()}`;
+}
+
+// 04/01/2026 é domingo: a grade começa no domingo.
+function weekdayInitials() {
+  return Array.from({ length: 7 }, (_, index) => formatDate(new Date(2026, 0, 4 + index), { weekday: "narrow" }));
+}
 
 function padDatePart(value) {
   return String(value).padStart(2, "0");
@@ -99,10 +106,6 @@ function normalizeTime(value) {
   };
 }
 
-function buildStepLabel(stepKey) {
-  return stepKey === "retirada" ? "Retirada" : "Devolução";
-}
-
 function abrirSeletor(event, abrir) {
   if (event.key !== "Enter" && event.key !== " ") return;
   event.preventDefault();
@@ -118,7 +121,6 @@ export default function GarageJourneyStep({
   documentTitle,
 }) {
   const navigate = useNavigate();
-  const stepLabel = buildStepLabel(stepKey);
 
   const storedStep = useMemo(() => getJourneyStep(stepKey), [stepKey]);
 
@@ -174,7 +176,7 @@ export default function GarageJourneyStep({
       .catch((e) => {
         if (!ativo) return;
         setGaragens([]);
-        setErroGaragens(e?.message || "Não foi possível carregar as garagens.");
+        setErroGaragens(e?.message || t("journey.garage.loadError"));
       })
       .finally(() => {
         if (ativo) setCarregandoGaragens(false);
@@ -373,9 +375,9 @@ export default function GarageJourneyStep({
         <h1>{title}</h1>
         <p className="page-head__lede">
           {retiradaFixa
-            ? "A retirada acontece na garagem onde o veículo está alocado. Escolha a data e o horário."
+            ? t("journey.garage.pickupLede")
             : selectedGarage
-              ? "A garagem selecionada fica em destaque até você trocar a opção."
+              ? t("journey.garage.selectedLede")
               : subtitle}
         </p>
       </header>
@@ -383,8 +385,8 @@ export default function GarageJourneyStep({
       <div className="vehicle-strip">
         <VehicleMedia vehicle={veiculoSelecionado} />
         <div>
-          <p className="vehicle-strip__label">Você está reservando</p>
-          <p className="vehicle-strip__name">{[veiculoSelecionado.marca, veiculoSelecionado.modelo].filter(Boolean).join(" ") || veiculoSelecionado.nome || "Veículo selecionado"}</p>
+          <p className="vehicle-strip__label">{t("journey.garage.reserving")}</p>
+          <p className="vehicle-strip__name">{[veiculoSelecionado.marca, veiculoSelecionado.modelo].filter(Boolean).join(" ") || veiculoSelecionado.nome || t("journey.garage.selectedVehicle")}</p>
         </div>
       </div>
 
@@ -398,10 +400,10 @@ export default function GarageJourneyStep({
         }}
       >
         <section className="journey-section" aria-labelledby={`${stepKey}-garagem-title`}>
-          <h2 id={`${stepKey}-garagem-title`}>Garagem de {stepLabel.toLowerCase()}</h2>
+          <h2 id={`${stepKey}-garagem-title`}>{t(`journey.garage.garageTitle.${stepKey}`)}</h2>
 
           {!selectedGarage && carregandoGaragens && (
-            <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando garagens…</p>
+            <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />{t("journey.garage.loading")}</p>
           )}
 
           {!selectedGarage && !carregandoGaragens && erroGaragens && (
@@ -411,8 +413,8 @@ export default function GarageJourneyStep({
           {!selectedGarage && !carregandoGaragens && !erroGaragens && garagens.length === 0 && (
             <p className="alert alert--warning" role="status">
               {retiradaFixa
-                ? "Este veículo não está alocado em nenhuma garagem, então não há local de retirada definido."
-                : "Nenhuma garagem de devolução disponível para este locador."}
+                ? t("journey.garage.noPickupGarage")
+                : t("journey.garage.noReturnGarage")}
             </p>
           )}
 
@@ -429,7 +431,7 @@ export default function GarageJourneyStep({
                     <span className="garage-option__icon"><FontAwesomeIcon icon={faLocationDot} aria-hidden="true" /></span>
                     <span>
                       <span className="garage-option__name">{garage.nome}</span>
-                      <span className="garage-option__address">Endereço: {garage.endereco}</span>
+                      <span className="garage-option__address">{t("journey.garage.address", { address: garage.endereco })}</span>
                       {descreverCapacidade(garage) && <span className="garage-option__info">{descreverCapacidade(garage)}</span>}
                     </span>
                   </button>
@@ -444,14 +446,14 @@ export default function GarageJourneyStep({
                 <span className="garage-option__icon"><FontAwesomeIcon icon={faLocationDot} aria-hidden="true" /></span>
                 <span>
                   <span className="garage-option__name">{selectedGarage.nome}</span>
-                  <span className="garage-option__address">Endereço: {selectedGarage.endereco}</span>
+                  <span className="garage-option__address">{t("journey.garage.address", { address: selectedGarage.endereco })}</span>
                   {descreverCapacidade(selectedGarage) && <span className="garage-option__info">{descreverCapacidade(selectedGarage)}</span>}
                 </span>
               </div>
 
               {!retiradaFixa && (
                 <button type="button" className="btn btn--quiet journey-edit" onClick={() => setSelectedGarageId("")}>
-                  Trocar garagem
+                  {t("journey.garage.changeGarage")}
                 </button>
               )}
             </>
@@ -459,16 +461,16 @@ export default function GarageJourneyStep({
         </section>
 
         <section className="journey-section" aria-labelledby={`${stepKey}-quando-title`}>
-        <h2 id={`${stepKey}-quando-title`}>Data e horário</h2>
+        <h2 id={`${stepKey}-quando-title`}>{t("journey.garage.dateTime")}</h2>
         <JourneyFieldsGrid className="datetime-grid">
           <JourneyFieldGroup>
-            <JourneyFieldLabel htmlFor={`${stepKey}-date`}>Data da {stepLabel.toLowerCase()}</JourneyFieldLabel>
+            <JourneyFieldLabel htmlFor={`${stepKey}-date`}>{t(`journey.garage.dateLabel.${stepKey}`)}</JourneyFieldLabel>
             <FieldWrapper>
               <InputWithIcon
                 id={`${stepKey}-date`}
                 ref={dateInputRef}
                 type="text"
-                placeholder="Digite a data (DD/MM/AAAA)"
+                placeholder={t("journey.garage.datePlaceholder")}
                 value={data}
                 required
                 disabled={!etapaLiberada}
@@ -499,7 +501,7 @@ export default function GarageJourneyStep({
                 </svg>
               </IconBtn>
 
-              <span id={`${stepKey}-date-help`} className="sr-only">Digite no formato dia, mês e ano ou use o calendário.</span>
+              <span id={`${stepKey}-date-help`} className="sr-only">{t("journey.garage.dateHelp")}</span>
 
               {calOpen && etapaLiberada && (
                 <>
@@ -512,15 +514,15 @@ export default function GarageJourneyStep({
                     }}
                   >
                     <CalHeader>
-                      <NavBtn type="button" onClick={prevMonth} aria-label="Mês anterior">‹</NavBtn>
+                      <NavBtn type="button" onClick={prevMonth} aria-label={t("journey.garage.prevMonth")}>‹</NavBtn>
                       <CalTitle>
-                        {MONTHS[calDate.getMonth()]} {calDate.getFullYear()}
+                        {monthTitle(calDate)}
                       </CalTitle>
-                      <NavBtn type="button" onClick={nextMonth} aria-label="Próximo mês">›</NavBtn>
+                      <NavBtn type="button" onClick={nextMonth} aria-label={t("journey.garage.nextMonth")}>›</NavBtn>
                     </CalHeader>
 
                     <DayNames>
-                      {["D", "S", "T", "Q", "Q", "S", "S"].map((day, index) => (
+                      {weekdayInitials().map((day, index) => (
                         <span key={index}>{day}</span>
                       ))}
                     </DayNames>
@@ -536,7 +538,7 @@ export default function GarageJourneyStep({
                             disabled={cell.disabled}
                             today={cell.today}
                             selected={cell.selected}
-                            aria-label={`${cell.day} de ${MONTHS[calDate.getMonth()].toLowerCase()} de ${calDate.getFullYear()}`}
+                            aria-label={formatDate(new Date(calDate.getFullYear(), calDate.getMonth(), cell.day), { dateStyle: "long" })}
                             onClick={() => !cell.disabled && pickDay(cell.day)}
                           >
                             {cell.day}
@@ -551,12 +553,12 @@ export default function GarageJourneyStep({
           </JourneyFieldGroup>
 
           <JourneyFieldGroup>
-            <JourneyFieldLabel htmlFor={`${stepKey}-time`}>Horário da {stepLabel.toLowerCase()}</JourneyFieldLabel>
+            <JourneyFieldLabel htmlFor={`${stepKey}-time`}>{t(`journey.garage.timeLabel.${stepKey}`)}</JourneyFieldLabel>
             <FieldWrapper>
               <InputWithIcon
                 id={`${stepKey}-time`}
                 type="text"
-                placeholder="Digite o horário (HH:MM)"
+                placeholder={t("journey.garage.timePlaceholder")}
                 value={hora}
                 required
                 disabled={!etapaLiberada}
@@ -585,7 +587,7 @@ export default function GarageJourneyStep({
                 </svg>
               </IconBtn>
 
-              <span id={`${stepKey}-time-help`} className="sr-only">Digite no formato horas e minutos ou use o relógio.</span>
+              <span id={`${stepKey}-time-help`} className="sr-only">{t("journey.garage.timeHelp")}</span>
 
               {clockOpen && etapaLiberada && (
                 <>
@@ -605,17 +607,17 @@ export default function GarageJourneyStep({
                     </ClockDisplay>
 
                     <AmPmBtns>
-                      <AmPmBtn type="button" active={amPm === "AM"} onClick={() => setAmPm("AM")}>AM (Manhã)</AmPmBtn>
-                      <AmPmBtn type="button" active={amPm === "PM"} onClick={() => setAmPm("PM")}>PM (Tarde)</AmPmBtn>
+                      <AmPmBtn type="button" active={amPm === "AM"} onClick={() => setAmPm("AM")}>{t("journey.garage.am")}</AmPmBtn>
+                      <AmPmBtn type="button" active={amPm === "PM"} onClick={() => setAmPm("PM")}>{t("journey.garage.pm")}</AmPmBtn>
                     </AmPmBtns>
 
                     <ModeBtns>
-                      <ModeBtn type="button" active={clockMode === "hour"} onClick={() => setClockMode("hour")}>Horas</ModeBtn>
-                      <ModeBtn type="button" active={clockMode === "minute"} onClick={() => setClockMode("minute")}>Minutos</ModeBtn>
+                      <ModeBtn type="button" active={clockMode === "hour"} onClick={() => setClockMode("hour")}>{t("journey.garage.hours")}</ModeBtn>
+                      <ModeBtn type="button" active={clockMode === "minute"} onClick={() => setClockMode("minute")}>{t("journey.garage.minutes")}</ModeBtn>
                     </ModeBtns>
 
                     <ClockFaceWrap>
-                      <FaceSvg width="200" height="200" viewBox="0 0 200 200" role="application" aria-label={`Relógio para selecionar ${clockMode === "hour" ? "a hora" : "os minutos"}`} onClick={handleFaceClick}>
+                      <FaceSvg width="200" height="200" viewBox="0 0 200 200" role="application" aria-label={clockMode === "hour" ? t("journey.garage.clockHour") : t("journey.garage.clockMinute")} onClick={handleFaceClick}>
                         <circle className="clock-face__dial" cx={CX} cy={CY} r="95" strokeWidth="2" />
                         <line className="clock-face__hour" x1={CX} y1={CY} x2={hEnd.x} y2={hEnd.y} strokeWidth="4" strokeLinecap="round" />
                         <line className="clock-face__minute" x1={CX} y1={CY} x2={mEnd.x} y2={mEnd.y} strokeWidth="3" strokeLinecap="round" />
@@ -626,7 +628,7 @@ export default function GarageJourneyStep({
                             key={index}
                             tabIndex="0"
                             role="button"
-                            aria-label={`${clockMode === "hour" ? "Hora" : "Minutos"} ${number.label}`}
+                            aria-label={t(clockMode === "hour" ? "journey.garage.hourMark" : "journey.garage.minuteMark", { n: number.label })}
                             onKeyDown={(event) => {
                               if (event.key !== "Enter" && event.key !== " ") return;
                               event.preventDefault();
@@ -666,7 +668,7 @@ export default function GarageJourneyStep({
                       </FaceSvg>
                     </ClockFaceWrap>
 
-                    <ConfirmBtn type="button" onClick={confirmTime}>Confirmar horário</ConfirmBtn>
+                    <ConfirmBtn type="button" onClick={confirmTime}>{t("journey.garage.confirmTime")}</ConfirmBtn>
                   </Popup>
                 </>
               )}

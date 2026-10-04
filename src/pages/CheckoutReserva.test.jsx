@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import CheckoutReserva from "./CheckoutReserva";
 import { createReserva } from "../services/reservaService";
+import { setLocale } from "../i18n";
 
 const { navigateMock, journey, getAuthSessionMock } = vi.hoisted(() => ({
   navigateMock: vi.fn(),
@@ -134,5 +135,35 @@ describe("CheckoutReserva — RF10", () => {
     expect(screen.queryByText("900 km")).not.toBeInTheDocument();
     expect(screen.queryByText("Gasolina")).not.toBeInTheDocument();
     expect(screen.queryByText("Ar-condicionado")).not.toBeInTheDocument();
+  });
+});
+
+describe("CheckoutReserva — RNF08 (idiomas)", () => {
+  beforeEach(() => vi.clearAllMocks());
+  afterEach(() => setLocale("pt-BR"));
+
+  it("em inglês traduz o resumo e mantém a moeda BRL", async () => {
+    getAuthSessionMock.mockReturnValue({ user: { id: "locatario-1", deficienciaId: "def-perfil" } });
+    setLocale("en");
+    render(<CheckoutReserva />);
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Booking checkout" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Price summary" })).toBeInTheDocument();
+    expect(screen.getByText("Capacity: 5 people")).toBeInTheDocument();
+    expect(screen.getByText("R$149.90")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Confirm and go to payment" })).toBeInTheDocument();
+    expect(document.title).toBe("MOVA - Booking checkout");
+  });
+
+  it("em espanhol traduz o resumo e formata BRL no padrão es-ES", async () => {
+    getAuthSessionMock.mockReturnValue({ user: { id: "locatario-1", deficienciaId: "def-perfil" } });
+    setLocale("es");
+    render(<CheckoutReserva />);
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Resumen de la reserva" })).toBeInTheDocument();
+    expect(screen.getByText("Capacidad: 5 personas")).toBeInTheDocument();
+    // CLDR es usa "BRL" (ou "R$" em ICU antigo); vírgula decimal confirma es-ES.
+    expect(screen.getByText(/^149,90\s(R\$|BRL)$/)).toBeInTheDocument();
+    expect(screen.getByText("Ver detalles de la cobertura")).toBeInTheDocument();
   });
 });

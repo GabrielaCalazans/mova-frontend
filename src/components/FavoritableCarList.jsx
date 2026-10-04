@@ -8,6 +8,7 @@ import VehicleCard from "./vehicle/VehicleCard";
 import { listVeiculos, normalizeVeiculo } from "../services/veiculoService";
 import { desfavoritar, favoritar, listarFavoritos } from "../services/favoritoService";
 import { cancelarInteresse, listarInteresses, registrarInteresse } from "../services/interesseService";
+import { t } from "../i18n";
 import "../styles/vehicle.css";
 
 export default function FavoritableCarList({ title, onlyFavorites, emptyMessage, documentTitle }) {
@@ -21,7 +22,7 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
   const [erroAcao, setErroAcao] = useState(null);
 
   const crossLinkRoute = onlyFavorites ? "/carros/disponiveis" : "/carros/favoritos";
-  const crossLinkLabel = onlyFavorites ? "Ver carros disponíveis" : "Ver meus favoritos";
+  const crossLinkLabel = onlyFavorites ? t("reservation.list.browseCars") : t("tenant.carList.viewFavorites");
 
   const carregar = useCallback(async () => {
     setLoading(true);
@@ -37,7 +38,7 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
       setInteresses(new Set(interessesApi.map((item) => String(item.idVeiculo))));
       setVeiculos(onlyFavorites ? favoritosApi.map((item) => normalizeVeiculo(item.veiculo)) : resultado);
     } catch (e) {
-      setErro(e.message || "Não foi possível carregar os veículos.");
+      setErro(e.message || t("tenant.carList.loadError"));
     } finally {
       setLoading(false);
     }
@@ -66,7 +67,7 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
       else await favoritar(id);
       toggleIn(setFavoritos, id);
     } catch (e) {
-      setErroAcao(e.message || "Não foi possível atualizar o favorito.");
+      setErroAcao(e.message || t("tenant.carList.favoriteError"));
     }
   }
 
@@ -77,7 +78,7 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
       else await registrarInteresse(id);
       toggleIn(setInteresses, id);
     } catch (e) {
-      setErroAcao(e.message || "Não foi possível atualizar o aviso de disponibilidade.");
+      setErroAcao(e.message || t("tenant.carList.alertError"));
     }
   }
 
@@ -92,7 +93,7 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
       </header>
 
       <div className="catalog-page__body">
-        {loading && <p className="loading-state carro-status" role="status"><span className="spinner" aria-hidden="true" />Carregando veículos…</p>}
+        {loading && <p className="loading-state carro-status" role="status"><span className="spinner" aria-hidden="true" />{t("tenant.carList.loading")}</p>}
         {!loading && erro && <p className="alert alert--danger carro-status" role="alert">{erro}</p>}
         {!loading && !erro && erroAcao && <p className="alert alert--danger carro-status" role="alert">{erroAcao}</p>}
 
@@ -115,11 +116,11 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
                   actions={(
                     <>
                       <button type="button" className="btn btn--secondary" onClick={() => navigate(`/carros/${veiculo.id}`)}>
-                        Ver detalhes
+                        {t("tenant.carList.details")}
                       </button>
                       <button type="button" className="btn btn--quiet" aria-pressed={avisando} onClick={() => handleToggleInteresse(veiculo.id)}>
                         <FontAwesomeIcon icon={avisando ? faBellSlash : faBell} aria-hidden="true" />
-                        {avisando ? "Cancelar aviso" : "Avisar quando disponível"}
+                        {avisando ? t("tenant.interests.cancel") : t("tenant.interests.notify")}
                       </button>
                     </>
                   )}

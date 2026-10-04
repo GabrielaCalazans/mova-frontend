@@ -8,6 +8,7 @@ import FrotaMonitoramento from "../components/FrotaMonitoramento";
 import { listFrota, deleteVeiculo } from "../services/veiculoService";
 import { getAuthSession } from "../services/authSession";
 import VehicleMedia from "../components/vehicle/VehicleMedia";
+import { t } from "../i18n";
 import "../styles/vehicle.css";
 import "../styles/owner.css";
 
@@ -30,7 +31,7 @@ export default function CadastroDeCarros() {
 
   const carregar = useCallback(async () => {
     if (!idLocador) {
-      setErro("Sessão inválida. Faça login novamente.");
+      setErro(t("owner.common.sessionInvalid"));
       return;
     }
 
@@ -41,14 +42,14 @@ export default function CadastroDeCarros() {
       const resultado = await listFrota();
       setVeiculos(resultado);
     } catch (e) {
-      setErro(e.message || "Não foi possível carregar os veículos.");
+      setErro(e.message || t("owner.cars.loadError"));
     } finally {
       setLoading(false);
     }
   }, [idLocador]);
 
   useEffect(() => {
-    document.title = "MOVA - Cadastro de Carros";
+    document.title = t("owner.cars.docTitle");
     queueMicrotask(() => {
       void carregar();
     });
@@ -63,7 +64,7 @@ export default function CadastroDeCarros() {
       setVeiculoParaExcluir(null);
       await carregar();
     } catch (e) {
-      setErro(e.message || "Não foi possível excluir o veículo.");
+      setErro(e.message || t("owner.cars.deleteError"));
       setVeiculoParaExcluir(null);
     } finally {
       setExcluindo(false);
@@ -73,27 +74,27 @@ export default function CadastroDeCarros() {
   return (
     <main className="owner-page" aria-labelledby="frota-title">
       <header className="page-head">
-        <h1 id="frota-title">Cadastro de Carros</h1>
-        <p className="page-head__lede">Veículos da sua frota, com placa, status e garagem operacional.</p>
+        <h1 id="frota-title">{t("owner.cars.title")}</h1>
+        <p className="page-head__lede">{t("owner.cars.lede")}</p>
       </header>
 
       <FrotaMonitoramento />
 
       <section className="owner-section" aria-labelledby="frota-veiculos-title">
         <div className="owner-section__head">
-          <h2 id="frota-veiculos-title">Veículos</h2>
+          <h2 id="frota-veiculos-title">{t("owner.cars.listTitle")}</h2>
           <button type="button" className="btn" onClick={() => navigate("/cadastro-carros/novo")}>
             <Plus className="icon" aria-hidden="true" />
-            Adicionar
+            {t("owner.common.add")}
           </button>
         </div>
 
-        {loading && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando veículos…</p>}
+        {loading && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />{t("owner.cars.loading")}</p>}
         {!loading && erro && <p className="alert alert--danger" role="alert">{erro}</p>}
         {!loading && !erro && veiculos.length === 0 && (
           <div className="state-block">
-            <p className="state-block__title">Nenhum veículo cadastrado</p>
-            <p className="state-block__text">Você ainda não cadastrou nenhum veículo. Toque em "Adicionar" para começar.</p>
+            <p className="state-block__title">{t("owner.cars.emptyTitle")}</p>
+            <p className="state-block__text">{t("owner.cars.emptyText")}</p>
           </div>
         )}
 
@@ -117,28 +118,28 @@ export default function CadastroDeCarros() {
                       </span>
                     </p>
                     <p className="owner-row__meta">
-                      <span>{veiculo.ano} • {veiculo.cambio} • {veiculo.capacidade} lugares</span>
-                      <span>{garagem ? `Garagem: ${garagem}` : "Sem garagem"}</span>
+                      <span>{t("owner.cars.seats", { year: veiculo.ano, gearbox: veiculo.cambio, count: veiculo.capacidade })}</span>
+                      <span>{garagem ? t("owner.cars.garage", { name: garagem }) : t("owner.cars.noGarage")}</span>
                     </p>
                   </div>
                   <div className="owner-row__actions">
                     <button
                       type="button"
                       className="btn btn--secondary"
-                      aria-label={`Editar ${nomeExibicao}`}
+                      aria-label={t("owner.common.editItem", { name: nomeExibicao })}
                       onClick={() => navigate(`/cadastro-carros/${veiculo.id}`, { state: { veiculo } })}
                     >
                       <Pencil aria-hidden="true" />
-                      Editar
+                      {t("owner.common.edit")}
                     </button>
                     <button
                       type="button"
                       className="btn btn--danger"
-                      aria-label={`Excluir ${nomeExibicao}`}
+                      aria-label={t("owner.common.deleteItem", { name: nomeExibicao })}
                       onClick={() => setVeiculoParaExcluir(veiculo)}
                     >
                       <Trash2 aria-hidden="true" />
-                      Excluir
+                      {t("owner.common.delete")}
                     </button>
                   </div>
                 </li>
@@ -158,15 +159,15 @@ export default function CadastroDeCarros() {
           onClose={() => setVeiculoParaExcluir(null)}
           closeDisabled={excluindo}
         >
-          <h2 id="excluir-veiculo-title">Deseja excluir esse veículo?</h2>
-          <p id="excluir-veiculo-desc">{`${veiculoParaExcluir.marca} ${veiculoParaExcluir.modelo}`.trim()} · {veiculoParaExcluir.placa}. Esta ação não pode ser desfeita.</p>
+          <h2 id="excluir-veiculo-title">{t("owner.cars.deleteTitle")}</h2>
+          <p id="excluir-veiculo-desc">{t("owner.cars.deleteDesc", { name: `${veiculoParaExcluir.marca} ${veiculoParaExcluir.modelo}`.trim(), plate: veiculoParaExcluir.placa })}</p>
           <div className="owner-dialog__actions">
-            <button type="button" className="btn btn--secondary" aria-label="Cancelar exclusão" onClick={() => setVeiculoParaExcluir(null)} disabled={excluindo} data-autofocus>
-              Cancelar
+            <button type="button" className="btn btn--secondary" aria-label={t("owner.common.cancelDelete")} onClick={() => setVeiculoParaExcluir(null)} disabled={excluindo} data-autofocus>
+              {t("owner.common.cancel")}
             </button>
-            <button type="button" className="btn btn--danger" aria-label="Confirmar exclusão" onClick={confirmarExclusao} disabled={excluindo}>
+            <button type="button" className="btn btn--danger" aria-label={t("owner.common.confirmDelete")} onClick={confirmarExclusao} disabled={excluindo}>
               <Trash2 className="icon" aria-hidden="true" />
-              {excluindo ? "Excluindo…" : "Confirmar exclusão"}
+              {excluindo ? t("owner.common.deleting") : t("owner.common.confirmDelete")}
             </button>
           </div>
         </ModalDialog>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { t } from "../i18n";
 
 const EyeIcon = ({ open }) =>
   open ? (
@@ -83,7 +84,7 @@ function FormField({
             type="button"
             className="auth-field__eye-btn"
             onClick={() => setShowPassword((v) => !v)}
-            aria-label={showPassword ? "Ocultar caracteres digitados" : "Exibir caracteres digitados"}
+            aria-label={showPassword ? t("common.form.hidePassword") : t("common.form.showPassword")}
             aria-controls={id}
             disabled={disabled}
           >

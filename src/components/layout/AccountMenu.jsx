@@ -4,15 +4,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClockRotateLeft, faGear, faHeadset, faRightFromBracket, faUser, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { clearAuthSession } from "../../services/authSession";
 import ThemeToggle from "../ui/ThemeToggle";
+import LanguageSelect from "../ui/LanguageSelect";
+import { t } from "../../i18n";
 
 const ITEMS = [
-  { label: "Minha conta", icon: faUser, route: "/conta" },
-  { label: "Histórico", icon: faClockRotateLeft, route: "/historico" },
-  { label: "Suporte", icon: faHeadset, route: "/suporte" },
-  { label: "Configurações", icon: faGear, route: "/configuracoes" },
+  { label: "myAccount", icon: faUser, route: "/conta" },
+  { label: "history", icon: faClockRotateLeft, route: "/historico" },
+  { label: "support", icon: faHeadset, route: "/suporte" },
+  { label: "settings", icon: faGear, route: "/configuracoes" },
 ];
 
-const FOCUSABLE = 'a[href], button:not([disabled]):not([tabindex="-1"])';
+const FOCUSABLE = 'a[href], button:not([disabled]):not([tabindex="-1"]), select:not([disabled])';
 
 /**
  * Menu da conta do locatário. Folha inferior no mobile, painel ancorado no
@@ -55,27 +57,28 @@ export default function AccountMenu({ open, onClose }) {
       <button type="button" className="account-menu__scrim" tabIndex={-1} aria-hidden="true" onClick={onClose} />
       <div ref={panelRef} className="account-menu__panel" role="dialog" aria-modal="true" aria-labelledby="account-menu-title">
         <div className="account-menu__head">
-          <h2 id="account-menu-title">Menu da conta</h2>
+          <h2 id="account-menu-title">{t("common.accountMenu.title")}</h2>
           <button type="button" className="icon-btn" onClick={onClose}>
             <FontAwesomeIcon icon={faXmark} aria-hidden="true" />
-            <span className="sr-only">Fechar menu</span>
+            <span className="sr-only">{t("common.accountMenu.close")}</span>
           </button>
         </div>
-        <nav aria-label="Conta">
+        <nav aria-label={t("common.accountMenu.nav")}>
           {ITEMS.map(({ label, icon, route }) => (
             <Link key={route} to={route} className="account-menu__item" onClick={onClose}>
               <FontAwesomeIcon icon={icon} aria-hidden="true" fixedWidth />
-              {label}
+              {t(`common.accountMenu.${label}`)}
             </Link>
           ))}
         </nav>
         <div className="account-menu__theme">
-          <p className="account-menu__label">Tema</p>
+          <p className="account-menu__label">{t("common.accountMenu.theme")}</p>
           <ThemeToggle labeled />
+          <LanguageSelect labeled />
         </div>
         <button type="button" className="account-menu__item account-menu__item--danger" onClick={leave}>
           <FontAwesomeIcon icon={faRightFromBracket} aria-hidden="true" fixedWidth />
-          Sair
+          {t("common.shell.signOut")}
         </button>
       </div>
     </div>

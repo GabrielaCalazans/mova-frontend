@@ -16,7 +16,7 @@ describe("formValidators", () => {
     });
 
     expect(validateForgotPasswordForm({ email: "email-invalido" })).toEqual({
-      email: "Digite um e-mail valido.",
+      email: "Digite um e-mail válido.",
     });
 
     expect(validateForgotPasswordForm({ email: "user@example.com" })).toEqual({});
@@ -98,7 +98,7 @@ describe("formValidators", () => {
     };
 
     expect(validateCadastroDetalhesForm({ ...base, cnh: "12345678910" }).cnh).toBe("CNH inválida.");
-    expect(validateCadastroDetalhesForm({ ...base, cnh: "123" }).cnh).toBe("CNH deve conter 11 digitos.");
+    expect(validateCadastroDetalhesForm({ ...base, cnh: "123" }).cnh).toBe("CNH deve conter 11 dígitos.");
     expect(validateCadastroDetalhesForm({ ...base, cnh: "12345678900" })).toEqual({});
   });
 });

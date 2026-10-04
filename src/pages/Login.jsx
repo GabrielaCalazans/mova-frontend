@@ -10,6 +10,7 @@ import { resolveAuthRoute } from "../services/authIdentity";
 import { consumeAuthFeedback, getAuthSession } from "../services/authSession";
 import { loginUser } from "../services/authService";
 import { validateLoginForm } from "../utils/formValidators";
+import { t } from "../i18n";
 
 function resolvePostLoginRoute(user) {
   return resolveAuthRoute(user);
@@ -41,7 +42,7 @@ function Login() {
   });
 
   useEffect(() => {
-    document.title = "MOVA - Login";
+    document.title = t("auth.login.documentTitle");
 
     const authFeedback = consumeAuthFeedback();
     if (authFeedback?.message) {
@@ -61,7 +62,7 @@ function Login() {
     setFeedback,
     getInvalidFeedback: () => ({
       type: "error",
-      message: "Verifique o e-mail e use uma senha com pelo menos 8 caracteres.",
+      message: t("auth.login.invalid"),
     }),
     getValidFeedback: (_validValues, submitResult) => ({
       type: "success",
@@ -79,11 +80,11 @@ function Login() {
 
   return (
     <AuthLayout
-      title="Login"
+      title={t("auth.login.title")}
       logoSrc={movaLogo}
-      logoAlt="Mova Logo"
+      logoAlt={t("auth.logoAlt")}
       wordmark="MOVA"
-      tagline="Mobilidade on-demand versátil e acessível"
+      tagline={t("auth.tagline")}
     >
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         {feedback && (
@@ -96,8 +97,8 @@ function Login() {
           id="email"
           name="email"
           type="email"
-          placeholder="E-mail"
-          ariaLabel="E-mail"
+          placeholder={t("auth.email")}
+          ariaLabel={t("auth.email")}
           value={values.email}
           onChange={(e) => setFieldValue("email", e.target.value)}
           required
@@ -109,8 +110,8 @@ function Login() {
           id="senha"
           name="senha"
           type="password"
-          placeholder="Senha"
-          ariaLabel="Senha"
+          placeholder={t("auth.password")}
+          ariaLabel={t("auth.password")}
           value={values.senha}
           onChange={(e) => setFieldValue("senha", e.target.value)}
           required
@@ -119,17 +120,17 @@ function Login() {
         />
 
         <button type="submit" className="auth-button" disabled={isSubmitting}>
-          {isSubmitting ? "Entrando..." : "Entrar"}
+          {isSubmitting ? t("auth.login.submitting") : t("auth.signIn")}
         </button>
 
         <p className="auth-forgot">
-          <Link to="/recuperar-senha">Esqueci minha senha</Link>
+          <Link to="/recuperar-senha">{t("auth.login.forgot")}</Link>
         </p>
 
         <div className="auth-actions auth-divider">
-          <p className="auth-footer">Ainda não tem conta?</p>
+          <p className="auth-footer">{t("auth.login.noAccount")}</p>
           <Link to="/cadastro" className="auth-button-secondary">
-            Cadastre-se
+            {t("auth.login.signUp")}
           </Link>
         </div>
       </form>

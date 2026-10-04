@@ -16,6 +16,7 @@ import {
   SuccessTitle,
   SuccessSubtitle,
 } from "../styles/authStyle";
+import { t } from "../i18n";
 
 function CadastroLocador() {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ function CadastroLocador() {
   });
 
   useEffect(() => {
-    document.title = "MOVA - Cadastro de Locador";
+    document.title = t("auth.registerOwner.documentTitle");
   }, []);
 
   const { handleSubmit, isSubmitting } = useFormSubmit({
@@ -50,7 +51,7 @@ function CadastroLocador() {
     setFeedback,
     getInvalidFeedback: () => ({
       type: "error",
-      message: "Existem campos invalidos. Revise os avisos abaixo.",
+      message: t("auth.invalidFields"),
     }),
     getSubmitErrorFeedback: (error) => ({
       type: "error",
@@ -66,12 +67,12 @@ function CadastroLocador() {
 
   return (
     <AuthLayout
-      title="Cadastro de Locador"
+      title={t("auth.registerOwner.title")}
       logoSrc={movaLogo}
-      logoAlt="Mova Logo"
-      footerText="Quer cadastrar como locatário?"
+      logoAlt={t("auth.logoAlt")}
+      footerText={t("auth.registerOwner.renterPrompt")}
       footerLinkTo="/cadastro"
-      footerLinkLabel="Voltar ao cadastro de locatário"
+      footerLinkLabel={t("auth.registerOwner.renterLink")}
     >
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         {feedback && (
@@ -84,8 +85,8 @@ function CadastroLocador() {
           id="name"
           name="name"
           type="text"
-          placeholder="Nome do Proprietário"
-          ariaLabel="Nome do Proprietário"
+          placeholder={t("auth.registerOwner.ownerName")}
+          ariaLabel={t("auth.registerOwner.ownerName")}
           value={values.name}
           onChange={(e) => setFieldValue("name", e.target.value)}
           required
@@ -97,8 +98,8 @@ function CadastroLocador() {
           id="email"
           name="email"
           type="email"
-          placeholder="E-mail"
-          ariaLabel="E-mail"
+          placeholder={t("auth.email")}
+          ariaLabel={t("auth.email")}
           value={values.email}
           onChange={(e) => setFieldValue("email", e.target.value)}
           required
@@ -110,8 +111,8 @@ function CadastroLocador() {
           id="celphone"
           name="celphone"
           type="text"
-          placeholder="Numero de telefone"
-          ariaLabel="Numero de telefone"
+          placeholder={t("auth.registerOwner.phone")}
+          ariaLabel={t("auth.registerOwner.phone")}
           value={values.celphone}
           onChange={(e) => setFieldValue("celphone", maskCelphone(e.target.value))}
           required
@@ -124,8 +125,8 @@ function CadastroLocador() {
           id="empresa"
           name="empresa"
           type="text"
-          placeholder="Nome da empresa"
-          ariaLabel="Nome da empresa"
+          placeholder={t("auth.registerOwner.company")}
+          ariaLabel={t("auth.registerOwner.company")}
           value={values.empresa}
           onChange={(e) => setFieldValue("empresa", e.target.value)}
           required
@@ -137,8 +138,8 @@ function CadastroLocador() {
           id="cnpj"
           name="cnpj"
           type="text"
-          placeholder="CNPJ"
-          ariaLabel="CNPJ"
+          placeholder={t("auth.registerOwner.cnpj")}
+          ariaLabel={t("auth.registerOwner.cnpj")}
           value={values.cnpj}
           onChange={(e) => setFieldValue("cnpj", maskCnpj(e.target.value))}
           required
@@ -150,8 +151,8 @@ function CadastroLocador() {
           id="address"
           name="address"
           type="text"
-          placeholder="Endereco Completo"
-          ariaLabel="Endereco Completo"
+          placeholder={t("auth.registerOwner.address")}
+          ariaLabel={t("auth.registerOwner.address")}
           value={values.address}
           onChange={(e) => setFieldValue("address", e.target.value)}
           required
@@ -163,8 +164,8 @@ function CadastroLocador() {
           id="cep"
           name="cep"
           type="text"
-          placeholder="CEP"
-          ariaLabel="CEP"
+          placeholder={t("auth.registerOwner.cep")}
+          ariaLabel={t("auth.registerOwner.cep")}
           value={values.cep}
           onChange={(e) => setFieldValue("cep", maskCep(e.target.value))}
           required
@@ -177,8 +178,8 @@ function CadastroLocador() {
           id="password"
           name="password"
           type="password"
-          placeholder="Senha"
-          ariaLabel="Senha"
+          placeholder={t("auth.password")}
+          ariaLabel={t("auth.password")}
           value={values.password}
           onChange={(e) => setFieldValue("password", e.target.value)}
           required
@@ -190,8 +191,8 @@ function CadastroLocador() {
           id="confirmPassword"
           name="confirmPassword"
           type="password"
-          placeholder="Repita a senha"
-          ariaLabel="Repita a senha"
+          placeholder={t("auth.registerOwner.confirmPassword")}
+          ariaLabel={t("auth.registerOwner.confirmPassword")}
           value={values.confirmPassword}
           onChange={(e) => setFieldValue("confirmPassword", e.target.value)}
           required
@@ -200,11 +201,11 @@ function CadastroLocador() {
         />
 
         <button type="submit" className="auth-button" disabled={isSubmitting}>
-          {isSubmitting ? "Cadastrando..." : "Cadastrar Locador"}
+          {isSubmitting ? t("auth.registering") : t("auth.registerOwner.submit")}
         </button>
 
         <p className="auth-footer">
-          Já tem conta? <Link to="/login">Entrar</Link>
+          {t("auth.haveAccount")} <Link to="/login">{t("auth.signIn")}</Link>
         </p>
       </form>
 
@@ -214,9 +215,9 @@ function CadastroLocador() {
             <IconCircle>
               <CheckCircle size={48} color="currentColor" strokeWidth={1.5} aria-hidden="true" />
             </IconCircle>
-            <SuccessTitle>Cadastro concluído!</SuccessTitle>
+            <SuccessTitle>{t("auth.successTitle")}</SuccessTitle>
             <SuccessSubtitle>
-              Sua conta de locador foi criada com sucesso. Você será redirecionado para o login.
+              {t("auth.registerOwner.successText")}
             </SuccessSubtitle>
           </SuccessModal>
         </ModalOverlay>

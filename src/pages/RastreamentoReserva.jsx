@@ -3,14 +3,14 @@ import { useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { getRastreamentoReserva } from "../services/reservaService";
+import { formatDate, t } from "../i18n";
 import "../styles/journey.css";
 import "../styles/postcompra.css";
 
 export const INTERVALO_RASTREAMENTO_MS = 15_000;
 
 function formatarDataHora(valor) {
-  const data = new Date(valor);
-  return Number.isNaN(data.getTime()) ? "Não informado" : data.toLocaleString("pt-BR");
+  return formatDate(valor, { dateStyle: "short", timeStyle: "medium" }) || t("reservation.tracking.notProvided");
 }
 
 export default function RastreamentoReserva() {
@@ -34,7 +34,7 @@ export default function RastreamentoReserva() {
         setErro("");
       } catch (error) {
         if (!ativo) return;
-        setErro(error?.message || "Não foi possível atualizar localização.");
+        setErro(error?.message || t("reservation.tracking.updateError"));
         if (error?.status === 409) interrompido = true;
       } finally {
         emAndamento = false;
@@ -56,11 +56,11 @@ export default function RastreamentoReserva() {
   return (
     <main className="journey-page">
       <header className="journey-head">
-        <h1>Acompanhar veículo</h1>
-        <p className="page-head__lede">A posição é atualizada automaticamente enquanto esta tela estiver aberta.</p>
+        <h1>{t("reservation.tracking.title")}</h1>
+        <p className="page-head__lede">{t("reservation.tracking.lede")}</p>
       </header>
       {carregando && (
-        <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando localização…</p>
+        <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />{t("reservation.tracking.loading")}</p>
       )}
       {erro && (
         <div className="alert alert--danger">
@@ -69,15 +69,15 @@ export default function RastreamentoReserva() {
         </div>
       )}
       {veiculo && (
-        <section aria-label="Rastreamento da reserva" className="post-panel">
+        <section aria-label={t("reservation.tracking.sectionLabel")} className="post-panel">
           <h2>{veiculo.nome}</h2>
           <ul className="post-facts">
-            <li>Placa: <span className="tabular">{veiculo.placa}</span></li>
-            {!localizacao && <li>Localização ainda indisponível para este veículo.</li>}
+            <li>{t("reservation.common.plate")} <span className="tabular">{veiculo.placa}</span></li>
+            {!localizacao && <li>{t("reservation.tracking.unavailable")}</li>}
             {localizacao && (
               <>
-                <li className="tabular">Localização: {Number(localizacao.latitude).toFixed(5)}, {Number(localizacao.longitude).toFixed(5)}</li>
-                <li>Última atualização: <span className="tabular">{formatarDataHora(localizacao.dataHora)}</span></li>
+                <li className="tabular">{t("reservation.tracking.location")} {Number(localizacao.latitude).toFixed(5)}, {Number(localizacao.longitude).toFixed(5)}</li>
+                <li>{t("reservation.tracking.lastUpdate")} <span className="tabular">{formatarDataHora(localizacao.dataHora)}</span></li>
               </>
             )}
           </ul>

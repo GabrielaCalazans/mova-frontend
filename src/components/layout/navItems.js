@@ -1,4 +1,5 @@
 import { faCalendarCheck, faCarSide, faHeart, faHouse } from "@fortawesome/free-solid-svg-icons";
+import { t } from "../../i18n";
 
 /**
  * Fonte única dos destinos do locatário (tab bar no mobile, barra superior no
@@ -6,10 +7,10 @@ import { faCalendarCheck, faCarSide, faHeart, faHouse } from "@fortawesome/free-
  */
 export function renterNavItems(activeReservation) {
   return [
-    { key: "home", icon: faHouse, route: "/", label: "Início", end: true, match: ["/", "/home"] },
-    ...(activeReservation ? [{ key: "alugar", icon: faCarSide, route: "/carros", label: "Alugar" }] : []),
-    { key: "historico", icon: faCalendarCheck, route: "/historico", label: "Reservas" },
-    { key: "favoritos", icon: faHeart, route: "/carros/favoritos", label: "Favoritos" },
+    { key: "home", icon: faHouse, route: "/", label: t("common.nav.home"), end: true, match: ["/", "/home"] },
+    ...(activeReservation ? [{ key: "alugar", icon: faCarSide, route: "/carros", label: t("common.nav.rent") }] : []),
+    { key: "historico", icon: faCalendarCheck, route: "/historico", label: t("common.nav.reservations") },
+    { key: "favoritos", icon: faHeart, route: "/carros/favoritos", label: t("common.nav.favorites") },
   ];
 }
 

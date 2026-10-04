@@ -1,14 +1,15 @@
-﻿import GarageJourneyStep from "../components/GarageJourneyStep";
+import GarageJourneyStep from "../components/GarageJourneyStep";
+import { t } from "../i18n";
 
 export default function EscolhaGaragemDevolucao() {
   return (
     <GarageJourneyStep
       stepKey="devolucao"
-      title="Escolha a Garagem para Devolução"
-      subtitle="Selecione a garagem, a data e o horário para devolver o veículo."
+      title={t("journey.return.title")}
+      subtitle={t("journey.return.subtitle")}
       nextPath="/servicos-opcionais"
-      nextButtonLabel="Escolher serviços"
-      documentTitle="MOVA - Devolução"
+      nextButtonLabel={t("journey.return.next")}
+      documentTitle={t("journey.return.documentTitle")}
     />
   );
 }

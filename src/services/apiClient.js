@@ -1,4 +1,4 @@
-﻿const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.API_BASE_URL;
 
 /**
  * Erro de API com o status HTTP preservado. Antes o cliente lançava um Error
@@ -6,6 +6,7 @@
  * mensagem. Ver auditoria/CONTRATO-FRONTEND-BACKEND.md.
  */
 import { clearAuthSession, saveAuthFeedback } from "./authSession";
+import { getLocale, t } from "../i18n";
 
 export class ApiError extends Error {
   constructor(message, { status, code, errors, payload, requestId } = {}) {
@@ -53,7 +54,7 @@ function parseApiErrorMessage(payload) {
       const detalhes = payload.errors
         .map((issue) => {
           const campo = Array.isArray(issue.path) ? issue.path.join(".") : issue.path;
-          const texto = issue.message || "Valor invalido";
+          const texto = issue.message || t("errors.invalidValue");
           return campo ? `${campo}: ${texto}` : texto;
         })
         .join(" | ");
@@ -75,7 +76,7 @@ function parseApiErrorMessage(payload) {
 
 function buildUrl(path) {
   if (!API_BASE_URL) {
-    throw new Error("API_BASE_URL nao configurada.");
+    throw new Error(t("errors.apiNotConfigured"));
   }
 
   const normalizedBase = API_BASE_URL.replace(/\/$/, "");
@@ -97,6 +98,7 @@ function apiRequestWithUploadProgress(path, options) {
     xhr.open(requestOptions.method || "GET", buildUrl(path));
 
     if (requestContentType) xhr.setRequestHeader("Content-Type", requestContentType);
+    xhr.setRequestHeader("Accept-Language", getLocale());
     Object.entries(customHeaders).forEach(([name, value]) => xhr.setRequestHeader(name, value));
     if (authToken) xhr.setRequestHeader("Authorization", `Bearer ${authToken}`);
 
@@ -104,7 +106,7 @@ function apiRequestWithUploadProgress(path, options) {
       if (event.lengthComputable) onUploadProgress(event.loaded, event.total);
     };
 
-    xhr.onerror = () => reject(new ApiError("Nao foi possivel conectar com a API.", { status: 0 }));
+    xhr.onerror = () => reject(new ApiError(t("errors.apiUnreachable"), { status: 0 }));
     xhr.onload = () => {
       const responseContentType = xhr.getResponseHeader("content-type") || "";
       let payload = xhr.responseText;
@@ -121,7 +123,7 @@ function apiRequestWithUploadProgress(path, options) {
         return;
       }
 
-      const message = parseApiErrorMessage(payload) || `Erro ao comunicar com a API (HTTP ${xhr.status}).`;
+      const message = parseApiErrorMessage(payload) || t("errors.apiHttp", { status: xhr.status });
       const requestId = payload?.requestId ?? xhr.getResponseHeader("x-request-id");
       if (xhr.status === 401) {
         saveAuthFeedback({ type: "error", message });
@@ -154,6 +156,8 @@ export async function apiRequest(path, options = {}) {
 
   const headers = {
     ...(requestContentType ? { "Content-Type": requestContentType } : {}),
+    // A API traduz mensagens conhecidas (pt/en/es) pelo Accept-Language.
+    "Accept-Language": getLocale(),
     ...customHeaders,
   };
 
@@ -169,7 +173,7 @@ export async function apiRequest(path, options = {}) {
       headers,
     });
   } catch {
-    throw new ApiError("Nao foi possivel conectar com a API.", { status: 0 });
+    throw new ApiError(t("errors.apiUnreachable"), { status: 0 });
   }
 
   const contentType = response.headers.get("content-type") || "";
@@ -178,7 +182,7 @@ export async function apiRequest(path, options = {}) {
 
   if (!response.ok) {
     const parsedMessage = parseApiErrorMessage(payload);
-    const message = parsedMessage || `Erro ao comunicar com a API (HTTP ${response.status}).`;
+    const message = parsedMessage || t("errors.apiHttp", { status: response.status });
     const requestId = payload?.requestId ?? response.headers.get("x-request-id");
 
     if (response.status === 401) {

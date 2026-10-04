@@ -1,0 +1,209 @@
+{
+  "language": {
+    "label": "Idioma",
+    "hint": "O idioma escolhido fica salvo neste navegador."
+  },
+  "brand": {
+    "name": "MOVA — Mobilidade para todos",
+    "home": "MOVA, página inicial",
+    "ownerHome": "MOVA, painel do locador"
+  },
+  "shell": {
+    "skipLink": "Pular para o conteúdo",
+    "mainNav": "Navegação principal",
+    "ownerNav": "Navegação do locador",
+    "ownerArea": "Área do locador",
+    "ownerPanel": "Painel do locador",
+    "account": "Conta",
+    "signIn": "Entrar",
+    "signOut": "Sair",
+    "activeReservationUnavailable": "A reserva ativa está indisponível no momento."
+  },
+  "nav": {
+    "home": "Início",
+    "rent": "Alugar",
+    "reservations": "Reservas",
+    "favorites": "Favoritos",
+    "dashboard": "Painel",
+    "fleet": "Frota",
+    "garages": "Garagens",
+    "reports": "Relatórios",
+    "account": "Conta"
+  },
+  "accountMenu": {
+    "title": "Menu da conta",
+    "close": "Fechar menu",
+    "nav": "Conta",
+    "myAccount": "Minha conta",
+    "history": "Histórico",
+    "support": "Suporte",
+    "settings": "Configurações",
+    "theme": "Tema"
+  },
+  "theme": {
+    "group": "Tema da interface",
+    "system": "Sistema",
+    "light": "Claro",
+    "dark": "Escuro"
+  },
+  "route": {
+    "opening": "Abrindo {label}…",
+    "openingApp": "Abrindo MOVA",
+    "loading": "Carregando tela…",
+    "errorTitle": "Não foi possível carregar esta tela",
+    "errorText": "O recurso pode ter sido atualizado. Tente carregar a tela novamente.",
+    "reload": "Recarregar tela",
+    "screens": {
+      "login": "o login",
+      "signup": "o cadastro",
+      "ownerSignup": "o cadastro do locador",
+      "forgotPassword": "a recuperação de senha",
+      "resetPassword": "a redefinição de senha",
+      "home": "a página inicial",
+      "sharedTrip": "a viagem compartilhada",
+      "reservationDetail": "o detalhe da reserva",
+      "carTypes": "a escolha do tipo de carro",
+      "vehicleDetails": "os detalhes do veículo",
+      "carList": "a lista de carros",
+      "pickupGarage": "a garagem de retirada",
+      "returnGarage": "a garagem de devolução",
+      "extras": "os serviços opcionais",
+      "checkout": "o checkout da reserva",
+      "drivers": "os condutores adicionais",
+      "payment": "o pagamento",
+      "unlock": "o desbloqueio",
+      "tracking": "o acompanhamento da reserva",
+      "return": "a devolução",
+      "cancellation": "o cancelamento",
+      "review": "a avaliação",
+      "history": "o histórico",
+      "pendingPayments": "as pendências financeiras",
+      "availabilityAlerts": "os avisos de disponibilidade",
+      "availableCars": "os carros disponíveis",
+      "favorites": "os favoritos",
+      "page": "a página",
+      "account": "a conta",
+      "support": "o suporte",
+      "settings": "as configurações",
+      "ownerDashboard": "o painel do locador",
+      "fleetReservations": "as reservas da frota",
+      "monitoring": "o monitoramento",
+      "reports": "os relatórios",
+      "vehicleReport": "o relatório de veículos",
+      "reviewFilter": "o filtro de avaliações",
+      "reviews": "as avaliações",
+      "fleet": "a frota",
+      "vehicle": "o veículo",
+      "garages": "as garagens",
+      "garageCapacity": "a capacidade da garagem",
+      "garage": "a garagem"
+    }
+  },
+  "form": {
+    "showPassword": "Exibir caracteres digitados",
+    "hidePassword": "Ocultar caracteres digitados"
+  },
+  "vehicle": {
+    "fallbackName": "Veículo",
+    "noPhoto": "Sem foto do veículo",
+    "illustrativePhoto": "Foto ilustrativa",
+    "photoOf": "Foto de {name}",
+    "illustrativePhotoOf": "Foto ilustrativa de {name}",
+    "addFavorite": "Adicionar {name} aos favoritos",
+    "removeFavorite": "Remover {name} dos favoritos",
+    "features": "Características",
+    "seats_one": "{count} lugar",
+    "seats_other": "{count} lugares",
+    "adapted": "Adaptado PCD",
+    "notAdapted": "Sem adaptação PCD",
+    "electric": "Elétrico",
+    "automatic": "Automático",
+    "notInformed": "Não informado",
+    "pickupAt": "Retirada: ",
+    "unknownLocation": "Local não informado",
+    "perDay": "/dia",
+    "dailyUnavailable": "Diária indisponível",
+    "status": {
+      "RESERVADO": "Reservado",
+      "MANUTENCAO": "Em manutenção",
+      "INATIVO": "Indisponível"
+    }
+  },
+  "journey": {
+    "nav": "Etapas da reserva",
+    "step": "Etapa",
+    "of": "de",
+    "done": " (concluída)",
+    "steps": {
+      "veiculo": "Veículo",
+      "retirada": "Retirada",
+      "devolucao": "Devolução",
+      "servicos": "Serviços",
+      "resumo": "Resumo",
+      "condutores": "Condutores",
+      "pagamento": "Pagamento"
+    }
+  },
+  "activeReservation": {
+    "title": "Sua reserva ativa",
+    "inProgress": "Em andamento",
+    "confirmed": "Confirmada",
+    "vehicle": "Veículo",
+    "garage": "Garagem",
+    "pickup": "Retirada",
+    "return": "Devolução",
+    "garageMissing": "Não informada",
+    "dateMissing": "Data não informada",
+    "fallbackVehicle": "Veículo reservado",
+    "track": "Acompanhar viagem",
+    "open": "Abrir reserva",
+    "viewAll": "Ver reservas"
+  },
+  "notFound": {
+    "code": "Erro 404",
+    "title": "Página não encontrada",
+    "text": "O endereço que você tentou acessar não existe.",
+    "home": "Ir para a página inicial",
+    "login": "Voltar para o login"
+  },
+  "support": {
+    "title": "Suporte",
+    "channels": "Canais de atendimento",
+    "tollFree": "0800 999 999 (SAC 0800)",
+    "whatsapp": "+55 11 99999-9999 (WhatsApp)"
+  },
+  "settings": {
+    "documentTitle": "MOVA - Configurações",
+    "title": "Configurações",
+    "appearance": "Aparência",
+    "theme": "Tema",
+    "zoomHint": "Para aumentar o texto, use o zoom ou o tamanho de fonte do navegador: a interface se adapta sem cortar conteúdo.",
+    "language": "Idioma",
+    "notifications": "Notificações por e-mail",
+    "loadingPrefs": "Carregando preferências…",
+    "loadError": "Não foi possível carregar suas preferências.",
+    "saveError": "Não foi possível salvar a preferência.",
+    "toggled": "{label}: {state}.",
+    "on": "ativado",
+    "off": "desativado",
+    "security": "Segurança",
+    "securityHint": "Senha, e-mail e exclusão de conta ficam em Minha conta.",
+    "changePassword": "Alterar senha em Minha conta",
+    "prefs": {
+      "RESERVA": { "label": "E-mails sobre minhas reservas", "hint": "Confirmação de pagamento e dados da retirada." },
+      "VEICULO_DISPONIVEL": { "label": "Avisos de disponibilidade", "hint": "Quando um veículo que você acompanha volta a ficar livre." },
+      "ALERTA_VEICULO": { "label": "Alertas da frota", "hint": "Inatividade prolongada e avaliações baixas recorrentes." }
+    }
+  },
+  "feedback": {
+    "loginSuccess": "Login realizado com sucesso.",
+    "registered": "Cadastrado com sucesso.",
+    "renterRegistered": "Cadastro de locatário realizado com sucesso.",
+    "ownerRegistered": "Cadastro de locador realizado com sucesso.",
+    "dataUpdated": "Dados atualizados com sucesso.",
+    "recoveryRequested": "Se existir uma conta associada a este e-mail, enviaremos as instruções de recuperação.",
+    "passwordReset": "Senha redefinida com sucesso.",
+    "passwordChanged": "Senha alterada com sucesso.",
+    "accountDeleted": "Conta deletada com sucesso."
+  }
+}

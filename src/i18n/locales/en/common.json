@@ -1,0 +1,209 @@
+{
+  "language": {
+    "label": "Language",
+    "hint": "Your language choice is saved in this browser."
+  },
+  "brand": {
+    "name": "MOVA — Mobility for everyone",
+    "home": "MOVA, home page",
+    "ownerHome": "MOVA, owner dashboard"
+  },
+  "shell": {
+    "skipLink": "Skip to content",
+    "mainNav": "Main navigation",
+    "ownerNav": "Owner navigation",
+    "ownerArea": "Owner area",
+    "ownerPanel": "Owner dashboard",
+    "account": "Account",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "activeReservationUnavailable": "Your active reservation is unavailable right now."
+  },
+  "nav": {
+    "home": "Home",
+    "rent": "Rent",
+    "reservations": "Bookings",
+    "favorites": "Favorites",
+    "dashboard": "Dashboard",
+    "fleet": "Fleet",
+    "garages": "Garages",
+    "reports": "Reports",
+    "account": "Account"
+  },
+  "accountMenu": {
+    "title": "Account menu",
+    "close": "Close menu",
+    "nav": "Account",
+    "myAccount": "My account",
+    "history": "History",
+    "support": "Support",
+    "settings": "Settings",
+    "theme": "Theme"
+  },
+  "theme": {
+    "group": "Interface theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "route": {
+    "opening": "Loading {label}…",
+    "openingApp": "Loading MOVA",
+    "loading": "Loading screen…",
+    "errorTitle": "This screen could not be loaded",
+    "errorText": "The app may have been updated. Try loading the screen again.",
+    "reload": "Reload screen",
+    "screens": {
+      "login": "sign-in",
+      "signup": "sign-up",
+      "ownerSignup": "owner sign-up",
+      "forgotPassword": "password recovery",
+      "resetPassword": "password reset",
+      "home": "home page",
+      "sharedTrip": "shared trip",
+      "reservationDetail": "booking details",
+      "carTypes": "car type selection",
+      "vehicleDetails": "vehicle details",
+      "carList": "car list",
+      "pickupGarage": "pickup garage",
+      "returnGarage": "return garage",
+      "extras": "optional services",
+      "checkout": "booking checkout",
+      "drivers": "additional drivers",
+      "payment": "payment",
+      "unlock": "vehicle unlock",
+      "tracking": "booking tracking",
+      "return": "vehicle return",
+      "cancellation": "cancellation",
+      "review": "review",
+      "history": "history",
+      "pendingPayments": "pending payments",
+      "availabilityAlerts": "availability alerts",
+      "availableCars": "available cars",
+      "favorites": "favorites",
+      "page": "page",
+      "account": "account",
+      "support": "support",
+      "settings": "settings",
+      "ownerDashboard": "owner dashboard",
+      "fleetReservations": "fleet bookings",
+      "monitoring": "monitoring",
+      "reports": "reports",
+      "vehicleReport": "vehicle report",
+      "reviewFilter": "review filter",
+      "reviews": "reviews",
+      "fleet": "fleet",
+      "vehicle": "vehicle",
+      "garages": "garages",
+      "garageCapacity": "garage capacity",
+      "garage": "garage"
+    }
+  },
+  "form": {
+    "showPassword": "Show typed characters",
+    "hidePassword": "Hide typed characters"
+  },
+  "vehicle": {
+    "fallbackName": "Vehicle",
+    "noPhoto": "No vehicle photo",
+    "illustrativePhoto": "Illustrative photo",
+    "photoOf": "Photo of {name}",
+    "illustrativePhotoOf": "Illustrative photo of {name}",
+    "addFavorite": "Add {name} to favorites",
+    "removeFavorite": "Remove {name} from favorites",
+    "features": "Features",
+    "seats_one": "{count} seat",
+    "seats_other": "{count} seats",
+    "adapted": "Accessible (PwD)",
+    "notAdapted": "Not adapted for PwD",
+    "electric": "Electric",
+    "automatic": "Automatic",
+    "notInformed": "Not provided",
+    "pickupAt": "Pickup: ",
+    "unknownLocation": "Location not provided",
+    "perDay": "/day",
+    "dailyUnavailable": "Daily rate unavailable",
+    "status": {
+      "RESERVADO": "Booked",
+      "MANUTENCAO": "Under maintenance",
+      "INATIVO": "Unavailable"
+    }
+  },
+  "journey": {
+    "nav": "Booking steps",
+    "step": "Step",
+    "of": "of",
+    "done": " (completed)",
+    "steps": {
+      "veiculo": "Vehicle",
+      "retirada": "Pickup",
+      "devolucao": "Return",
+      "servicos": "Services",
+      "resumo": "Summary",
+      "condutores": "Drivers",
+      "pagamento": "Payment"
+    }
+  },
+  "activeReservation": {
+    "title": "Your active booking",
+    "inProgress": "In progress",
+    "confirmed": "Confirmed",
+    "vehicle": "Vehicle",
+    "garage": "Garage",
+    "pickup": "Pickup",
+    "return": "Return",
+    "garageMissing": "Not provided",
+    "dateMissing": "Date not provided",
+    "fallbackVehicle": "Booked vehicle",
+    "track": "Track trip",
+    "open": "Open booking",
+    "viewAll": "View bookings"
+  },
+  "notFound": {
+    "code": "Error 404",
+    "title": "Page not found",
+    "text": "The address you tried to open does not exist.",
+    "home": "Go to the home page",
+    "login": "Back to sign-in"
+  },
+  "support": {
+    "title": "Support",
+    "channels": "Contact channels",
+    "tollFree": "0800 999 999 (toll-free, Brazil)",
+    "whatsapp": "+55 11 99999-9999 (WhatsApp)"
+  },
+  "settings": {
+    "documentTitle": "MOVA - Settings",
+    "title": "Settings",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "zoomHint": "To enlarge text, use your browser's zoom or font size: the interface adapts without cutting off content.",
+    "language": "Language",
+    "notifications": "Email notifications",
+    "loadingPrefs": "Loading preferences…",
+    "loadError": "We couldn't load your preferences.",
+    "saveError": "We couldn't save the preference.",
+    "toggled": "{label}: {state}.",
+    "on": "on",
+    "off": "off",
+    "security": "Security",
+    "securityHint": "Password, email and account deletion are in My account.",
+    "changePassword": "Change password in My account",
+    "prefs": {
+      "RESERVA": { "label": "Emails about my bookings", "hint": "Payment confirmation and pickup details." },
+      "VEICULO_DISPONIVEL": { "label": "Availability alerts", "hint": "When a vehicle you follow becomes available again." },
+      "ALERTA_VEICULO": { "label": "Fleet alerts", "hint": "Long inactivity and recurring low ratings." }
+    }
+  },
+  "feedback": {
+    "loginSuccess": "Signed in successfully.",
+    "registered": "Registered successfully.",
+    "renterRegistered": "Renter account created successfully.",
+    "ownerRegistered": "Owner account created successfully.",
+    "dataUpdated": "Details updated successfully.",
+    "recoveryRequested": "If an account exists for this email, we will send recovery instructions.",
+    "passwordReset": "Password reset successfully.",
+    "passwordChanged": "Password changed successfully.",
+    "accountDeleted": "Account deleted successfully."
+  }
+}

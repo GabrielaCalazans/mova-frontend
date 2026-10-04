@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import { apiRequest, apiRequestPaginado } from "./apiClient";
 import { getAuthSession } from "./authSession";
 
@@ -29,7 +30,7 @@ export async function listGaragens(filters = {}) {
 
 /** Endpoint: GET /garagem/:id */
 export async function getGaragemById(id) {
-  if (!id) throw new Error("ID da garagem não informado.");
+  if (!id) throw new Error(t("errors.missingGarageId"));
   const data = await apiRequest(`/garagem/${id}`, authHeaders());
   return data.result ?? data;
 }
@@ -50,7 +51,7 @@ export async function createGaragem(payload) {
 
 /** Endpoint: PUT /garagem/:id — aceita subconjunto de nome/endereco/capacidade/acessibilidade */
 export async function updateGaragem(id, payload) {
-  if (!id) throw new Error("ID da garagem não informado.");
+  if (!id) throw new Error(t("errors.missingGarageId"));
   const data = await apiRequest(`/garagem/${id}`, {
     method: "PUT",
     body: JSON.stringify(payload),
@@ -61,13 +62,13 @@ export async function updateGaragem(id, payload) {
 
 /** Endpoint: DELETE /garagem/:id */
 export async function deleteGaragem(id) {
-  if (!id) throw new Error("ID da garagem não informado.");
+  if (!id) throw new Error(t("errors.missingGarageId"));
   await apiRequest(`/garagem/${id}`, { method: "DELETE", ...authHeaders() });
 }
 
 /** Endpoint: GET /garagem/:id/veiculos — veículos alocados nesta garagem */
 export async function listVeiculosDaGaragem(garagemId, status) {
-  if (!garagemId) throw new Error("ID da garagem não informado.");
+  if (!garagemId) throw new Error(t("errors.missingGarageId"));
   const query = status ? `?status=${encodeURIComponent(status)}` : "";
   return apiRequestPaginado(`/garagem/${garagemId}/veiculos${query}`, authHeaders());
 }

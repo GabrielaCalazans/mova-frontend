@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import economicoImg from "../assets/car-types/manuais.png";
 import executivoImg from "../assets/car-types/automaticos.png";
 import adaptadoImg from "../assets/car-types/adaptados.png";
@@ -14,20 +15,14 @@ const MODEL_DETAILS = {
   "honda civic": { image: null },
 };
 
-const CATEGORY_LABELS = {
-  ECONOMICO: "Econômico",
-  ESPACOSO: "Espaçoso",
-  EXECUTIVO: "Executivo",
-  PCD: "PCD",
-  ELETRICO: "Elétrico",
-};
+const CATEGORIES = new Set(["ECONOMICO", "ESPACOSO", "EXECUTIVO", "PCD", "ELETRICO"]);
 
 function resolveVehicleField(vehicle, field) {
   return vehicle?.[field] ?? vehicle?.modeloVeiculo?.[field];
 }
 
 export function vehicleTitle(vehicle) {
-  return [resolveVehicleField(vehicle, "marca"), resolveVehicleField(vehicle, "modelo")].filter(Boolean).join(" ") || "Veículo";
+  return [resolveVehicleField(vehicle, "marca"), resolveVehicleField(vehicle, "modelo")].filter(Boolean).join(" ") || t("common.vehicle.fallbackName");
 }
 
 // RN01 (backend, services/reserva.ts): adaptado OU categoria PCD exige
@@ -37,12 +32,12 @@ export function isVeiculoPcd(vehicle) {
 }
 
 export function formatCategoria(categoria) {
-  return CATEGORY_LABELS[categoria] ?? "Não informado";
+  return CATEGORIES.has(categoria) ? t(`enums.categoria.${categoria}`) : t("common.vehicle.notInformed");
 }
 
 export function formatCambio(cambio) {
-  if (!cambio) return "Não informado";
-  if (String(cambio).toLowerCase() === "automatico") return "Automático";
+  if (!cambio) return t("common.vehicle.notInformed");
+  if (String(cambio).toLowerCase() === "automatico") return t("common.vehicle.automatic");
   return String(cambio);
 }
 
@@ -54,11 +49,11 @@ export function getVehicleCharacteristics(vehicle) {
 
   if (cambio) characteristics.push(formatCambio(cambio));
   if (capacidade !== undefined && capacidade !== null && capacidade !== "") {
-    characteristics.push(`${capacidade} lugares`);
+    characteristics.push(t("common.vehicle.seats", { count: capacidade }));
   }
   if (categoria) characteristics.push(formatCategoria(categoria));
-  if (resolveVehicleField(vehicle, "eletrico") === true) characteristics.push("Elétrico");
-  if (isVeiculoPcd(vehicle)) characteristics.push("Adaptado PCD");
+  if (resolveVehicleField(vehicle, "eletrico") === true) characteristics.push(t("common.vehicle.electric"));
+  if (isVeiculoPcd(vehicle)) characteristics.push(t("common.vehicle.adapted"));
 
   return characteristics;
 }
@@ -80,13 +75,13 @@ export function resolveTipoIcon(tipoFiltro) {
 export function resolveVehicleImages(vehicle) {
   const marca = resolveVehicleField(vehicle, "marca") || "";
   const modelo = resolveVehicleField(vehicle, "modelo") || "";
-  const nome = `${marca} ${modelo}`.trim() || "Veículo";
+  const nome = `${marca} ${modelo}`.trim();
   const reais = (Array.isArray(vehicle?.imagens) ? vehicle.imagens : [])
     .filter((imagem) => imagem?.url)
-    .map((imagem) => ({ src: imagem.url, alt: imagem.altText || `Foto de ${nome}`, kind: "real" }));
+    .map((imagem) => ({ src: imagem.url, alt: imagem.altText || t("common.vehicle.photoOf", { name: nome || t("common.vehicle.fallbackName") }), kind: "real" }));
   if (reais.length) return reais;
   const ilustrativa = MODEL_DETAILS[nome.toLowerCase()]?.image;
-  return ilustrativa ? [{ src: ilustrativa, alt: `Foto ilustrativa de ${nome}`, kind: "illustrative" }] : [];
+  return ilustrativa ? [{ src: ilustrativa, alt: t("common.vehicle.illustrativePhotoOf", { name: nome }), kind: "illustrative" }] : [];
 }
 
 export function resolveModelDetails(marca, modelo, tipoFiltro) {

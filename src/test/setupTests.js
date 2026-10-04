@@ -1,5 +1,10 @@
 import "@testing-library/jest-dom/vitest";
 import { afterEach, beforeEach } from "vitest";
+import { loadLocale } from "../i18n";
+
+// Dicionários en/es são chunks sob demanda no app; nos testes ficam carregados
+// para que setLocale("en"|"es") funcione de forma síncrona.
+await Promise.all([loadLocale("en"), loadLocale("es")]);
 
 // Isolamento de rede da suíte unitária (Task 8.1).
 // 1) vite.config.js força VITE_API_BASE_URL para um host `.invalid`

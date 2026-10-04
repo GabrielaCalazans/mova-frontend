@@ -1,0 +1,56 @@
+{
+  "interests": {
+    "loadError": "No se pudieron cargar los avisos.",
+    "documentTitle": "MOVA - Avisos de disponibilidad",
+    "cancelled": "Aviso de disponibilidad cancelado.",
+    "activated": "Aviso de disponibilidad activado.",
+    "updateError": "No se pudo actualizar el aviso.",
+    "title": "Avisos de disponibilidad",
+    "lede": "Elige un vehículo no disponible para recibir un aviso cuando vuelva a estar disponible.",
+    "loading": "Cargando vehículos no disponibles…",
+    "empty": "No se encontraron vehículos no disponibles.",
+    "unavailable": "No disponible — {status}",
+    "garageStatus": "(garaje {status})",
+    "year": "Año",
+    "perDay": "/día",
+    "cancel": "Cancelar aviso",
+    "notify": "Avisarme cuando esté disponible",
+    "received": "Avisos recibidos",
+    "backToCatalog": "Volver al catálogo"
+  },
+  "favorites": {
+    "title": "Coches favoritos",
+    "documentTitle": "MOVA - Coches favoritos",
+    "empty": "Aún no has marcado ningún coche como favorito. Toca el corazón de un vehículo en Coches disponibles para añadirlo aquí."
+  },
+  "available": {
+    "title": "Coches disponibles",
+    "documentTitle": "MOVA - Coches disponibles",
+    "empty": "No hay vehículos disponibles en este momento."
+  },
+  "carList": {
+    "viewFavorites": "Ver mis favoritos",
+    "loadError": "No se pudieron cargar los vehículos.",
+    "favoriteError": "No se pudo actualizar el favorito.",
+    "alertError": "No se pudo actualizar el aviso de disponibilidad.",
+    "loading": "Cargando vehículos…",
+    "details": "Ver detalles"
+  },
+  "sharedTrip": {
+    "notProvided": "No indicado",
+    "notFound": "Viaje compartido no encontrado.",
+    "title": "Viaje compartido",
+    "loading": "Cargando viaje…",
+    "sectionLabel": "Detalles públicos del viaje",
+    "statusLabel": "Estado:",
+    "pickup": "Recogida:",
+    "return": "Devolución:",
+    "status": {
+      "AGUARDANDO_PAGAMENTO": "Pendiente de pago",
+      "CONFIRMADA": "Confirmada",
+      "EM_ANDAMENTO": "En curso",
+      "REALIZADA": "Finalizada",
+      "CANCELADA": "Cancelada"
+    }
+  }
+}

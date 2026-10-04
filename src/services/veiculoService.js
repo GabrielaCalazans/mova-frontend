@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import { apiRequest, apiRequestPaginado } from "./apiClient";
 import { getAuthSession } from "./authSession";
 
@@ -50,7 +51,7 @@ export function normalizeVeiculo(veiculo) {
 
 /** Lista imagens prontas; o backend decide se a consulta é pública ou privada. */
 export async function listImagensVeiculo(id) {
-  if (!id) throw new Error("ID do veículo não informado.");
+  if (!id) throw new Error(t("errors.missingVehicleId"));
   const session = getAuthSession();
   const data = await apiRequest(`/veiculo/${id}/imagens`, { authToken: session?.token });
   return data.result ?? data;
@@ -58,7 +59,7 @@ export async function listImagensVeiculo(id) {
 
 /** Upload binário autenticado; nenhuma credencial de storage vai para o browser. */
 export async function uploadImagemVeiculo(id, file, altText = "", onProgress) {
-  if (!id || !file) throw new Error("Veículo e arquivo são obrigatórios.");
+  if (!id || !file) throw new Error(t("errors.vehicleFileRequired"));
   const session = getAuthSession();
   const progress = typeof onProgress === "function" ? { onUploadProgress: onProgress } : {};
   const data = await apiRequest(`/veiculo/${id}/imagens`, {
@@ -163,7 +164,7 @@ export async function createVeiculo(payload) {
  */
 export async function updateVeiculo(id, payload) {
   if (!id) {
-    throw new Error("ID do veículo não informado.");
+    throw new Error(t("errors.missingVehicleId"));
   }
 
   const session = getAuthSession();
@@ -183,7 +184,7 @@ export async function updateVeiculo(id, payload) {
  */
 export async function deleteVeiculo(id) {
   if (!id) {
-    throw new Error("ID do veículo não informado.");
+    throw new Error(t("errors.missingVehicleId"));
   }
 
   const session = getAuthSession();
@@ -201,7 +202,7 @@ export async function deleteVeiculo(id) {
  */
 export async function getVeiculoById(id) {
   if (!id) {
-    throw new Error("ID do veículo não informado.");
+    throw new Error(t("errors.missingVehicleId"));
   }
 
   const data = await apiRequest(`/veiculo/${id}`, { authToken: undefined });

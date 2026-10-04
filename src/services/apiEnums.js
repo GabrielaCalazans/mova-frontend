@@ -3,6 +3,16 @@
 //
 // Regra: o CÓDIGO é o que trafega na API; o RÓTULO é só para exibição.
 // Ver auditoria/CONTRATO-FRONTEND-BACKEND.md.
+import { t } from "../i18n";
+
+// Mapas de rótulo com getters: cada leitura traduz no idioma ativo (RNF08),
+// mantendo o formato { CODIGO: "Rótulo" } que as telas já usam.
+function labels(group, codes) {
+  return Object.defineProperties(
+    {},
+    Object.fromEntries(codes.map((code) => [code, { enumerable: true, get: () => t(`enums.${group}.${code}`) }])),
+  );
+}
 
 /** enum StatusReserva — schema.prisma */
 export const STATUS_RESERVA = {
@@ -13,13 +23,7 @@ export const STATUS_RESERVA = {
   CANCELADA: "CANCELADA",
 };
 
-export const STATUS_RESERVA_LABELS = {
-  [STATUS_RESERVA.AGUARDANDO_PAGAMENTO]: "Aguardando pagamento",
-  [STATUS_RESERVA.CONFIRMADA]: "Confirmada",
-  [STATUS_RESERVA.EM_ANDAMENTO]: "Em andamento",
-  [STATUS_RESERVA.REALIZADA]: "Concluída",
-  [STATUS_RESERVA.CANCELADA]: "Cancelada",
-};
+export const STATUS_RESERVA_LABELS = labels("statusReserva", Object.values(STATUS_RESERVA));
 
 /** enum StatusPagamento — schema.prisma. Somente leitura: o cliente nunca envia. */
 export const STATUS_PAGAMENTO = {
@@ -29,12 +33,7 @@ export const STATUS_PAGAMENTO = {
   FALHA: "FALHA",
 };
 
-export const STATUS_PAGAMENTO_LABELS = {
-  [STATUS_PAGAMENTO.AGUARDANDO_PAGAMENTO]: "Aguardando pagamento",
-  [STATUS_PAGAMENTO.PROCESSANDO]: "Processando",
-  [STATUS_PAGAMENTO.SUCESSO]: "Pago",
-  [STATUS_PAGAMENTO.FALHA]: "Não aprovado",
-};
+export const STATUS_PAGAMENTO_LABELS = labels("statusPagamento", Object.values(STATUS_PAGAMENTO));
 
 /**
  * enum MetodoPagamento — schema.prisma.
@@ -48,12 +47,7 @@ export const METODO_PAGAMENTO = {
   CARTEIRA_DIGITAL: "CARTEIRA_DIGITAL",
 };
 
-export const METODO_PAGAMENTO_LABELS = {
-  [METODO_PAGAMENTO.CARTAO_CREDITO]: "Cartão de Crédito",
-  [METODO_PAGAMENTO.CARTAO_DEBITO]: "Cartão de Débito",
-  [METODO_PAGAMENTO.PIX]: "Pix",
-  [METODO_PAGAMENTO.CARTEIRA_DIGITAL]: "Carteira Digital",
-};
+export const METODO_PAGAMENTO_LABELS = labels("metodoPagamento", Object.values(METODO_PAGAMENTO));
 
 /** enum StatusVeiculo — schema.prisma */
 export const STATUS_VEICULO = {
@@ -77,40 +71,18 @@ export const CARGO = {
   ADMIN: "ADMIN",
 };
 
-export const STATUS_VEICULO_LABELS = {
-  [STATUS_VEICULO.DISPONIVEL]: "Disponível",
-  [STATUS_VEICULO.RESERVADO]: "Reservado",
-  [STATUS_VEICULO.MANUTENCAO]: "Em manutenção",
-  [STATUS_VEICULO.INATIVO]: "Inativo",
-};
+export const STATUS_VEICULO_LABELS = labels("statusVeiculo", Object.values(STATUS_VEICULO));
 
-export const STATUS_GARAGEM_LABELS = {
-  [STATUS_GARAGEM.ATIVA]: "Ativa",
-  [STATUS_GARAGEM.INATIVA]: "Inativa",
-  [STATUS_GARAGEM.MANUTENCAO]: "Em manutenção",
-};
+export const STATUS_GARAGEM_LABELS = labels("statusGaragem", Object.values(STATUS_GARAGEM));
 
 /** StatusEstorno — derivado em mova-backend/src/services/pagamento-estorno.ts */
-export const STATUS_ESTORNO_LABELS = {
-  NAO_SOLICITADO: "Não solicitado",
-  SOLICITADO: "Solicitado",
-  CONCLUIDO: "Concluído",
-  FALHOU: "Falhou",
-};
+export const STATUS_ESTORNO_LABELS = labels("statusEstorno", ["NAO_SOLICITADO", "SOLICITADO", "CONCLUIDO", "FALHOU"]);
 
 /** enum TipoCobranca — schema.prisma */
-export const TIPO_COBRANCA_LABELS = {
-  CANCELAMENTO: "Multa de cancelamento",
-  ATRASO_DEVOLUCAO: "Atraso na devolução",
-  PAGAMENTO_RESERVA: "Pagamento da reserva",
-};
+export const TIPO_COBRANCA_LABELS = labels("tipoCobranca", ["CANCELAMENTO", "ATRASO_DEVOLUCAO", "PAGAMENTO_RESERVA"]);
 
 /** enum StatusNotificacao — schema.prisma */
-export const STATUS_NOTIFICACAO_LABELS = {
-  PENDENTE: "Pendente",
-  ENVIADA: "Enviada",
-  FALHA: "Falhou",
-};
+export const STATUS_NOTIFICACAO_LABELS = labels("statusNotificacao", ["PENDENTE", "ENVIADA", "FALHA"]);
 
 /**
  * Rótulo de exibição. Código desconhecido (enum novo no backend) vira texto

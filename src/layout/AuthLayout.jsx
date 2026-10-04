@@ -3,6 +3,7 @@ import BottomNav from "../components/BottomNav";
 import BrandLogo from "../components/brand/BrandLogo";
 import { useShell } from "../components/layout/shell-context";
 import "../styles/auth.css";
+import { t } from "../i18n";
 
 /**
  * Moldura das telas de formulário. Fora do AppShell (login, cadastro,
@@ -33,7 +34,7 @@ function AuthLayout({
         <div className="auth-header">
           {slot}
           {showBrand && (
-            <Link to="/" className="auth-brand" aria-label="MOVA, página inicial">
+            <Link to="/" className="auth-brand" aria-label={t("common.brand.home")}>
               <BrandLogo variant="loading" decorative />
             </Link>
           )}

@@ -11,11 +11,12 @@ import {
   registrarInteresse,
 } from "../services/interesseService";
 import { formatMoneyBRL } from "../utils/reservationMath";
+import { t } from "../i18n";
 import "../styles/journey.css";
 import "../styles/postcompra.css";
 
 function nomeVeiculo(veiculo) {
-  return `${veiculo.marca ?? ""} ${veiculo.modelo ?? ""}`.trim() || "Veículo";
+  return `${veiculo.marca ?? ""} ${veiculo.modelo ?? ""}`.trim() || t("reservation.common.vehicle");
 }
 
 export default function InteressesDisponibilidade() {
@@ -41,14 +42,14 @@ export default function InteressesDisponibilidade() {
       setInteresses(new Set(ativos.map((item) => String(item.idVeiculo))));
       setNotificacoes(avisos);
     } catch (error) {
-      setErro(error.message || "Não foi possível carregar os interesses.");
+      setErro(error.message || t("tenant.interests.loadError"));
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    document.title = "MOVA - Avisos de disponibilidade";
+    document.title = t("tenant.interests.documentTitle");
     queueMicrotask(() => {
       void carregar();
     });
@@ -67,14 +68,14 @@ export default function InteressesDisponibilidade() {
           proximo.delete(chave);
           return proximo;
         });
-        setFeedback("Aviso de disponibilidade cancelado.");
+        setFeedback(t("tenant.interests.cancelled"));
       } else {
         await registrarInteresse(idVeiculo);
         setInteresses((atual) => new Set(atual).add(chave));
-        setFeedback("Aviso de disponibilidade ativado.");
+        setFeedback(t("tenant.interests.activated"));
       }
     } catch (error) {
-      setErro(error.message || "Não foi possível atualizar o aviso.");
+      setErro(error.message || t("tenant.interests.updateError"));
     } finally {
       setProcessando((atual) => {
         const proximo = new Set(atual);
@@ -87,12 +88,12 @@ export default function InteressesDisponibilidade() {
   return (
     <main className="journey-page">
       <header className="journey-head">
-        <h1>Avisos de disponibilidade</h1>
-        <p className="page-head__lede">Escolha um veículo indisponível para receber um aviso quando ele voltar a ficar disponível.</p>
+        <h1>{t("tenant.interests.title")}</h1>
+        <p className="page-head__lede">{t("tenant.interests.lede")}</p>
       </header>
 
       {loading && (
-        <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando veículos indisponíveis…</p>
+        <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />{t("tenant.interests.loading")}</p>
       )}
       {!loading && erro && (
         <div className="alert alert--danger" role="alert">
@@ -102,7 +103,7 @@ export default function InteressesDisponibilidade() {
       )}
       {!loading && !erro && veiculos.length === 0 && (
         <div className="state-block">
-          <p className="state-block__text">Nenhum veículo indisponível encontrado.</p>
+          <p className="state-block__text">{t("tenant.interests.empty")}</p>
         </div>
       )}
 
@@ -117,13 +118,13 @@ export default function InteressesDisponibilidade() {
                 <div className="post-item__body">
                   <h2 className="post-item__title">{nomeVeiculo(veiculo)}</h2>
                   <p className="post-item__meta">
-                    Indisponível — {rotulo(STATUS_VEICULO_LABELS, veiculo.status)}
+                    {t("tenant.interests.unavailable", { status: rotulo(STATUS_VEICULO_LABELS, veiculo.status) })}
                     {veiculo.garagem?.status && veiculo.garagem.status !== "ATIVA"
-                      ? ` (garagem ${rotulo(STATUS_GARAGEM_LABELS, veiculo.garagem.status).toLowerCase()})`
+                      ? ` ${t("tenant.interests.garageStatus", { status: rotulo(STATUS_GARAGEM_LABELS, veiculo.garagem.status).toLowerCase() })}`
                       : ""}
                   </p>
-                  {veiculo.ano && <p className="post-item__meta">Ano <span className="tabular">{veiculo.ano}</span></p>}
-                  {veiculo.valorDiaria != null && <p className="post-item__meta tabular">{formatMoneyBRL(veiculo.valorDiaria)} /dia</p>}
+                  {veiculo.ano && <p className="post-item__meta">{t("tenant.interests.year")} <span className="tabular">{veiculo.ano}</span></p>}
+                  {veiculo.valorDiaria != null && <p className="post-item__meta tabular">{formatMoneyBRL(veiculo.valorDiaria)} {t("tenant.interests.perDay")}</p>}
                   {veiculo.garagem?.nome && <p className="post-item__meta">{veiculo.garagem.nome}</p>}
                 </div>
                 <button
@@ -134,7 +135,7 @@ export default function InteressesDisponibilidade() {
                   aria-busy={busy || undefined}
                   onClick={() => alternarInteresse(veiculo.id)}
                 >
-                  {ativo ? "Cancelar aviso" : "Avisar quando disponível"}
+                  {ativo ? t("tenant.interests.cancel") : t("tenant.interests.notify")}
                 </button>
               </li>
             );
@@ -151,7 +152,7 @@ export default function InteressesDisponibilidade() {
 
       {notificacoes.length > 0 && (
         <section className="journey-section" aria-labelledby="avisos-recebidos">
-          <h2 id="avisos-recebidos">Avisos recebidos</h2>
+          <h2 id="avisos-recebidos">{t("tenant.interests.received")}</h2>
           <ul className="line-list">
             {notificacoes.map((notificacao) => (
               <li key={notificacao.id} className="line-list__item">
@@ -164,7 +165,7 @@ export default function InteressesDisponibilidade() {
       )}
 
       <div className="journey-actions">
-        <button type="button" className="btn btn--secondary" onClick={() => navigate("/carros")}>Voltar ao catálogo</button>
+        <button type="button" className="btn btn--secondary" onClick={() => navigate("/carros")}>{t("tenant.interests.backToCatalog")}</button>
       </div>
     </main>
   );

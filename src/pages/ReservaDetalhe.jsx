@@ -20,6 +20,7 @@ import {
 } from "../services/apiEnums";
 import { contarDiarias, formatMoneyBRL } from "../utils/reservationMath";
 import { updateJourneyStep } from "../utils/journeyStorage";
+import { formatDate, t } from "../i18n";
 import "../styles/vehicle.css";
 import "../styles/journey.css";
 import "../styles/postcompra.css";
@@ -28,23 +29,17 @@ import "../styles/reservation-detail.css";
 const TIMEZONE_EXIBICAO = import.meta.env.VITE_TIMEZONE_EXIBICAO || "America/Sao_Paulo";
 
 function formatarDataHora(valor) {
-  if (!valor) return "Não informado";
-  const data = new Date(valor);
-  if (Number.isNaN(data.getTime())) return "Não informado";
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: TIMEZONE_EXIBICAO,
-  }).format(data);
+  return formatDate(valor, { dateStyle: "medium", timeStyle: "short", timeZone: TIMEZONE_EXIBICAO })
+    || t("reservation.tracking.notProvided");
 }
 
 function resolveVeiculoNome(reserva) {
   const modelo = reserva?.veiculo?.modeloVeiculo || reserva?.veiculo || {};
-  return [modelo.marca, modelo.modelo].filter(Boolean).join(" ") || "Veículo não informado";
+  return [modelo.marca, modelo.modelo].filter(Boolean).join(" ") || t("reservation.detail.vehicleMissing");
 }
 
 function nomeGaragem(garagem, id) {
-  return garagem?.nome || id || "Não informada";
+  return garagem?.nome || id || t("reservation.detail.garageMissing");
 }
 
 function copiarLink(link) {
@@ -59,21 +54,21 @@ function copiarLink(link) {
   area.select();
   const copiado = typeof document.execCommand === "function" && document.execCommand("copy");
   area.remove();
-  return copiado ? Promise.resolve() : Promise.reject(new Error("Não foi possível copiar o link."));
+  return copiado ? Promise.resolve() : Promise.reject(new Error(t("reservation.share.copyError")));
 }
 
 function destinoDaReserva(reserva) {
   if (reserva.status === STATUS_RESERVA.AGUARDANDO_PAGAMENTO) {
-    return { path: "/pagamento", label: "Pagar reserva" };
+    return { path: "/pagamento", label: t("reservation.detail.actions.pay") };
   }
   if (reserva.status === STATUS_RESERVA.CONFIRMADA && reserva.statusPagamento === "SUCESSO") {
-    return { path: "/desbloqueio", label: "Desbloquear veículo" };
+    return { path: "/desbloqueio", label: t("reservation.unlock.submit") };
   }
   if (reserva.status === STATUS_RESERVA.EM_ANDAMENTO) {
-    return { path: `/reserva/${reserva.id}/localizacao`, label: "Acompanhar viagem" };
+    return { path: `/reserva/${reserva.id}/localizacao`, label: t("reservation.detail.actions.track") };
   }
   if (reserva.status === STATUS_RESERVA.REALIZADA) {
-    return { path: "/avaliacao", label: "Avaliar reserva" };
+    return { path: "/avaliacao", label: t("reservation.detail.actions.rate") };
   }
   return null;
 }
@@ -89,13 +84,13 @@ export default function ReservaDetalhe() {
   const [qr, setQr] = useState({});
 
   useEffect(() => {
-    document.title = "MOVA - Detalhe da reserva";
+    document.title = t("reservation.detail.documentTitle");
     let ativo = true;
     setCarregando(true);
     setErro("");
 
     if (!id) {
-      setErro("Reserva não informada.");
+      setErro(t("reservation.detail.missingId"));
       setCarregando(false);
       return () => { ativo = false; };
     }
@@ -103,7 +98,7 @@ export default function ReservaDetalhe() {
     const financeiro = typeof getPagamentoReserva === "function" ? Promise.resolve(getPagamentoReserva(id)) : Promise.resolve(null);
     Promise.all([getReservaById(id), financeiro])
       .then(([resultado, statusFinanceiro]) => { if (ativo) { setReserva(resultado); setPagamento(statusFinanceiro); } })
-      .catch((error) => { if (ativo) setErro(error?.message || "Não foi possível carregar a reserva."); })
+      .catch((error) => { if (ativo) setErro(error?.message || t("reservation.return.loadError")); })
       .finally(() => { if (ativo) setCarregando(false); });
 
     return () => { ativo = false; };
@@ -126,31 +121,31 @@ export default function ReservaDetalhe() {
     setCompartilhamento((atual) => ({ ...atual, carregando: true, erro: "" }));
     try {
       const resultado = await criarCompartilhamentoReserva(reserva.id);
-      let mensagem = "Link pronto para compartilhar.";
+      let mensagem = t("reservation.share.ready");
       let compartilhado = false;
       if (typeof navigator.share === "function") {
         try {
           await navigator.share({
-            title: `Viagem MOVA — ${resolveVeiculoNome(reserva)}`,
-            text: "Confira os detalhes desta viagem.",
+            title: t("reservation.share.nativeTitle", { vehicle: resolveVeiculoNome(reserva) }),
+            text: t("reservation.share.nativeText"),
             url: resultado.url,
           });
           compartilhado = true;
-          mensagem = "Compartilhamento aberto.";
+          mensagem = t("reservation.share.opened");
         } catch {
           // Se a pessoa fechar o compartilhamento nativo, mantém cópia como alternativa.
         }
       }
       if (!compartilhado) {
         await copiarLink(resultado.url);
-        mensagem = "Link copiado.";
+        mensagem = t("reservation.share.copied");
       }
       setCompartilhamento({ url: resultado.url, mensagem, carregando: false, erro: "" });
     } catch (error) {
       setCompartilhamento((atual) => ({
         ...atual,
         carregando: false,
-        erro: error?.message || "Não foi possível compartilhar.",
+        erro: error?.message || t("reservation.share.error"),
       }));
     }
   }
@@ -166,7 +161,7 @@ export default function ReservaDetalhe() {
       const imagem = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
       setQr({ link, imagem });
     } catch (error) {
-      setQr({ erro: error?.message || "Não foi possível gerar o QR de desbloqueio." });
+      setQr({ erro: error?.message || t("reservation.detail.qrError") });
     }
   }
 
@@ -174,12 +169,12 @@ export default function ReservaDetalhe() {
     setCompartilhamento((atual) => ({ ...atual, carregando: true, erro: "" }));
     try {
       await revogarCompartilhamentoReserva(reserva.id);
-      setCompartilhamento({ mensagem: "Compartilhamento revogado.", carregando: false, erro: "" });
+      setCompartilhamento({ mensagem: t("reservation.share.revoked"), carregando: false, erro: "" });
     } catch (error) {
       setCompartilhamento((atual) => ({
         ...atual,
         carregando: false,
-        erro: error?.message || "Não foi possível revogar o compartilhamento.",
+        erro: error?.message || t("reservation.share.revokeError"),
       }));
     }
   }
@@ -187,7 +182,7 @@ export default function ReservaDetalhe() {
   const voltar = (
     <button type="button" className="btn btn--quiet page-head__back" onClick={() => navigate("/historico")}>
       <FontAwesomeIcon icon={faArrowLeft} aria-hidden="true" />
-      Voltar para histórico
+      {t("reservation.detail.backToHistory")}
     </button>
   );
 
@@ -195,11 +190,11 @@ export default function ReservaDetalhe() {
     return (
       <main className="journey-page">
         {voltar}
-        <header className="journey-head"><h1>Detalhe da reserva</h1></header>
-        {carregando && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando reserva…</p>}
+        <header className="journey-head"><h1>{t("reservation.detail.title")}</h1></header>
+        {carregando && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />{t("reservation.return.loading")}</p>}
         {!carregando && erro && (
           <div className="state-block state-block--error" role="alert">
-            <p className="state-block__title">Não foi possível abrir a reserva</p>
+            <p className="state-block__title">{t("reservation.detail.openError")}</p>
             <p className="state-block__text">{erro}</p>
           </div>
         )}
@@ -213,7 +208,7 @@ export default function ReservaDetalhe() {
     <main className="journey-page">
       {voltar}
       <header className="journey-head">
-        <h1>Detalhe da reserva</h1>
+        <h1>{t("reservation.detail.title")}</h1>
         <div className="detail-head">
           <h2>{resolveVeiculoNome(reserva)}</h2>
           <StatusBadge status={reserva.status} role="status" />
@@ -223,28 +218,28 @@ export default function ReservaDetalhe() {
       <div className="journey-layout detail-layout">
         <div className="journey-layout__main">
           <section className="journey-section" aria-labelledby="detalhe-quando">
-            <h2 id="detalhe-quando">Quando e onde</h2>
+            <h2 id="detalhe-quando">{t("reservation.detail.whenWhere")}</h2>
             <div className="detail-vehicle">
               <VehicleMedia vehicle={reserva.veiculo} className="summary-vehicle__media" />
               <ol className="itinerary">
-                <Leg icon={faArrowRightFromBracket} label="Retirada" garagem={reserva.garagemRetirada} id={reserva.idGaragemRetirada} quando={reserva.dataHoraInicio} />
-                <Leg icon={faArrowRightToBracket} label="Devolução" garagem={reserva.garagemDevolucao} id={reserva.idGaragemDevolucao} quando={reserva.dataHoraFim} />
+                <Leg icon={faArrowRightFromBracket} label={t("payment.summary.pickup")} garagem={reserva.garagemRetirada} id={reserva.idGaragemRetirada} quando={reserva.dataHoraInicio} />
+                <Leg icon={faArrowRightToBracket} label={t("payment.summary.return")} garagem={reserva.garagemDevolucao} id={reserva.idGaragemDevolucao} quando={reserva.dataHoraFim} />
               </ol>
             </div>
           </section>
 
           {reserva.servicos?.length > 0 && (
             <section className="journey-section" aria-labelledby="servicos-title">
-              <h2 id="servicos-title">Serviços contratados</h2>
+              <h2 id="servicos-title">{t("reservation.detail.services")}</h2>
               <ul className="line-list">
                 {reserva.servicos.map((servico) => (
                   <li key={servico.idServico || servico.id} className="line-list__item">
                     <div>
-                      <strong>{servico.nome || "Serviço"}</strong>
+                      <strong>{servico.nome || t("reservation.detail.service")}</strong>
                       {servico.descricao && <p className="line-list__desc">{servico.descricao}</p>}
                       {servico.detalhesCobertura && (
                         <details className="line-list__details">
-                          <summary>Ver detalhes da cobertura</summary>
+                          <summary>{t("reservation.detail.coverageDetails")}</summary>
                           <p>{servico.detalhesCobertura}</p>
                         </details>
                       )}
@@ -258,19 +253,19 @@ export default function ReservaDetalhe() {
 
           {reserva.codigoDesbloqueio && (
             <section className="journey-section" aria-labelledby="codigo-title">
-              <h2 id="codigo-title">Código de desbloqueio</h2>
+              <h2 id="codigo-title">{t("reservation.unlock.codeLabel")}</h2>
               <strong className="unlock-code">{reserva.codigoDesbloqueio}</strong>
-              <p className="journey-muted">Use o código somente na janela autorizada. O servidor valida reserva, usuário, horário e localização.</p>
+              <p className="journey-muted">{t("reservation.detail.codeNotice")}</p>
               {reserva.status === STATUS_RESERVA.CONFIRMADA && (
                 <div className="detail-qr">
                   {!qr.imagem && (
                     <button type="button" className="btn btn--secondary" disabled={qr.carregando} aria-busy={qr.carregando || undefined} onClick={() => void mostrarQr()}>
-                      {qr.carregando ? "Gerando QR…" : "Mostrar QR de desbloqueio"}
+                      {qr.carregando ? t("reservation.detail.qrGenerating") : t("reservation.detail.qrShow")}
                     </button>
                   )}
                   {qr.imagem && <>
-                    <img src={qr.imagem} width="240" height="240" alt="QR de desbloqueio desta reserva" />
-                    <p><a href={qr.link} onClick={(event) => { event.preventDefault(); navigate(qr.link); }}>Usar este QR neste dispositivo</a></p>
+                    <img src={qr.imagem} width="240" height="240" alt={t("reservation.detail.qrAlt")} />
+                    <p><a href={qr.link} onClick={(event) => { event.preventDefault(); navigate(qr.link); }}>{t("reservation.detail.qrUseHere")}</a></p>
                   </>}
                   {qr.erro && <p className="alert alert--danger" role="alert">{qr.erro}</p>}
                 </div>
@@ -279,18 +274,18 @@ export default function ReservaDetalhe() {
           )}
 
           <section className="journey-section" aria-labelledby="share-title">
-            <h2 id="share-title">Compartilhar viagem</h2>
-            <p className="journey-muted">Gere um link estático. O link não libera veículo nem exibe localização ao vivo.</p>
+            <h2 id="share-title">{t("reservation.share.title")}</h2>
+            <p className="journey-muted">{t("reservation.share.notice")}</p>
             <div className="journey-actions detail-share">
               <button type="button" className="btn btn--secondary" disabled={compartilhamento.carregando} aria-busy={compartilhamento.carregando || undefined} onClick={() => void compartilhar()}>
-                {compartilhamento.carregando ? "Gerando link…" : "Compartilhar viagem"}
+                {compartilhamento.carregando ? t("reservation.share.generating") : t("reservation.share.title")}
               </button>
               {compartilhamento.url && <>
-                <button type="button" className="btn btn--quiet" onClick={() => void copiarLink(compartilhamento.url).then(() => setCompartilhamento((atual) => ({ ...atual, mensagem: "Link copiado.", erro: "" }))).catch((error) => setCompartilhamento((atual) => ({ ...atual, erro: error.message })))}>Copiar link</button>
-                <button type="button" className="btn btn--quiet" onClick={() => void revogar()}>Revogar compartilhamento</button>
+                <button type="button" className="btn btn--quiet" onClick={() => void copiarLink(compartilhamento.url).then(() => setCompartilhamento((atual) => ({ ...atual, mensagem: t("reservation.share.copied"), erro: "" }))).catch((error) => setCompartilhamento((atual) => ({ ...atual, erro: error.message })))}>{t("reservation.share.copy")}</button>
+                <button type="button" className="btn btn--quiet" onClick={() => void revogar()}>{t("reservation.share.revoke")}</button>
               </>}
             </div>
-            {compartilhamento.url && <p><a href={compartilhamento.url} target="_blank" rel="noreferrer">Abrir link compartilhável</a></p>}
+            {compartilhamento.url && <p><a href={compartilhamento.url} target="_blank" rel="noreferrer">{t("reservation.share.open")}</a></p>}
             {compartilhamento.mensagem && <p className="journey-muted" aria-live="polite">{compartilhamento.mensagem}</p>}
             {compartilhamento.erro && <p className="alert alert--danger" aria-live="assertive" role="alert">{compartilhamento.erro}</p>}
           </section>
@@ -298,29 +293,30 @@ export default function ReservaDetalhe() {
 
         <aside className="journey-layout__aside detail-aside">
           <section className="price-summary" aria-labelledby="financeiro-title">
-            <h2 id="financeiro-title">Resumo financeiro</h2>
+            <h2 id="financeiro-title">{t("reservation.detail.financialSummary")}</h2>
             <dl className="price-summary__rows">
               {contarDiarias(reserva.dataHoraInicio, reserva.dataHoraFim) && (
-                <div><dt>Diárias</dt><dd className="tabular">{contarDiarias(reserva.dataHoraInicio, reserva.dataHoraFim)}</dd></div>
+                <div><dt>{t("reservation.detail.days")}</dt><dd className="tabular">{contarDiarias(reserva.dataHoraInicio, reserva.dataHoraFim)}</dd></div>
               )}
-              <div><dt>Pagamento</dt><dd>{rotulo(STATUS_PAGAMENTO_LABELS, statusPagamentoAtual) || "Não informado"}</dd></div>
+              <div><dt>{t("payment.summary.payment")}</dt><dd>{rotulo(STATUS_PAGAMENTO_LABELS, statusPagamentoAtual) || t("reservation.tracking.notProvided")}</dd></div>
               {pagamento?.statusEstorno && <>
-                <div><dt>Valor pago</dt><dd className="tabular">{formatMoneyBRL(pagamento.valorPago)}</dd></div>
-                <div><dt>Status do estorno</dt><dd>{rotulo(STATUS_ESTORNO_LABELS, pagamento.statusEstorno)}</dd></div>
-                <div><dt>Elegível ao estorno</dt><dd className="tabular">{formatMoneyBRL(pagamento.valorElegivelEstorno)}</dd></div>
+                <div><dt>{t("reservation.detail.amountPaid")}</dt><dd className="tabular">{formatMoneyBRL(pagamento.valorPago)}</dd></div>
+                <div><dt>{t("reservation.detail.refundStatus")}</dt><dd>{rotulo(STATUS_ESTORNO_LABELS, pagamento.statusEstorno)}</dd></div>
+                <div><dt>{t("reservation.detail.refundable")}</dt><dd className="tabular">{formatMoneyBRL(pagamento.valorElegivelEstorno)}</dd></div>
               </>}
             </dl>
             <div className="price-summary__total">
-              <span>Total</span>
-              <strong className="tabular">{reserva.valorTotal != null ? formatMoneyBRL(reserva.valorTotal) : "Valor não informado"}</strong>
+              <span>{t("payment.summary.total")}</span>
+              <strong className="tabular">{reserva.valorTotal != null ? formatMoneyBRL(reserva.valorTotal) : t("reservation.detail.amountMissing")}</strong>
             </div>
-            {pagamento?.aviso && <p className="price-summary__note">{pagamento.aviso}</p>}
+            {/* O aviso da API vem em pt-BR; a interface mostra o mesmo aviso no idioma ativo. */}
+            {pagamento?.aviso && <p className="price-summary__note">{t("payment.summary.sandboxNote")}</p>}
 
-            <div className="detail-actions" aria-label="Ações da reserva" role="group">
+            <div className="detail-actions" aria-label={t("reservation.detail.actionsLabel")} role="group">
               {destino && <button type="button" className="btn btn--lg btn--block" onClick={() => navegarComReserva(destino.path)}>{destino.label}</button>}
-              {reserva.status === STATUS_RESERVA.EM_ANDAMENTO && <button type="button" className="btn btn--secondary btn--block" onClick={() => navegarComReserva("/devolucao")}>Devolver veículo</button>}
-              {podeCancelar && <button type="button" className="btn btn--danger btn--block" onClick={() => navegarComReserva("/cancelamento")}>Cancelar reserva</button>}
-              {!destino && reserva.status === STATUS_RESERVA.CANCELADA && <p className="journey-muted" role="status">Esta reserva foi cancelada. Nenhuma ação operacional está disponível.</p>}
+              {reserva.status === STATUS_RESERVA.EM_ANDAMENTO && <button type="button" className="btn btn--secondary btn--block" onClick={() => navegarComReserva("/devolucao")}>{t("reservation.detail.actions.return")}</button>}
+              {podeCancelar && <button type="button" className="btn btn--danger btn--block" onClick={() => navegarComReserva("/cancelamento")}>{t("reservation.cancel.title")}</button>}
+              {!destino && reserva.status === STATUS_RESERVA.CANCELADA && <p className="journey-muted" role="status">{t("reservation.detail.cancelledNotice")}</p>}
             </div>
           </section>
         </aside>

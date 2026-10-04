@@ -1,0 +1,56 @@
+{
+  "interests": {
+    "loadError": "We couldn't load your alerts.",
+    "documentTitle": "MOVA - Availability alerts",
+    "cancelled": "Availability alert cancelled.",
+    "activated": "Availability alert enabled.",
+    "updateError": "We couldn't update the alert.",
+    "title": "Availability alerts",
+    "lede": "Choose an unavailable vehicle to get an alert when it becomes available again.",
+    "loading": "Loading unavailable vehicles…",
+    "empty": "No unavailable vehicles found.",
+    "unavailable": "Unavailable — {status}",
+    "garageStatus": "(garage {status})",
+    "year": "Year",
+    "perDay": "/day",
+    "cancel": "Cancel alert",
+    "notify": "Notify me when available",
+    "received": "Alerts received",
+    "backToCatalog": "Back to catalog"
+  },
+  "favorites": {
+    "title": "Favorite Cars",
+    "documentTitle": "MOVA - Favorite Cars",
+    "empty": "You haven't added any favorite cars yet. Tap the heart on a vehicle in Available Cars to add it here."
+  },
+  "available": {
+    "title": "Available Cars",
+    "documentTitle": "MOVA - Available Cars",
+    "empty": "No vehicles available right now."
+  },
+  "carList": {
+    "viewFavorites": "View my favorites",
+    "loadError": "We couldn't load the vehicles.",
+    "favoriteError": "We couldn't update the favorite.",
+    "alertError": "We couldn't update the availability alert.",
+    "loading": "Loading vehicles…",
+    "details": "View details"
+  },
+  "sharedTrip": {
+    "notProvided": "Not provided",
+    "notFound": "Shared trip not found.",
+    "title": "Shared trip",
+    "loading": "Loading trip…",
+    "sectionLabel": "Public trip details",
+    "statusLabel": "Status:",
+    "pickup": "Pickup:",
+    "return": "Return:",
+    "status": {
+      "AGUARDANDO_PAGAMENTO": "Awaiting payment",
+      "CONFIRMADA": "Confirmed",
+      "EM_ANDAMENTO": "In progress",
+      "REALIZADA": "Completed",
+      "CANCELADA": "Cancelled"
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "interests": {
+    "loadError": "Não foi possível carregar os interesses.",
+    "documentTitle": "MOVA - Avisos de disponibilidade",
+    "cancelled": "Aviso de disponibilidade cancelado.",
+    "activated": "Aviso de disponibilidade ativado.",
+    "updateError": "Não foi possível atualizar o aviso.",
+    "title": "Avisos de disponibilidade",
+    "lede": "Escolha um veículo indisponível para receber um aviso quando ele voltar a ficar disponível.",
+    "loading": "Carregando veículos indisponíveis…",
+    "empty": "Nenhum veículo indisponível encontrado.",
+    "unavailable": "Indisponível — {status}",
+    "garageStatus": "(garagem {status})",
+    "year": "Ano",
+    "perDay": "/dia",
+    "cancel": "Cancelar aviso",
+    "notify": "Avisar quando disponível",
+    "received": "Avisos recebidos",
+    "backToCatalog": "Voltar ao catálogo"
+  },
+  "favorites": {
+    "title": "Carros Favoritados",
+    "documentTitle": "MOVA - Carros Favoritados",
+    "empty": "Você ainda não favoritou nenhum carro. Toque no coração de um veículo em Carros Disponíveis para adicioná-lo aqui."
+  },
+  "available": {
+    "title": "Carros Disponíveis",
+    "documentTitle": "MOVA - Carros Disponíveis",
+    "empty": "Nenhum veículo disponível no momento."
+  },
+  "carList": {
+    "viewFavorites": "Ver meus favoritos",
+    "loadError": "Não foi possível carregar os veículos.",
+    "favoriteError": "Não foi possível atualizar o favorito.",
+    "alertError": "Não foi possível atualizar o aviso de disponibilidade.",
+    "loading": "Carregando veículos…",
+    "details": "Ver detalhes"
+  },
+  "sharedTrip": {
+    "notProvided": "Não informado",
+    "notFound": "Compartilhamento não encontrado.",
+    "title": "Viagem compartilhada",
+    "loading": "Carregando viagem…",
+    "sectionLabel": "Detalhes públicos da viagem",
+    "statusLabel": "Status:",
+    "pickup": "Retirada:",
+    "return": "Devolução:",
+    "status": {
+      "AGUARDANDO_PAGAMENTO": "Aguardando pagamento",
+      "CONFIRMADA": "Confirmada",
+      "EM_ANDAMENTO": "Em andamento",
+      "REALIZADA": "Realizada",
+      "CANCELADA": "Cancelada"
+    }
+  }
+}

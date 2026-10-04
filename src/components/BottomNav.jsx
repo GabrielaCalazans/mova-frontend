@@ -8,6 +8,7 @@ import { useActiveReservation } from "../hooks/useActiveReservation";
 import { useShell } from "./layout/shell-context";
 import AccountMenu from "./layout/AccountMenu";
 import { isNavItemActive, renterNavItems } from "./layout/navItems";
+import { t } from "../i18n";
 
 /**
  * Tab bar do locatário. Dentro do AppShell só a instância do próprio shell
@@ -34,7 +35,7 @@ export default function BottomNav({ activeReservation: providedReservation, shel
 
   return (
     <>
-      <nav className="tabbar" aria-label="Navegação principal">
+      <nav className="tabbar" aria-label={t("common.shell.mainNav")}>
         {renterNavItems(activeReservation).map((item) => {
           const active = isNavItemActive(item, location.pathname);
           return (
@@ -54,7 +55,7 @@ export default function BottomNav({ activeReservation: providedReservation, shel
           onClick={(event) => (onOpenMenu ? onOpenMenu(event.currentTarget) : setLocalMenu(true))}
         >
           <FontAwesomeIcon icon={faUser} aria-hidden="true" />
-          <span>Conta</span>
+          <span>{t("common.shell.account")}</span>
         </button>
       </nav>
       {!onOpenMenu && <AccountMenu open={localMenu} onClose={closeLocalMenu} />}

@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCarSide } from "@fortawesome/free-solid-svg-icons";
 import { resolveVehicleImages } from "../../utils/vehicleDisplay";
+import { t } from "../../i18n";
 
 /**
  * Mídia do veículo em proporção fixa e `object-fit: contain`: o carro inteiro
@@ -15,7 +16,7 @@ export default function VehicleMedia({ vehicle, index = 0, eager = false, classN
     return (
       <div className={`vmedia vmedia--empty ${className}`.trim()}>
         <FontAwesomeIcon icon={faCarSide} aria-hidden="true" />
-        <span>Sem foto do veículo</span>
+        <span>{t("common.vehicle.noPhoto")}</span>
       </div>
     );
   }
@@ -23,7 +24,7 @@ export default function VehicleMedia({ vehicle, index = 0, eager = false, classN
   return (
     <figure className={`vmedia ${className}`.trim()}>
       <img src={image.src} alt={image.alt} loading={eager ? "eager" : "lazy"} decoding="async" />
-      {image.kind === "illustrative" ? <figcaption className="vmedia__flag">Foto ilustrativa</figcaption> : null}
+      {image.kind === "illustrative" ? <figcaption className="vmedia__flag">{t("common.vehicle.illustrativePhoto")}</figcaption> : null}
     </figure>
   );
 }

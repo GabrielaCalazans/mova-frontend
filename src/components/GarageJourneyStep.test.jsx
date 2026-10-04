@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { setLocale } from "../i18n";
 import GarageJourneyStep from "./GarageJourneyStep";
 
 vi.mock("../components/BottomNav", () => ({ default: () => null }));
@@ -43,5 +44,25 @@ describe("GarageJourneyStep — calendário", () => {
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("button", { name: "Próximo mês" })).not.toBeInTheDocument();
     expect(campo).toHaveFocus();
+  });
+});
+
+describe("GarageJourneyStep — RNF08 (idiomas)", () => {
+  afterEach(() => setLocale("pt-BR"));
+
+  it("em inglês rotula campos e dias do calendário no idioma ativo", async () => {
+    const user = userEvent.setup();
+    setLocale("en");
+    renderStep();
+
+    const campo = await screen.findByLabelText("Pickup date");
+    expect(screen.getByLabelText("Pickup time")).toBeInTheDocument();
+    await user.click(campo);
+    await user.click(screen.getByRole("button", { name: "Next month" }));
+
+    const hoje = new Date();
+    const mesSeguinte = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 14);
+    const rotulo = new Intl.DateTimeFormat("en-US", { dateStyle: "long" }).format(mesSeguinte);
+    expect(screen.getByRole("button", { name: rotulo })).toBeInTheDocument();
   });
 });

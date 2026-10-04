@@ -3,6 +3,7 @@ import { rotulo, STATUS_GARAGEM_LABELS } from "../services/apiEnums";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { createGaragem, listGaragens, updateGaragem } from "../services/garagemService";
 import { getAuthSession } from "../services/authSession";
+import { t } from "../i18n";
 import "../styles/owner.css";
 
 const STATUS_OPCOES = ["ATIVA", "INATIVA", "MANUTENCAO"];
@@ -38,7 +39,7 @@ export default function CadastroGaragemForm() {
           (item) => String(item.id) === String(id),
         );
         if (!garagem) {
-          throw new Error("Garagem não encontrada na sua conta.");
+          throw new Error(t("owner.garageForm.notFound"));
         }
         setValues({
           nome: garagem.nome || "",
@@ -50,7 +51,7 @@ export default function CadastroGaragemForm() {
         setErro(null);
       })
       .catch((error) => {
-        if (ativo) setErro(error.message || "Não foi possível carregar a garagem.");
+        if (ativo) setErro(error.message || t("owner.garageForm.loadError"));
       })
       .finally(() => {
         if (ativo) setCarregandoGaragem(false);
@@ -62,7 +63,7 @@ export default function CadastroGaragemForm() {
   }, [garagemOriginal, id, idLocador, isNovo]);
 
   useEffect(() => {
-    document.title = isNovo ? "MOVA - Adicionar Garagem" : "MOVA - Editar Garagem";
+    document.title = isNovo ? t("owner.garageForm.docTitleNew") : t("owner.garageForm.docTitleEdit");
   }, [isNovo]);
 
   function handleChange(key, value) {
@@ -84,26 +85,26 @@ export default function CadastroGaragemForm() {
     setSalvando(true);
     try {
       if (isNovo) {
-        if (!idLocador) throw new Error("Sessão inválida. Faça login novamente.");
+        if (!idLocador) throw new Error(t("owner.common.sessionInvalid"));
         await createGaragem({ ...payload, idLocador });
       } else {
         await updateGaragem(id, payload);
       }
       navigate("/cadastro-garagens");
     } catch (e) {
-      setErro(e.message || "Não foi possível salvar a garagem.");
+      setErro(e.message || t("owner.garageForm.saveError"));
     } finally {
       setSalvando(false);
     }
   }
 
-  const titulo = isNovo ? "Adicionar garagem" : "Editar garagem";
+  const titulo = isNovo ? t("owner.garageForm.titleNew") : t("owner.garageForm.titleEdit");
 
   if (carregandoGaragem) {
     return (
       <main className="owner-page" aria-labelledby="garagem-form-title">
         <header className="page-head"><h1 id="garagem-form-title">{titulo}</h1></header>
-        <p className="loading-state" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" />Carregando garagem…</p>
+        <p className="loading-state" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" />{t("owner.garageForm.loading")}</p>
       </main>
     );
   }
@@ -112,7 +113,7 @@ export default function CadastroGaragemForm() {
     <main className="owner-page" aria-labelledby="garagem-form-title">
       <header className="page-head">
         <h1 id="garagem-form-title">{titulo}</h1>
-        <p className="page-head__lede">Ponto de retirada e devolução: endereço, vagas e acessibilidade.</p>
+        <p className="page-head__lede">{t("owner.garageForm.lede")}</p>
       </header>
       <form className="owner-form" onSubmit={handleSubmit} noValidate>
         {erro && (
@@ -122,14 +123,14 @@ export default function CadastroGaragemForm() {
         )}
 
         <fieldset className="fieldset">
-          <legend>Dados da garagem</legend>
+          <legend>{t("owner.garageForm.details")}</legend>
           <div className="field">
-            <label className="field__label" htmlFor="nome">Nome*</label>
+            <label className="field__label" htmlFor="nome">{t("owner.garageForm.name")}</label>
             <input
               id="nome"
               className="field__control"
               type="text"
-              placeholder="Nome*"
+              placeholder={t("owner.garageForm.name")}
               required
               value={values.nome}
               onChange={(e) => handleChange("nome", e.target.value)}
@@ -137,12 +138,12 @@ export default function CadastroGaragemForm() {
           </div>
 
           <div className="field">
-            <label className="field__label" htmlFor="endereco">Endereço*</label>
+            <label className="field__label" htmlFor="endereco">{t("owner.garageForm.address")}</label>
             <input
               id="endereco"
               className="field__control"
               type="text"
-              placeholder="Endereço*"
+              placeholder={t("owner.garageForm.address")}
               required
               value={values.endereco}
               onChange={(e) => handleChange("endereco", e.target.value)}
@@ -151,16 +152,16 @@ export default function CadastroGaragemForm() {
         </fieldset>
 
         <fieldset className="fieldset">
-          <legend>Operação</legend>
+          <legend>{t("owner.common.operation")}</legend>
           <div className="owner-form__grid">
             <div className="field">
-              <label className="field__label" htmlFor="capacidade">Capacidade Total*</label>
+              <label className="field__label" htmlFor="capacidade">{t("owner.garageForm.capacity")}</label>
               <input
                 id="capacidade"
                 className="field__control"
                 type="text"
                 inputMode="numeric"
-                placeholder="Capacidade Total* (nº de vagas)"
+                placeholder={t("owner.garageForm.capacityPlaceholder")}
                 required
                 value={values.capacidade}
                 onChange={(e) => handleChange("capacidade", e.target.value.replace(/\D/g, ""))}
@@ -169,7 +170,7 @@ export default function CadastroGaragemForm() {
 
             {!isNovo && (
               <div className="field">
-                <label className="field__label" htmlFor="status">Status</label>
+                <label className="field__label" htmlFor="status">{t("owner.common.status")}</label>
                 <select
                   id="status"
                   className="field__control"
@@ -190,18 +191,18 @@ export default function CadastroGaragemForm() {
               checked={values.acessibilidade}
               onChange={(e) => handleChange("acessibilidade", e.target.checked)}
             />
-            Garagem acessível (vagas para veículos adaptados)
+            {t("owner.garageForm.accessible")}
           </label>
         </fieldset>
 
-        {isNovo && <p className="owner-form__note">Todos os campos com * são obrigatórios</p>}
+        {isNovo && <p className="owner-form__note">{t("owner.common.requiredNote")}</p>}
 
         <div className="owner-form__actions">
           <button type="button" className="btn btn--secondary btn--lg" onClick={() => navigate("/cadastro-garagens")} disabled={salvando}>
-            Cancelar
+            {t("owner.common.cancel")}
           </button>
           <button type="submit" className="btn btn--lg" disabled={salvando}>
-            {salvando ? "Salvando..." : isNovo ? "Finalizar Cadastro" : "Editar"}
+            {salvando ? t("owner.common.saving") : isNovo ? t("owner.common.finishRegistration") : t("owner.common.submitEdit")}
           </button>
         </div>
       </form>

@@ -8,6 +8,7 @@ import { METODO_PAGAMENTO_LABELS, rotulo, STATUS_RESERVA } from "../services/api
 import { formatMoneyBRL } from "../utils/reservationMath";
 import { getReservaById } from "../services/reservaService";
 import { createAvaliacao, getAvaliacaoDaReserva } from "../services/avaliacaoService";
+import { formatDate, t } from "../i18n";
 import "../styles/journey.css";
 import "../styles/postcompra.css";
 
@@ -25,14 +26,12 @@ function resolveVeiculoNome(reserva, veiculoJourney) {
     return `${marca ?? ""} ${modelo ?? ""}`.trim();
   }
 
-  return veiculoJourney?.nome || "Veículo";
+  return veiculoJourney?.nome || t("reservation.common.vehicle");
 }
 
 function formatarDataHora(valor) {
-  if (!valor) return "";
-  const data = new Date(valor);
-  if (Number.isNaN(data.getTime())) return "";
-  return `${data.toLocaleDateString("pt-BR")} ${data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+  const data = formatDate(valor);
+  return data ? `${data} ${formatDate(valor, { hour: "2-digit", minute: "2-digit" })}` : "";
 }
 
 export default function AvaliacaoReserva() {
@@ -58,7 +57,7 @@ export default function AvaliacaoReserva() {
   const [erroAvaliacao, setErroAvaliacao] = useState("");
 
   useEffect(() => {
-    document.title = "MOVA - Avalie sua Experiência";
+    document.title = t("reservation.review.documentTitle");
   }, []);
 
   useEffect(() => {
@@ -74,7 +73,7 @@ export default function AvaliacaoReserva() {
     ]).then(([reservaResult, avaliacaoResult]) => {
       if (!active) return;
       if (reservaResult?.erro) {
-        setErroCarregamento(reservaResult.erro.message || "Não foi possível carregar a reserva.");
+        setErroCarregamento(reservaResult.erro.message || t("reservation.return.loadError"));
         setCarregando(false);
         return;
       }
@@ -96,7 +95,7 @@ export default function AvaliacaoReserva() {
   const jaAvaliada = Boolean(avaliacaoExistente);
   const podeAvaliar = reserva?.status === STATUS_RESERVA.REALIZADA;
   const mensagemCarregamento = semReservaId
-    ? "Não encontramos a reserva a ser avaliada."
+    ? t("reservation.review.notFound")
     : erroCarregamento;
 
   function handleEnviarAvaliacao(event) {
@@ -104,7 +103,7 @@ export default function AvaliacaoReserva() {
     setErroAvaliacao("");
 
     if (!reservaId || !podeAvaliar) {
-      setErroAvaliacao("A avaliação fica disponível após a devolução da reserva.");
+      setErroAvaliacao(t("reservation.review.availableAfterReturn"));
       return;
     }
 
@@ -118,7 +117,7 @@ export default function AvaliacaoReserva() {
         setAvaliacaoExistente(avaliacao);
       })
       .catch((error) => {
-        setErroAvaliacao(error?.message || "Não foi possível enviar sua avaliação.");
+        setErroAvaliacao(error?.message || t("reservation.review.sendError"));
       })
       .finally(() => setEnviando(false));
   }
@@ -128,11 +127,11 @@ export default function AvaliacaoReserva() {
   return (
     <main className="journey-page">
       <header className="journey-head">
-        <h1>Avalie sua Experiência</h1>
+        <h1>{t("reservation.review.title")}</h1>
       </header>
 
       {!semReservaId && carregando && (
-        <p className="loading-state" aria-live="polite"><span className="spinner" aria-hidden="true" />Carregando dados da reserva…</p>
+        <p className="loading-state" aria-live="polite"><span className="spinner" aria-hidden="true" />{t("reservation.review.loading")}</p>
       )}
 
       {((semReservaId || !carregando) && mensagemCarregamento && !reserva) && (
@@ -145,20 +144,20 @@ export default function AvaliacaoReserva() {
       {!carregando && (reserva || veiculoJourney) && (
         <div className="journey-layout">
           <section className="post-panel" aria-labelledby="avaliacao-titulo">
-            <h2 id="avaliacao-titulo">Sua nota</h2>
+            <h2 id="avaliacao-titulo">{t("reservation.review.yourRating")}</h2>
 
             {jaAvaliada && (
               <div className="alert alert--success" role="status">
                 <FontAwesomeIcon icon={faCircleCheck} aria-hidden="true" />
                 <div className="alert__body">
-                  <p>Você já avaliou esta reserva com nota {avaliacaoExistente.nota}.</p>
+                  <p>{t("reservation.review.alreadyRated", { rating: avaliacaoExistente.nota })}</p>
                   {avaliacaoExistente.comentario && <p>“{avaliacaoExistente.comentario}”</p>}
                 </div>
               </div>
             )}
 
             <div className="rating">
-              <p className="rating__label" id="rating-label">Avaliação em estrelas</p>
+              <p className="rating__label" id="rating-label">{t("reservation.review.starsLabel")}</p>
               <div className="rating__stars" role="group" aria-labelledby="rating-label">
                 {[1, 2, 3, 4, 5].map((star) => {
                   const filled = star <= notaExibida;
@@ -170,7 +169,7 @@ export default function AvaliacaoReserva() {
                       onClick={() => !jaAvaliada && setRating(star)}
                       onMouseEnter={() => !jaAvaliada && setHoverRating(star)}
                       onMouseLeave={() => !jaAvaliada && setHoverRating(0)}
-                      aria-label={`${star} estrela${star > 1 ? "s" : ""}`}
+                      aria-label={t("reservation.review.star", { count: star })}
                       aria-pressed={star === rating}
                       disabled={jaAvaliada}
                     >
@@ -180,7 +179,7 @@ export default function AvaliacaoReserva() {
                 })}
               </div>
               <p className="rating__value" aria-live="polite">
-                Nota selecionada: <span className="tabular">{rating}</span> de 5
+                {t("reservation.review.selected")} <span className="tabular">{rating}</span> {t("reservation.review.outOf5")}
               </p>
             </div>
 
@@ -191,11 +190,11 @@ export default function AvaliacaoReserva() {
               </div>
             )}
 
-            {!jaAvaliada && !podeAvaliar && <p className="journey-muted">A avaliação fica disponível após a devolução da reserva.</p>}
+            {!jaAvaliada && !podeAvaliar && <p className="journey-muted">{t("reservation.review.availableAfterReturn")}</p>}
 
             {!jaAvaliada && podeAvaliar && <>
               <div className="field">
-                <label className="field__label" htmlFor="comentario-avaliacao">Comentário (opcional)</label>
+                <label className="field__label" htmlFor="comentario-avaliacao">{t("reservation.review.comment")}</label>
                 <textarea
                   id="comentario-avaliacao"
                   className="field__control"
@@ -209,20 +208,20 @@ export default function AvaliacaoReserva() {
               </div>
               <div className="journey-actions">
                 <button type="button" className="btn btn--lg" onClick={handleEnviarAvaliacao} disabled={enviando} aria-busy={enviando || undefined}>
-                  {enviando ? "Enviando..." : "Enviar Avaliação"}
+                  {enviando ? t("reservation.review.sending") : t("reservation.review.submit")}
                 </button>
               </div>
             </>}
           </section>
 
           <aside className="post-panel" aria-labelledby="avaliacao-reserva">
-            <h2 id="avaliacao-reserva">Informações da Reserva</h2>
+            <h2 id="avaliacao-reserva">{t("reservation.review.infoTitle")}</h2>
             <ul className="post-facts">
-              <li>Veículo: {nomeVeiculo}</li>
-              <li>Início: <span className="tabular">{resolveField(formatarDataHora(reserva?.dataHoraInicio))}</span></li>
-              <li>Fim: <span className="tabular">{resolveField(formatarDataHora(reserva?.dataHoraFim))}</span></li>
-              <li>Preço: <span className="tabular">{reserva?.valorTotal != null ? formatMoneyBRL(reserva.valorTotal) : "—"}</span></li>
-              <li>Forma de Pagamento: {resolveField(rotulo(METODO_PAGAMENTO_LABELS, reserva?.metodoPagamento))}</li>
+              <li>{t("reservation.return.vehicle")} {nomeVeiculo}</li>
+              <li>{t("reservation.review.start")} <span className="tabular">{resolveField(formatarDataHora(reserva?.dataHoraInicio))}</span></li>
+              <li>{t("reservation.review.end")} <span className="tabular">{resolveField(formatarDataHora(reserva?.dataHoraFim))}</span></li>
+              <li>{t("reservation.review.price")} <span className="tabular">{reserva?.valorTotal != null ? formatMoneyBRL(reserva.valorTotal) : "—"}</span></li>
+              <li>{t("reservation.review.paymentMethod")} {resolveField(rotulo(METODO_PAGAMENTO_LABELS, reserva?.metodoPagamento))}</li>
             </ul>
           </aside>
         </div>

@@ -11,6 +11,7 @@ import {
   getReservaById,
   listReservasDoLocatario,
 } from "../services/reservaService";
+import { formatDate, t } from "../i18n";
 import "../styles/journey.css";
 import "../styles/payment.css";
 import "../styles/postcompra.css";
@@ -44,7 +45,7 @@ function idReservaDoQr(token) {
 function obterCoordenadas() {
   return new Promise((resolve, reject) => {
     if (typeof navigator === "undefined" || !navigator.geolocation?.getCurrentPosition) {
-      reject(new Error("Este navegador não oferece geolocalização. Use um navegador compatível para desbloquear."));
+      reject(new Error(t("reservation.unlock.geo.unsupported")));
       return;
     }
 
@@ -56,7 +57,7 @@ function obterCoordenadas() {
       acao(valor);
     };
     // O timeout da API pode nao contar enquanto o prompt de permissao esta aberto.
-    const prazo = setTimeout(() => concluir(reject, new Error("Tempo esgotado ao obter sua localização. Tente novamente.")), TIMEOUT_GEO_MS);
+    const prazo = setTimeout(() => concluir(reject, new Error(t("reservation.unlock.geo.timeout"))), TIMEOUT_GEO_MS);
     try {
       navigator.geolocation.getCurrentPosition(
         (posicao) => {
@@ -64,23 +65,23 @@ function obterCoordenadas() {
           const longitude = posicao?.coords?.longitude;
           if (!Number.isFinite(latitude) || !Number.isFinite(longitude) ||
               latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
-            concluir(reject, new Error("O dispositivo retornou uma localização inválida. Tente novamente."));
+            concluir(reject, new Error(t("reservation.unlock.geo.invalid")));
             return;
           }
           concluir(resolve, { latitude, longitude });
         },
         (erro) => {
           const mensagem = erro?.code === 1
-            ? "Permissão de localização negada. Autorize o acesso no navegador e tente novamente."
+            ? t("reservation.unlock.geo.denied")
             : erro?.code === 3
-              ? "Tempo esgotado ao obter sua localização. Tente novamente."
-              : "Localização indisponível. Verifique o GPS ou a conexão e tente novamente.";
+              ? t("reservation.unlock.geo.timeout")
+              : t("reservation.unlock.geo.unavailable");
           concluir(reject, new Error(mensagem));
         },
         { timeout: TIMEOUT_GEO_MS, enableHighAccuracy: true, maximumAge: 0 },
       );
     } catch {
-      concluir(reject, new Error("Não foi possível solicitar sua localização. Tente novamente."));
+      concluir(reject, new Error(t("reservation.unlock.geo.requestFailed")));
     }
   });
 }
@@ -107,14 +108,9 @@ function escolherReservaDesbloqueavel(reservas) {
 }
 
 function formatarDataHora(valor) {
-  if (!valor) return "";
-  const data = new Date(valor);
-  if (Number.isNaN(data.getTime())) return "";
-  const hora = data.toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  return `${data.toLocaleDateString("pt-BR")} às ${hora}`;
+  const date = formatDate(valor);
+  if (!date) return "";
+  return t("reservation.common.dateAtTime", { date, time: formatDate(valor, { hour: "2-digit", minute: "2-digit" }) });
 }
 
 export default function TelaDeDesbloqueio() {
@@ -132,7 +128,7 @@ export default function TelaDeDesbloqueio() {
   const [erroDesbloqueio, setErroDesbloqueio] = useState("");
 
   useEffect(() => {
-    document.title = "MOVA - Desbloqueio";
+    document.title = t("reservation.unlock.documentTitle");
   }, []);
 
   // Carrega a reserva pelo backend. O id vem do historico (location.state), da
@@ -148,7 +144,7 @@ export default function TelaDeDesbloqueio() {
       try {
         const idQr = idReservaDoQr(qrToken);
         if (qrToken && !idQr) {
-          throw new Error("QR Code inválido. Solicite um novo código ao locatário.");
+          throw new Error(t("reservation.unlock.invalidQr"));
         }
 
         const idDireto = idQr ||
@@ -159,7 +155,7 @@ export default function TelaDeDesbloqueio() {
         if (!encontrada) {
           const idLocatario = getAuthSession()?.user?.id;
           if (!idLocatario) {
-            throw new Error("Sessão inválida. Faça login novamente.");
+            throw new Error(t("reservation.common.invalidSession"));
           }
           const reservas = await listReservasDoLocatario(idLocatario);
           encontrada = escolherReservaDesbloqueavel(reservas);
@@ -169,7 +165,7 @@ export default function TelaDeDesbloqueio() {
 
         if (!encontrada) {
           setErroCarregamento(
-            "Não encontramos nenhuma reserva confirmada para desbloquear.",
+            t("reservation.unlock.noneFound"),
           );
           return;
         }
@@ -185,7 +181,7 @@ export default function TelaDeDesbloqueio() {
       } catch (error) {
         if (!ativo) return;
         setErroCarregamento(
-          error?.message || "Não foi possível carregar sua reserva.",
+          error?.message || t("reservation.common.loadError"),
         );
       } finally {
         if (ativo) setCarregando(false);
@@ -216,7 +212,7 @@ export default function TelaDeDesbloqueio() {
       setReserva(atualizada);
     } catch (error) {
       setErroDesbloqueio(
-        error?.message || "Não foi possível desbloquear o veículo.",
+        error?.message || t("reservation.unlock.error"),
       );
     } finally {
       setDesbloqueando(false);
@@ -231,22 +227,22 @@ export default function TelaDeDesbloqueio() {
   return (
     <main className="journey-page">
       <header className="journey-head">
-        <h1>Desbloqueio</h1>
+        <h1>{t("reservation.unlock.title")}</h1>
       </header>
 
       {carregando && (
         <p className="loading-state" role="status">
           <span className="spinner" aria-hidden="true" />
-          Carregando sua reserva…
+          {t("reservation.common.loading")}
         </p>
       )}
 
       {!carregando && erroCarregamento && (
         <div className="state-block state-block--error">
-          <p className="state-block__title">Não foi possível abrir o desbloqueio</p>
+          <p className="state-block__title">{t("reservation.unlock.openError")}</p>
           <p className="state-block__text" role="alert">{erroCarregamento}</p>
           <button type="button" className="btn" onClick={() => navigate("/historico")}>
-            Ver minhas reservas
+            {t("reservation.common.myReservations")}
           </button>
         </div>
       )}
@@ -255,22 +251,21 @@ export default function TelaDeDesbloqueio() {
         <section className="pay-success" aria-labelledby="titulo-desbloqueado">
           <h2 className="pay-success__title" id="titulo-desbloqueado" data-testid="titulo-desbloqueado">
             <FontAwesomeIcon icon={faCircleCheck} aria-hidden="true" />
-            Veículo Desbloqueado
+            {t("reservation.unlock.successTitle")}
           </h2>
           <p>
-            Desbloqueio confirmado pelo sistema em{" "}
+            {t("reservation.unlock.confirmedAt")}{" "}
             <span className="tabular">{formatarDataHora(reserva.codigoUsadoEm)}</span>.
           </p>
           <p className="journey-muted" data-testid="status-reserva">
-            Status da reserva: {rotulo(STATUS_RESERVA_LABELS, reserva.status)}
+            {t("reservation.unlock.status", { status: rotulo(STATUS_RESERVA_LABELS, reserva.status) })}
           </p>
           <p className="journey-muted">
-            Depois de devolver o veículo, você pode avaliar sua experiência a
-            qualquer momento pela tela de Histórico.
+            {t("reservation.unlock.reviewLater")}
           </p>
           <div className="journey-actions">
             <button type="button" className="btn btn--lg" onClick={() => navigate("/historico")}>
-              Ver minhas reservas
+              {t("reservation.common.myReservations")}
             </button>
           </div>
         </section>
@@ -282,13 +277,12 @@ export default function TelaDeDesbloqueio() {
         !desbloqueado &&
         (!pagamentoConfirmado || !temCodigo) && (
           <section className="state-block">
-            <h2 className="state-block__title">Pagamento ainda não confirmado</h2>
+            <h2 className="state-block__title">{t("reservation.unlock.unpaidTitle")}</h2>
             <p className="state-block__text">
-              O código de desbloqueio é gerado quando o gateway confirma o
-              pagamento. Conclua o pagamento para continuar.
+              {t("reservation.unlock.unpaidText")}
             </p>
             <button type="button" className="btn" onClick={() => navigate("/pagamento")}>
-              Ir para o pagamento
+              {t("reservation.unlock.goToPayment")}
             </button>
           </section>
         )}
@@ -308,23 +302,23 @@ export default function TelaDeDesbloqueio() {
               enviarDesbloqueio(false);
             }}
           >
-            <h2 id="desbloqueio-titulo">Desbloqueie seu veículo</h2>
+            <h2 id="desbloqueio-titulo">{t("reservation.unlock.formTitle")}</h2>
 
             <div className="pay-success__code">
-              <span className="journey-muted">Seu código de desbloqueio é:</span>
+              <span className="journey-muted">{t("reservation.unlock.yourCode")}</span>
               <strong className="unlock-code" data-testid="codigo-desbloqueio">
                 {reserva.codigoDesbloqueio}
               </strong>
               <span className="journey-muted">
-                Válido a partir de <span className="tabular">{formatarDataHora(reserva.dataHoraInicio)}</span>,
-                para este veículo e de uso único.
+                {t("reservation.unlock.validFrom")} <span className="tabular">{formatarDataHora(reserva.dataHoraInicio)}</span>
+                {t("reservation.unlock.validFromSuffix")}
               </span>
             </div>
 
             <p className="alert alert--info">
               <FontAwesomeIcon icon={faLocationDot} aria-hidden="true" />
               <span className="alert__body">
-                Ao desbloquear, o navegador pede sua localização. O servidor confere se você está perto do veículo.
+                {t("reservation.unlock.locationNotice")}
               </span>
             </p>
 
@@ -335,13 +329,13 @@ export default function TelaDeDesbloqueio() {
                 onClick={() => enviarDesbloqueio(true)}
                 disabled={desbloqueando}
               >
-                {desbloqueando ? "Desbloqueando…" : "Desbloquear pelo QR Code"}
+                {desbloqueando ? t("reservation.unlock.unlocking") : t("reservation.unlock.byQr")}
               </button>
             )}
 
             <div className="field">
               <label className="field__label" htmlFor="codigo-desbloqueio">
-                Código de desbloqueio
+                {t("reservation.unlock.codeLabel")}
               </label>
               <input
                 id="codigo-desbloqueio"
@@ -363,7 +357,7 @@ export default function TelaDeDesbloqueio() {
               disabled={desbloqueando || codigo.trim().length === 0}
               aria-busy={desbloqueando || undefined}
             >
-              {desbloqueando ? "Desbloqueando…" : "Desbloquear veículo"}
+              {desbloqueando ? t("reservation.unlock.unlocking") : t("reservation.unlock.submit")}
             </button>
 
             {erroDesbloqueio && (

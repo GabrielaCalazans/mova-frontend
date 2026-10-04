@@ -1,3 +1,5 @@
+import { t } from "../../i18n";
+
 // Assets oficiais de mova-identidade-visual, publicados em /public/brand.
 // Cada variante tem versão clara e escura; o CSS (.brand-img--light/--dark)
 // mostra a correta para o tema efetivo. Um único nome acessível fica no
@@ -8,9 +10,9 @@ const VARIANTS = {
   icon: { file: "icon-loading.png", width: 256, height: 256 },
 };
 
-export default function BrandLogo({ variant = "header", label = "MOVA — Mobilidade para todos", className = "", decorative = false }) {
+export default function BrandLogo({ variant = "header", label, className = "", decorative = false }) {
   const { file, width, height } = VARIANTS[variant];
-  const a11y = decorative ? { "aria-hidden": true } : { role: "img", "aria-label": label };
+  const a11y = decorative ? { "aria-hidden": true } : { role: "img", "aria-label": label ?? t("common.brand.name") };
 
   return (
     <span className={`brand-logo brand-logo--${variant} ${className}`.trim()} {...a11y}>

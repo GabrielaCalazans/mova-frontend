@@ -21,6 +21,7 @@ import {
   SuccessTitle,
   SuccessSubtitle,
 } from "../styles/authStyle";
+import { t } from "../i18n";
 
 function Register() {
   const navigate = useNavigate();
@@ -56,16 +57,16 @@ function Register() {
   });
 
   useEffect(() => {
-    document.title = "MOVA - Cadastro de Locatário";
+    document.title = t("auth.register.documentTitle");
   }, []);
 
   const passwordState = getPasswordState(values.password);
 
   const passwordHelperText =
     passwordState === "default" || passwordState === "warning"
-      ? "Minimo 8 caracteres, com maiuscula, minuscula, numero e caractere especial."
+      ? t("auth.register.passwordHint")
       : passwordState === "success"
-        ? "Senha forte para cadastro."
+        ? t("auth.register.passwordStrong")
         : undefined;
 
   const passwordHelperType = passwordState === "success" ? "success" : "warning";
@@ -77,7 +78,7 @@ function Register() {
     setFeedback,
     getInvalidFeedback: () => ({
       type: "error",
-      message: "Verifique o e-mail e a senha informados.",
+      message: t("auth.register.invalidAccount"),
     }),
     onSubmit: async () => setStep(2),
   });
@@ -89,7 +90,7 @@ function Register() {
     setFeedback,
     getInvalidFeedback: () => ({
       type: "error",
-      message: "Existem campos invalidos. Revise os avisos abaixo.",
+      message: t("auth.invalidFields"),
     }),
     getSubmitErrorFeedback: (error) => ({
       type: "error",
@@ -106,11 +107,11 @@ function Register() {
   if (step === 1) {
     return (
       <AuthLayout
-        title="Crie uma conta"
+        title={t("auth.register.title")}
         logoSrc={movaLogo}
-        logoAlt="Mova Logo"
+        logoAlt={t("auth.logoAlt")}
         wordmark="MOVA"
-        tagline="Mobilidade on-demand versátil e acessível"
+        tagline={t("auth.tagline")}
       >
         <form className="auth-form" onSubmit={handleAccountSubmit} noValidate>
           {feedback && (
@@ -123,8 +124,8 @@ function Register() {
             id="email"
             name="email"
             type="email"
-            placeholder="E-mail"
-            ariaLabel="E-mail"
+            placeholder={t("auth.email")}
+            ariaLabel={t("auth.email")}
             value={values.email}
             onChange={(e) => setFieldValue("email", e.target.value)}
             required
@@ -136,8 +137,8 @@ function Register() {
             id="password"
             name="password"
             type="password"
-            placeholder="Senha"
-            ariaLabel="Senha"
+            placeholder={t("auth.password")}
+            ariaLabel={t("auth.password")}
             value={values.password}
             onChange={(e) => setFieldValue("password", e.target.value)}
             required
@@ -149,15 +150,15 @@ function Register() {
           />
 
           <button type="submit" className="auth-button" disabled={isAdvancing}>
-            {isAdvancing ? "Avançando..." : "Continuar"}
+            {isAdvancing ? t("auth.register.advancing") : t("auth.register.continue")}
           </button>
 
           <div className="auth-divider">
             <p className="auth-footer">
-              Já tem conta? <Link to="/login">Entrar</Link>
+              {t("auth.haveAccount")} <Link to="/login">{t("auth.signIn")}</Link>
             </p>
             <p className="auth-footer">
-              Quer alugar seu carro? <Link to="/cadastro-locador">Seja um locador</Link>
+              {t("auth.register.ownerPrompt")} <Link to="/cadastro-locador">{t("auth.register.ownerLink")}</Link>
             </p>
           </div>
         </form>
@@ -167,7 +168,7 @@ function Register() {
 
   return (
     <AuthLayout
-      title="Crie uma conta"
+      title={t("auth.register.title")}
       align="left"
       logoSrc={movaLogo}
       topBarSlot={
@@ -175,7 +176,7 @@ function Register() {
           type="button"
           className="auth-step-back"
           onClick={() => setStep(1)}
-          aria-label="Voltar"
+          aria-label={t("auth.register.back")}
         >
           <ArrowLeft strokeWidth={2} aria-hidden="true" />
         </button>
@@ -192,9 +193,9 @@ function Register() {
           id="name"
           name="name"
           type="text"
-          label="Nome*"
-          placeholder="Nome*"
-          ariaLabel="Nome"
+          label={`${t("auth.register.name")}*`}
+          placeholder={`${t("auth.register.name")}*`}
+          ariaLabel={t("auth.register.name")}
           value={values.name}
           onChange={(e) => setFieldValue("name", e.target.value)}
           required
@@ -206,9 +207,9 @@ function Register() {
           id="email-details"
           name="email"
           type="email"
-          label="E-mail*"
-          placeholder="E-mail*"
-          ariaLabel="E-mail"
+          label={`${t("auth.email")}*`}
+          placeholder={`${t("auth.email")}*`}
+          ariaLabel={t("auth.email")}
           value={values.email}
           onChange={(e) => setFieldValue("email", e.target.value)}
           required
@@ -220,9 +221,9 @@ function Register() {
           id="celphone"
           name="celphone"
           type="text"
-          label="Celular*"
-          placeholder="Celular*"
-          ariaLabel="Celular"
+          label={`${t("auth.register.celphone")}*`}
+          placeholder={`${t("auth.register.celphone")}*`}
+          ariaLabel={t("auth.register.celphone")}
           value={values.celphone}
           onChange={(e) => setFieldValue("celphone", maskCelphone(e.target.value))}
           required
@@ -235,9 +236,9 @@ function Register() {
           id="cpf"
           name="cpf"
           type="text"
-          label="CPF*"
-          placeholder="CPF*"
-          ariaLabel="CPF"
+          label={`${t("auth.register.cpf")}*`}
+          placeholder={`${t("auth.register.cpf")}*`}
+          ariaLabel={t("auth.register.cpf")}
           value={values.cpf}
           onChange={(e) => setFieldValue("cpf", maskCpf(e.target.value))}
           required
@@ -249,9 +250,9 @@ function Register() {
           id="cnh"
           name="cnh"
           type="text"
-          label="CNH*"
-          placeholder="CNH*"
-          ariaLabel="CNH"
+          label={`${t("auth.register.cnh")}*`}
+          placeholder={`${t("auth.register.cnh")}*`}
+          ariaLabel={t("auth.register.cnh")}
           value={values.cnh}
           onChange={(e) => setFieldValue("cnh", e.target.value)}
           required
@@ -263,9 +264,9 @@ function Register() {
           id="rg"
           name="rg"
           type="text"
-          label="RG*"
-          placeholder="RG*"
-          ariaLabel="RG"
+          label={`${t("auth.register.rg")}*`}
+          placeholder={`${t("auth.register.rg")}*`}
+          ariaLabel={t("auth.register.rg")}
           value={values.rg}
           onChange={(e) => setFieldValue("rg", e.target.value.toUpperCase())}
           required
@@ -276,8 +277,8 @@ function Register() {
           id="dataNascimento"
           name="dataNascimento"
           type="date"
-          label="Data de Nascimento*"
-          ariaLabel="Data de Nascimento"
+          label={`${t("auth.register.birthDate")}*`}
+          ariaLabel={t("auth.register.birthDate")}
           value={values.dataNascimento}
           onChange={(e) => setFieldValue("dataNascimento", e.target.value)}
           required
@@ -288,9 +289,9 @@ function Register() {
           id="address"
           name="address"
           type="text"
-          label="Endereço Residencial*"
-          placeholder="Endereço Residencial*"
-          ariaLabel="Endereço Residencial"
+          label={`${t("auth.register.address")}*`}
+          placeholder={`${t("auth.register.address")}*`}
+          ariaLabel={t("auth.register.address")}
           value={values.address}
           onChange={(e) => setFieldValue("address", e.target.value)}
           required
@@ -302,9 +303,9 @@ function Register() {
           id="cep"
           name="cep"
           type="text"
-          label="CEP*"
-          placeholder="CEP*"
-          ariaLabel="CEP"
+          label={`${t("auth.register.cep")}*`}
+          placeholder={`${t("auth.register.cep")}*`}
+          ariaLabel={t("auth.register.cep")}
           value={values.cep}
           onChange={(e) => setFieldValue("cep", maskCep(e.target.value))}
           required
@@ -314,14 +315,14 @@ function Register() {
         />
 
         <div className="auth-field">
-          <label htmlFor="deficienciaId">Deficiência (opcional)</label>
+          <label htmlFor="deficienciaId">{t("auth.register.disability")}</label>
           <select
             id="deficienciaId"
             className="field__control"
             value={values.deficienciaId}
             onChange={(e) => setFieldValue("deficienciaId", e.target.value)}
           >
-            <option value="">Nenhuma</option>
+            <option value="">{t("auth.register.disabilityNone")}</option>
             {deficiencias.map((deficiencia) => (
               <option key={deficiencia.id} value={deficiencia.id}>
                 {deficiencia.descricao}
@@ -330,7 +331,7 @@ function Register() {
           </select>
         </div>
 
-        <p className="auth-required-note">Todos os campos com * são obrigatórios</p>
+        <p className="auth-required-note">{t("auth.register.requiredNote")}</p>
 
         <div className="auth-checkbox-group">
           <label className="auth-checkbox">
@@ -339,7 +340,7 @@ function Register() {
               checked={values.agreeTerms}
               onChange={(e) => setFieldValue("agreeTerms", e.target.checked)}
             />
-            Concordo com os termos de uso
+            {t("auth.register.agreeTerms")}
           </label>
           {errors.agreeTerms && (
             <p className="auth-message auth-message--error">{errors.agreeTerms}</p>
@@ -351,7 +352,7 @@ function Register() {
               checked={values.agreePrivacy}
               onChange={(e) => setFieldValue("agreePrivacy", e.target.checked)}
             />
-            Concordo com os termos de privacidade
+            {t("auth.register.agreePrivacy")}
           </label>
           {errors.agreePrivacy && (
             <p className="auth-message auth-message--error">{errors.agreePrivacy}</p>
@@ -359,7 +360,7 @@ function Register() {
         </div>
 
         <button type="submit" className="auth-button" disabled={isRegistering}>
-          {isRegistering ? "Cadastrando..." : "Finalizar Cadastro"}
+          {isRegistering ? t("auth.registering") : t("auth.register.submit")}
         </button>
       </form>
 
@@ -369,9 +370,9 @@ function Register() {
             <IconCircle>
               <CheckCircle size={48} color="currentColor" strokeWidth={1.5} aria-hidden="true" />
             </IconCircle>
-            <SuccessTitle>Cadastro concluído!</SuccessTitle>
+            <SuccessTitle>{t("auth.successTitle")}</SuccessTitle>
             <SuccessSubtitle>
-              Sua conta foi criada com sucesso. Você será redirecionado para o login.
+              {t("auth.register.successText")}
             </SuccessSubtitle>
           </SuccessModal>
         </ModalOverlay>

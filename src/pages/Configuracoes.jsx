@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AuthenticatedLayout from '../layout/AuthenticatedLayout';
 import ThemeToggle from '../components/ui/ThemeToggle';
+import LanguageSelect from '../components/ui/LanguageSelect';
+import { t } from '../i18n';
 import { useAuthSession } from '../hooks/useAuthSession';
 import { getUserCargo } from '../services/authIdentity';
 import { definirPreferencia, listarPreferencias } from '../services/notificacaoService';
@@ -9,14 +11,10 @@ import { Section, SectionTitle, Row, Label, Toggle } from '../styles/authStyle';
 
 // Só o que o backend realmente entrega: e-mail (CanalNotificacao.EMAIL).
 // Push/SMS existem no enum, mas nenhum serviço os envia — não são oferecidos.
+// Rótulo e dica vêm de common.settings.prefs.<tipo> (traduzidos no render).
 const PREFERENCIAS = {
-  LOCATARIO: [
-    { tipo: 'RESERVA', rotulo: 'E-mails sobre minhas reservas', dica: 'Confirmação de pagamento e dados da retirada.' },
-    { tipo: 'VEICULO_DISPONIVEL', rotulo: 'Avisos de disponibilidade', dica: 'Quando um veículo que você acompanha volta a ficar livre.' },
-  ],
-  LOCADOR: [
-    { tipo: 'ALERTA_VEICULO', rotulo: 'Alertas da frota', dica: 'Inatividade prolongada e avaliações baixas recorrentes.' },
-  ],
+  LOCATARIO: ['RESERVA', 'VEICULO_DISPONIVEL'],
+  LOCADOR: ['ALERTA_VEICULO'],
 };
 
 export default function Configuracoes() {
@@ -32,7 +30,7 @@ export default function Configuracoes() {
   const [salvando, setSalvando] = useState({});
 
   useEffect(() => {
-    document.title = 'MOVA - Configurações';
+    document.title = t('common.settings.documentTitle');
     if (!temOpcoes) return undefined;
     let ativo = true;
     listarPreferencias()
@@ -45,7 +43,7 @@ export default function Configuracoes() {
       .catch((error) => {
         if (!ativo) return;
         setFalhouCarga(true);
-        setErro(error?.message || 'Não foi possível carregar suas preferências.');
+        setErro(error?.message || t('common.settings.loadError'));
       })
       .finally(() => { if (ativo) setCarregando(false); });
     return () => { ativo = false; };
@@ -59,53 +57,62 @@ export default function Configuracoes() {
     setSalvando((anterior) => ({ ...anterior, [tipo]: true }));
     try {
       await definirPreferencia({ canal: 'EMAIL', tipo, habilitado: !atual });
-      setAviso(`${rotulo}: ${!atual ? 'ativado' : 'desativado'}.`);
+      setAviso(t('common.settings.toggled', { label: rotulo, state: t(!atual ? 'common.settings.on' : 'common.settings.off') }));
     } catch (error) {
       setHabilitadas((anterior) => ({ ...anterior, [tipo]: atual }));
-      setErro(error?.message || 'Não foi possível salvar a preferência.');
+      setErro(error?.message || t('common.settings.saveError'));
     } finally {
       setSalvando((anterior) => ({ ...anterior, [tipo]: false }));
     }
   }
 
   return (
-    <AuthenticatedLayout title="Configurações">
+    <AuthenticatedLayout title={t('common.settings.title')}>
       <Section aria-labelledby="cfg-aparencia">
-        <SectionTitle as="h2" id="cfg-aparencia">Aparência</SectionTitle>
+        <SectionTitle as="h2" id="cfg-aparencia">{t('common.settings.appearance')}</SectionTitle>
         <Row>
-          <Label>Tema</Label>
+          <Label>{t('common.settings.theme')}</Label>
           <ThemeToggle labeled />
         </Row>
-        <p className="field__hint">Para aumentar o texto, use o zoom ou o tamanho de fonte do navegador: a interface se adapta sem cortar conteúdo.</p>
+        <p className="field__hint">{t('common.settings.zoomHint')}</p>
+      </Section>
+
+      <Section aria-labelledby="cfg-idioma">
+        <SectionTitle as="h2" id="cfg-idioma">{t('common.settings.language')}</SectionTitle>
+        <LanguageSelect labeled />
+        <p className="field__hint">{t('common.language.hint')}</p>
       </Section>
 
       {temOpcoes && (
         <Section aria-labelledby="cfg-notificacoes">
-          <SectionTitle as="h2" id="cfg-notificacoes">Notificações por e-mail</SectionTitle>
-          {carregando && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando preferências…</p>}
+          <SectionTitle as="h2" id="cfg-notificacoes">{t('common.settings.notifications')}</SectionTitle>
+          {carregando && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />{t('common.settings.loadingPrefs')}</p>}
           {erro && <p className="alert alert--danger" role="alert">{erro}</p>}
-          {!carregando && opcoes.map(({ tipo, rotulo, dica }) => (
-            <Row as="label" key={tipo}>
-              <span>
-                <Label>{rotulo}</Label>
-                <span className="field__hint" style={{ display: 'block' }}>{dica}</span>
-              </span>
-              <Toggle
-                checked={habilitadas[tipo] ?? true}
-                disabled={falhouCarga || Boolean(salvando[tipo])}
-                aria-busy={salvando[tipo] || undefined}
-                onChange={() => alternar(tipo, rotulo)}
-              />
-            </Row>
-          ))}
+          {!carregando && opcoes.map((tipo) => {
+            const rotulo = t(`common.settings.prefs.${tipo}.label`);
+            return (
+              <Row as="label" key={tipo}>
+                <span>
+                  <Label>{rotulo}</Label>
+                  <span className="field__hint" style={{ display: 'block' }}>{t(`common.settings.prefs.${tipo}.hint`)}</span>
+                </span>
+                <Toggle
+                  checked={habilitadas[tipo] ?? true}
+                  disabled={falhouCarga || Boolean(salvando[tipo])}
+                  aria-busy={salvando[tipo] || undefined}
+                  onChange={() => alternar(tipo, rotulo)}
+                />
+              </Row>
+            );
+          })}
           <p className="sr-only" role="status" aria-live="polite">{aviso}</p>
         </Section>
       )}
 
       <Section aria-labelledby="cfg-seguranca">
-        <SectionTitle as="h2" id="cfg-seguranca">Segurança</SectionTitle>
-        <p className="field__hint">Senha, e-mail e exclusão de conta ficam em Minha conta.</p>
-        <Link className="btn btn--secondary" to="/conta">Alterar senha em Minha conta</Link>
+        <SectionTitle as="h2" id="cfg-seguranca">{t('common.settings.security')}</SectionTitle>
+        <p className="field__hint">{t('common.settings.securityHint')}</p>
+        <Link className="btn btn--secondary" to="/conta">{t('common.settings.changePassword')}</Link>
       </Section>
     </AuthenticatedLayout>
   );

@@ -1,0 +1,92 @@
+{
+  "documentTitle": "MOVA - Pagamento",
+  "title": "Pagamento",
+  "sandboxLede": "Ambiente de teste: nenhum valor é cobrado de verdade.",
+  "loading": "Carregando sua reserva...",
+  "dateMissing": "Data não informada",
+  "backToCheckout": "Voltar ao checkout",
+  "myReservations": "Ver minhas reservas",
+  "pay": "Pagar",
+  "afterConfirmation": "Depois da confirmação, o código de desbloqueio aparece aqui e em Minhas reservas.",
+  "questions": "Dúvidas?",
+  "contactSupport": "Fale com o suporte",
+  "close": "Fechar",
+  "errors": {
+    "load": "Não foi possível carregar sua reserva.",
+    "stillProcessing": "O pagamento ainda está em análise. Acompanhe pelo histórico de reservas.",
+    "verify": "Não foi possível verificar o pagamento.",
+    "declined": "Pagamento não aprovado. Confira os dados e tente novamente.",
+    "noReservation": "Não encontramos sua reserva. Volte para o checkout e confirme a reserva antes de pagar.",
+    "start": "Não foi possível iniciar o pagamento.",
+    "openTitle": "Não foi possível abrir o pagamento"
+  },
+  "closed": {
+    "cancelledTitle": "Reserva cancelada",
+    "completedTitle": "Reserva concluída",
+    "inProgressTitle": "Locação em andamento",
+    "cancelledText": "Esta reserva não pode receber pagamento nem liberar o veículo.",
+    "completedText": "O pagamento e a retirada já foram encerrados para esta reserva.",
+    "inProgressText": "O pagamento já foi confirmado e a locação está em andamento."
+  },
+  "summary": {
+    "title": "O que você está pagando",
+    "vehicleFallback": "Veículo da reserva",
+    "plate": "Placa",
+    "pickup": "Retirada",
+    "return": "Devolução",
+    "garageMissing": "Garagem não informada",
+    "payment": "Pagamento",
+    "total": "Total",
+    "sandboxNote": "Pagamento e estorno simulados — nenhum dinheiro real movimentado.",
+    "refund": "Estorno: {status}. Valor pago:"
+  },
+  "success": {
+    "title": "Pagamento aprovado",
+    "text": "Sua reserva está confirmada.",
+    "unlockCode": "Código de desbloqueio",
+    "unlock": "Desbloquear veículo"
+  },
+  "method": {
+    "title": "Como você quer pagar",
+    "label": "Método de pagamento"
+  },
+  "processing": {
+    "title": "Processando pagamento",
+    "text": "Aguardando a confirmação do gateway. Não é preciso pagar de novo.",
+    "button": "Processando..."
+  },
+  "card": {
+    "sandboxHint": "Ambiente de teste: use qualquer cartão fictício. Final 0000 simula recusa e final 0001 simula análise.",
+    "number": "Número do cartão",
+    "holder": "Nome do titular",
+    "expiry": "Validade (MM/AA)",
+    "cvv": "CVV",
+    "errors": {
+      "number": "Informe um número de cartão válido.",
+      "holder": "Informe o nome do titular (mínimo 3 caracteres).",
+      "expiryFormat": "Informe a validade no formato MM/AA.",
+      "expired": "Cartão vencido. Confira a validade.",
+      "cvv": "O CVV deve ter 3 ou 4 dígitos."
+    }
+  },
+  "pix": {
+    "title": "Pix",
+    "sandboxNote": "Pix em ambiente de teste. O QR Code é ilustrativo.",
+    "show": "Ver QR Code",
+    "dialogNote": "QR Code ilustrativo; nenhuma transferência é feita."
+  },
+  "pending": {
+    "loadError": "Não foi possível carregar pendências.",
+    "sent": "Pagamento enviado. Status: {status}.",
+    "approved": "Pagamento aprovado. Pendência quitada.",
+    "declined": "Pagamento não aprovado.",
+    "title": "Pendências financeiras",
+    "sandboxLede": "Pagamento em ambiente de teste (sandbox): nenhum valor é cobrado de verdade.",
+    "loading": "Carregando pendências...",
+    "emptyTitle": "Tudo em dia",
+    "emptyText": "Você não possui pendências financeiras.",
+    "status": "Status: {status}",
+    "paying": "Pagando...",
+    "payPix": "Pagar via Pix (sandbox)"
+  }
+}

@@ -228,7 +228,7 @@ describe("authService profile flow via /conta/auth/me", () => {
     await expect(registerLocatario({
       name: "Ana", email: "ana@example.com", password: "Senha12345",
       cpf: "12345678909", cnh: "12345678909", rg: "123456789", dataNascimento: "1990-05-15",
-    })).rejects.toThrow("Nao foi possivel autenticar o cadastro do locatario.");
+    })).rejects.toThrow("Não foi possível autenticar o cadastro do locatário.");
 
     expect(apiRequestMock).toHaveBeenCalledTimes(1);
     expect(saveAuthSessionMock).not.toHaveBeenCalled();
@@ -513,7 +513,7 @@ describe("updateUserProfile two-step flow", () => {
         cpf: "123.456.789-09",
         cnh: "12345678909",
       })
-    ).rejects.toThrow("Sessao expirada. Faca login novamente.");
+    ).rejects.toThrow("Sessão expirada. Faça login novamente.");
 
     expect(apiRequestMock).not.toHaveBeenCalled();
   });

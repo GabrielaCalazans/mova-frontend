@@ -8,6 +8,7 @@ import { useFormSubmit } from "../hooks/useFormSubmit";
 import AuthLayout from "../layout/AuthLayout";
 import { resetPassword } from "../services/authService";
 import { validateResetPasswordForm } from "../utils/formValidators";
+import { t } from "../i18n";
 
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{40,200}$/;
 
@@ -25,7 +26,7 @@ function ResetPassword() {
   } = useFormState({ token: tokenValido ? token : "", novaSenha: "", confirmarNovaSenha: "" });
 
   useEffect(() => {
-    document.title = "MOVA - Redefinir Senha";
+    document.title = t("auth.reset.documentTitle");
   }, []);
 
   const { handleSubmit, isSubmitting } = useFormSubmit({
@@ -35,7 +36,7 @@ function ResetPassword() {
     setFeedback,
     getInvalidFeedback: () => ({
       type: "error",
-      message: "Confira a nova senha e a confirmação.",
+      message: t("auth.reset.invalid"),
     }),
     getValidFeedback: (_values, result) => ({
       type: "success",
@@ -51,19 +52,19 @@ function ResetPassword() {
 
   return (
     <AuthLayout
-      title="Redefinir Senha"
+      title={t("auth.reset.title")}
       logoSrc={movaLogo}
-      logoAlt="Mova Logo"
+      logoAlt={t("auth.logoAlt")}
       wordmark="MOVA"
       compactLogo
-      footerText="Lembrou sua senha?"
+      footerText={t("auth.rememberedPassword")}
       footerLinkTo="/login"
-      footerLinkLabel="Entrar"
+      footerLinkLabel={t("auth.signIn")}
     >
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         {!tokenValido && (
           <p className="auth-feedback auth-feedback--error" role="alert" aria-live="assertive">
-            Link de recuperação inválido ou expirado.
+            {t("auth.reset.invalidLink")}
           </p>
         )}
         {feedback && (
@@ -72,13 +73,13 @@ function ResetPassword() {
           </p>
         )}
         <p className="auth-required-note">
-          Use 8+ caracteres com maiúscula, minúscula, número e caractere especial.
+          {t("auth.reset.passwordRule")}
         </p>
         <FormField
           id="novaSenha"
           name="novaSenha"
           type="password"
-          ariaLabel="Nova senha"
+          ariaLabel={t("auth.reset.newPassword")}
           value={values.novaSenha}
           onChange={(event) => setFieldValue("novaSenha", event.target.value)}
           error={errors.novaSenha}
@@ -90,7 +91,7 @@ function ResetPassword() {
           id="confirmarNovaSenha"
           name="confirmarNovaSenha"
           type="password"
-          ariaLabel="Confirmar nova senha"
+          ariaLabel={t("auth.reset.confirmPassword")}
           value={values.confirmarNovaSenha}
           onChange={(event) => setFieldValue("confirmarNovaSenha", event.target.value)}
           error={errors.confirmarNovaSenha}
@@ -99,10 +100,10 @@ function ResetPassword() {
           required
         />
         <button type="submit" className="auth-button" disabled={!tokenValido || isSubmitting}>
-          {isSubmitting ? "Redefinindo..." : "Redefinir Senha"}
+          {isSubmitting ? t("auth.reset.submitting") : t("auth.reset.submit")}
         </button>
         {feedback?.type === "success" && (
-          <p className="auth-footer"><Link to="/login">Entrar com a nova senha</Link></p>
+          <p className="auth-footer"><Link to="/login">{t("auth.reset.signInWithNew")}</Link></p>
         )}
       </form>
     </AuthLayout>

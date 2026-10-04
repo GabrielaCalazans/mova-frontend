@@ -1,0 +1,92 @@
+{
+  "documentTitle": "MOVA - Pago",
+  "title": "Pago",
+  "sandboxLede": "Entorno de pruebas: no se cobra ningún importe real.",
+  "loading": "Cargando tu reserva...",
+  "dateMissing": "Fecha no indicada",
+  "backToCheckout": "Volver al checkout",
+  "myReservations": "Ver mis reservas",
+  "pay": "Pagar",
+  "afterConfirmation": "Tras la confirmación, el código de desbloqueo aparece aquí y en Mis reservas.",
+  "questions": "¿Dudas?",
+  "contactSupport": "Habla con soporte",
+  "close": "Cerrar",
+  "errors": {
+    "load": "No se pudo cargar tu reserva.",
+    "stillProcessing": "El pago sigue en revisión. Consúltalo en el historial de reservas.",
+    "verify": "No se pudo verificar el pago.",
+    "declined": "Pago no aprobado. Revisa los datos e inténtalo de nuevo.",
+    "noReservation": "No encontramos tu reserva. Vuelve al checkout y confirma la reserva antes de pagar.",
+    "start": "No se pudo iniciar el pago.",
+    "openTitle": "No se pudo abrir el pago"
+  },
+  "closed": {
+    "cancelledTitle": "Reserva cancelada",
+    "completedTitle": "Reserva finalizada",
+    "inProgressTitle": "Alquiler en curso",
+    "cancelledText": "Esta reserva no puede recibir pagos ni liberar el vehículo.",
+    "completedText": "El pago y la recogida ya se cerraron para esta reserva.",
+    "inProgressText": "El pago ya se confirmó y el alquiler está en curso."
+  },
+  "summary": {
+    "title": "Qué estás pagando",
+    "vehicleFallback": "Vehículo de la reserva",
+    "plate": "Matrícula",
+    "pickup": "Recogida",
+    "return": "Devolución",
+    "garageMissing": "Garaje no indicado",
+    "payment": "Pago",
+    "total": "Total",
+    "sandboxNote": "Pago y reembolso simulados: no se mueve dinero real.",
+    "refund": "Reembolso: {status}. Importe pagado:"
+  },
+  "success": {
+    "title": "Pago aprobado",
+    "text": "Tu reserva está confirmada.",
+    "unlockCode": "Código de desbloqueo",
+    "unlock": "Desbloquear vehículo"
+  },
+  "method": {
+    "title": "Cómo quieres pagar",
+    "label": "Método de pago"
+  },
+  "processing": {
+    "title": "Procesando pago",
+    "text": "Esperando la confirmación de la pasarela. No hace falta pagar de nuevo.",
+    "button": "Procesando..."
+  },
+  "card": {
+    "sandboxHint": "Entorno de pruebas: usa cualquier tarjeta ficticia. Terminada en 0000 simula un rechazo y en 0001 simula una revisión.",
+    "number": "Número de tarjeta",
+    "holder": "Nombre del titular",
+    "expiry": "Caducidad (MM/AA)",
+    "cvv": "CVV",
+    "errors": {
+      "number": "Introduce un número de tarjeta válido.",
+      "holder": "Introduce el nombre del titular (mínimo 3 caracteres).",
+      "expiryFormat": "Introduce la caducidad con el formato MM/AA.",
+      "expired": "Tarjeta caducada. Revisa la fecha.",
+      "cvv": "El CVV debe tener 3 o 4 dígitos."
+    }
+  },
+  "pix": {
+    "title": "Pix",
+    "sandboxNote": "Pix en entorno de pruebas. El código QR es ilustrativo.",
+    "show": "Ver código QR",
+    "dialogNote": "Código QR ilustrativo; no se realiza ninguna transferencia."
+  },
+  "pending": {
+    "loadError": "No se pudieron cargar los pagos pendientes.",
+    "sent": "Pago enviado. Estado: {status}.",
+    "approved": "Pago aprobado. Cargo saldado.",
+    "declined": "Pago no aprobado.",
+    "title": "Pagos pendientes",
+    "sandboxLede": "Pago en entorno de pruebas (sandbox): no se cobra ningún importe real.",
+    "loading": "Cargando pagos pendientes...",
+    "emptyTitle": "Todo al día",
+    "emptyText": "No tienes pagos pendientes.",
+    "status": "Estado: {status}",
+    "paying": "Pagando...",
+    "payPix": "Pagar con Pix (sandbox)"
+  }
+}

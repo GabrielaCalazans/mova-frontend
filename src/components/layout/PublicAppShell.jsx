@@ -2,6 +2,7 @@ import { useLocation } from "react-router-dom";
 import ActiveReservationCard from "../ActiveReservationCard";
 import AppShell from "./AppShell";
 import { useShell } from "./shell-context";
+import { t } from "../../i18n";
 
 function PublicContent({ children }) {
   const shell = useShell();
@@ -12,7 +13,7 @@ function PublicContent({ children }) {
   return (
     <main className="public-main">
       {isHome && activity?.reservation && <ActiveReservationCard reservation={activity.reservation} />}
-      {isHome && activity?.error && <p className="alert alert--warning public-home__message" role="status">A reserva ativa está indisponível no momento.</p>}
+      {isHome && activity?.error && <p className="alert alert--warning public-home__message" role="status">{t("common.shell.activeReservationUnavailable")}</p>}
       {children}
     </main>
   );

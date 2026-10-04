@@ -4,13 +4,14 @@ import BottomNav from "../components/BottomNav";
 import { getAvaliacaoDashboard, getFinanceiro, getReservas, getUtilizacao } from "../services/dashboardService";
 import { rotulo, STATUS_RESERVA_LABELS } from "../services/apiEnums";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { formatCurrency, formatDate, formatNumber, t } from "../i18n";
 import "../styles/owner.css";
 import "../styles/relatorios.css";
 
 const csvValue = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
 
 function csvFinanceiro(porVeiculo) {
-  return [["Veículo", "Faturamento"], ...porVeiculo.map(({ placa, total }) => [placa, total])]
+  return [[t("reports.vehicles.csvVehicle"), t("reports.vehicles.csvRevenue")], ...porVeiculo.map(({ placa, total }) => [placa, total])]
     .map((row) => row.map(csvValue).join(";"))
     .join("\n");
 }
@@ -20,20 +21,21 @@ function downloadCsv(porVeiculo) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "relatorio-financeiro-veiculos.csv";
+  link.download = t("reports.vehicles.financeFile");
   document.body.appendChild(link);
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
 }
 
-const moeda = (valor) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(valor || 0));
-const percentual = (valor) => `${(Number(valor || 0) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%`;
+// Formatadores seguem o idioma ativo (lidos a cada render); a moeda é sempre BRL.
+const moeda = (valor) => formatCurrency(valor);
+const percentual = (valor) => `${formatNumber(Number(valor || 0) * 100, { maximumFractionDigits: 2 })}%`;
 const DISPLAY_TIME_ZONE = import.meta.env.VITE_TIMEZONE_EXIBICAO || "America/Sao_Paulo";
-const data = (valor) => valor ? new Intl.DateTimeFormat("pt-BR", { timeZone: DISPLAY_TIME_ZONE }).format(new Date(valor)) : "—";
+const data = (valor) => formatDate(valor, { timeZone: DISPLAY_TIME_ZONE }) || "—";
 
-const compacto = (valor) => new Intl.NumberFormat("pt-BR", { notation: "compact" }).format(Number(valor || 0));
-const horas = (valor) => `${Number(valor || 0).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} h`;
+const compacto = (valor) => formatNumber(valor, { notation: "compact" });
+const horas = (valor) => `${formatNumber(valor, { maximumFractionDigits: 1 })} h`;
 
 // Gráfico de barras com uma única cor de ação: a cor vem do CSS (relatorios.css),
 // então segue o tema. A lista abaixo do gráfico é a alternativa textual.
@@ -78,14 +80,14 @@ export default function RelatoriosVeiculos() {
       ]);
       setRelatorios({ reservas, financeiro, utilizacao, avaliacoes });
     } catch {
-      setErro("Não foi possível carregar os relatórios.");
+      setErro(t("reports.vehicles.loadError"));
     } finally {
       setCarregando(false);
     }
   }, []);
 
   useEffect(() => {
-    document.title = "MOVA - Relatórios de Veículos";
+    document.title = t("reports.vehicles.docTitle");
     const carregamentoInicial = window.setTimeout(() => void carregarRelatorios({}, true), 0);
     return () => window.clearTimeout(carregamentoInicial);
   }, [carregarRelatorios]);
@@ -103,7 +105,7 @@ export default function RelatoriosVeiculos() {
   function aplicarFiltros(event) {
     event.preventDefault();
     if (filtros.dataInicio && filtros.dataFim && filtros.dataFim < filtros.dataInicio) {
-      setErro("A data final deve ser igual ou posterior à data inicial.");
+      setErro(t("owner.common.dateRangeError"));
       return;
     }
     void carregarRelatorios(filtros);
@@ -112,94 +114,94 @@ export default function RelatoriosVeiculos() {
   return (
     <main className="owner-page" aria-labelledby="relatorio-veiculos-title">
       <header className="page-head">
-        <h1 id="relatorio-veiculos-title">Relatórios | Veículos</h1>
-        <p className="page-head__lede">Dados reais da frota, reservas, receita e avaliações do Locador autenticado.</p>
+        <h1 id="relatorio-veiculos-title">{t("reports.vehicles.title")}</h1>
+        <p className="page-head__lede">{t("reports.vehicles.lede")}</p>
       </header>
       <div className="owner-section">
         <form className="owner-filter" onSubmit={aplicarFiltros} aria-describedby="relatorio-filtros-ajuda">
           <fieldset className="fieldset">
-            <legend>Filtrar reservas</legend>
+            <legend>{t("owner.common.filterReservations")}</legend>
             <div className="owner-filter__grid">
               <div className="field">
-                <label className="field__label" htmlFor="relatorio-data-inicio">Data inicial</label>
+                <label className="field__label" htmlFor="relatorio-data-inicio">{t("owner.common.startDate")}</label>
                 <input className="field__control" id="relatorio-data-inicio" type="date" value={filtros.dataInicio} onChange={(event) => setFiltros((atual) => ({ ...atual, dataInicio: event.target.value }))} />
               </div>
               <div className="field">
-                <label className="field__label" htmlFor="relatorio-data-fim">Data final</label>
+                <label className="field__label" htmlFor="relatorio-data-fim">{t("owner.common.endDate")}</label>
                 <input className="field__control" id="relatorio-data-fim" type="date" value={filtros.dataFim} onChange={(event) => setFiltros((atual) => ({ ...atual, dataFim: event.target.value }))} />
               </div>
               <div className="field">
-                <label className="field__label" htmlFor="relatorio-veiculo">Veículo</label>
+                <label className="field__label" htmlFor="relatorio-veiculo">{t("owner.common.vehicle")}</label>
                 <select className="field__control" id="relatorio-veiculo" value={filtros.idVeiculo} onChange={(event) => setFiltros((atual) => ({ ...atual, idVeiculo: event.target.value }))}>
-                  <option value="">Todos os veículos</option>
+                  <option value="">{t("owner.common.allVehicles")}</option>
                   {veiculosFiltro.map((veiculo) => <option key={veiculo.id} value={veiculo.id}>{veiculo.placa}</option>)}
                 </select>
               </div>
             </div>
           </fieldset>
           <div className="owner-filter__actions">
-            <button type="submit" className="btn" disabled={carregando}>Aplicar filtros</button>
-            <p id="relatorio-filtros-ajuda" className="owner-filter__help">Período e veículo filtram as reservas conforme o contrato atual. Financeiro, utilização e avaliações seguem seus endpoints agregados sem esses filtros.</p>
+            <button type="submit" className="btn" disabled={carregando}>{t("owner.common.applyFilters")}</button>
+            <p id="relatorio-filtros-ajuda" className="owner-filter__help">{t("reports.vehicles.filterHelp")}</p>
           </div>
         </form>
-        {carregando && <p className="loading-state" role="status" aria-busy="true"><span className="spinner" aria-hidden="true" />{relatorios ? "Atualizando relatórios…" : "Carregando relatórios…"}</p>}
+        {carregando && <p className="loading-state" role="status" aria-busy="true"><span className="spinner" aria-hidden="true" />{relatorios ? t("reports.vehicles.updating") : t("reports.vehicles.loading")}</p>}
         {erro && <p className="alert alert--danger" role="alert">{erro}</p>}
       </div>
       {relatorios && (
         <div className="report-grid">
           <section className="report-block report-block--wide" aria-labelledby="rel-reservas">
             <div className="report-block__head">
-              <h2 id="rel-reservas">Reservas</h2>
-              <p className="report-block__source">Reservas da frota · dados reais filtrados pelo backend.</p>
+              <h2 id="rel-reservas">{t("reports.vehicles.reservationsTitle")}</h2>
+              <p className="report-block__source">{t("reports.vehicles.reservationsSource")}</p>
             </div>
-            <p className="report-block__figure"><strong>{relatorios.reservas?.total ?? reservas.length}</strong> reservas no período consultado.</p>
+            <p className="report-block__figure"><strong>{relatorios.reservas?.total ?? reservas.length}</strong> {t("reports.vehicles.reservationsFigure", { count: relatorios.reservas?.total ?? reservas.length })}</p>
             {reservas.length ? (
-              <ul className="report-list">{reservas.map((reserva) => <li key={reserva.id}>{reserva.veiculo?.placa || reserva.idVeiculo}: {rotulo(STATUS_RESERVA_LABELS, reserva.status)} · {data(reserva.dataHoraInicio)} a {data(reserva.dataHoraFim)} · {moeda(reserva.valorTotal)}</li>)}</ul>
-            ) : <p className="report-empty">Nenhuma reserva encontrada.</p>}
+              <ul className="report-list">{reservas.map((reserva) => <li key={reserva.id}>{t("reports.vehicles.reservationItem", { plate: reserva.veiculo?.placa || reserva.idVeiculo, status: rotulo(STATUS_RESERVA_LABELS, reserva.status), start: data(reserva.dataHoraInicio), end: data(reserva.dataHoraFim), value: moeda(reserva.valorTotal) })}</li>)}</ul>
+            ) : <p className="report-empty">{t("owner.common.noReservations")}</p>}
           </section>
           <section className="report-block" aria-labelledby="rel-financeiro">
             <div className="report-block__head">
-              <h2 id="rel-financeiro">Financeiro</h2>
-              <p className="report-block__source">Relatório financeiro por veículo · pagamentos concluídos.</p>
+              <h2 id="rel-financeiro">{t("reports.vehicles.financeTitle")}</h2>
+              <p className="report-block__source">{t("reports.vehicles.financeSource")}</p>
             </div>
-            <p className="report-block__figure"><strong>{moeda(relatorios.financeiro?.faturamentoBruto)}</strong> de faturamento bruto</p>
+            <p className="report-block__figure"><strong>{moeda(relatorios.financeiro?.faturamentoBruto)}</strong> {t("reports.vehicles.grossRevenue")}</p>
             {porVeiculo.length ? (
               <>
                 <GraficoBarras dados={porVeiculo} campo="total" formatar={moeda} />
                 <ul className="report-list">{porVeiculo.map(({ idVeiculo, placa, total }) => <li key={idVeiculo}>{placa}: {moeda(total)}</li>)}</ul>
               </>
-            ) : <p className="report-empty">Nenhum faturamento encontrado.</p>}
+            ) : <p className="report-empty">{t("reports.vehicles.noRevenue")}</p>}
             <div className="report-block__foot">
-              <button type="button" className="btn btn--secondary" disabled={!porVeiculo.length} onClick={() => downloadCsv(porVeiculo)}><Download aria-hidden="true" />Baixar relatório financeiro</button>
+              <button type="button" className="btn btn--secondary" disabled={!porVeiculo.length} onClick={() => downloadCsv(porVeiculo)}><Download aria-hidden="true" />{t("reports.vehicles.downloadFinance")}</button>
             </div>
           </section>
           <section className="report-block" aria-labelledby="rel-utilizacao">
             <div className="report-block__head">
-              <h2 id="rel-utilizacao">Utilização</h2>
-              <p className="report-block__source">Uso dos veículos · dados reais de reservas.</p>
+              <h2 id="rel-utilizacao">{t("reports.vehicles.usageTitle")}</h2>
+              <p className="report-block__source">{t("reports.vehicles.usageSource")}</p>
             </div>
-            <p className="report-block__figure"><strong>{percentual(relatorios.utilizacao?.taxaOcupacao)} de ocupação</strong>{horas(relatorios.utilizacao?.tempoMedioReservadoHoras)} em média por reserva</p>
+            <p className="report-block__figure"><strong>{t("reports.vehicles.occupancy", { rate: percentual(relatorios.utilizacao?.taxaOcupacao) })}</strong>{t("reports.vehicles.averagePerReservation", { hours: horas(relatorios.utilizacao?.tempoMedioReservadoHoras) })}</p>
             {maisUtilizados.length ? (
               <>
-                <GraficoBarras dados={maisUtilizados} campo="horasReservadas" formatar={(valor) => `${valor}h`} />
-                <ul className="report-list">{maisUtilizados.map(({ idVeiculo, placa, reservas, horasReservadas }) => <li key={idVeiculo}>{placa}: {reservas} reservas, {horasReservadas}h</li>)}</ul>
+                <GraficoBarras dados={maisUtilizados} campo="horasReservadas" formatar={(valor) => `${formatNumber(valor)}h`} />
+                <ul className="report-list">{maisUtilizados.map(({ idVeiculo, placa, reservas, horasReservadas }) => <li key={idVeiculo}>{t("reports.vehicles.usageItem", { plate: placa, count: reservas, hours: formatNumber(horasReservadas) })}</li>)}</ul>
               </>
-            ) : <p className="report-empty">Nenhuma utilização encontrada.</p>}
+            ) : <p className="report-empty">{t("reports.vehicles.noUsage")}</p>}
           </section>
           <section className="report-block" aria-labelledby="rel-avaliacoes">
             <div className="report-block__head">
-              <h2 id="rel-avaliacoes">Avaliações</h2>
-              <p className="report-block__source">Avaliações dos usuários vinculadas aos veículos do Locador.</p>
+              <h2 id="rel-avaliacoes">{t("reports.vehicles.ratingsTitle")}</h2>
+              <p className="report-block__source">{t("reports.vehicles.ratingsSource")}</p>
             </div>
-            <p className="report-block__figure"><strong>{avaliacoes.total ?? 0} avaliações · média {avaliacoes.media ?? 0}</strong></p>
-            {!avaliacoes.total && <p className="report-empty">Nenhuma avaliação encontrada.</p>}
+            <p className="report-block__figure"><strong>{t("reports.vehicles.ratingsSummary", { count: avaliacoes.total ?? 0, average: avaliacoes.media ?? 0 })}</strong></p>
+            {!avaliacoes.total && <p className="report-empty">{t("reports.vehicles.noRatings")}</p>}
           </section>
           <section className="report-block" aria-labelledby="rel-km">
             <div className="report-block__head">
-              <h2 id="rel-km">Quilometragem</h2>
-              <p className="report-block__source">O sistema não possui uma fonte persistida confiável para este indicador.</p>
+              <h2 id="rel-km">{t("reports.vehicles.mileageTitle")}</h2>
+              <p className="report-block__source">{t("reports.vehicles.mileageSource")}</p>
             </div>
-            <p className="report-empty">Dados de quilometragem indisponíveis.</p>
+            <p className="report-empty">{t("reports.vehicles.mileageEmpty")}</p>
           </section>
         </div>
       )}

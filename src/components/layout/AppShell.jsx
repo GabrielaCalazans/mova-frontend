@@ -9,6 +9,8 @@ import BottomNav from "../BottomNav";
 import { isNavItemActive, renterNavItems } from "./navItems";
 import BrandLogo from "../brand/BrandLogo";
 import ThemeToggle from "../ui/ThemeToggle";
+import LanguageSelect from "../ui/LanguageSelect";
+import { t } from "../../i18n";
 import AccountMenu from "./AccountMenu";
 import { ShellContext } from "./shell-context";
 import "../../styles/shell.css";
@@ -43,15 +45,15 @@ export default function AppShell({ children }) {
   return (
     <ShellContext.Provider value={shell}>
       <div className={`app-shell${isRenter ? " app-shell--tabbar" : ""}`}>
-        <a className="skip-link" href="#conteudo-principal">Pular para o conteúdo</a>
+        <a className="skip-link" href="#conteudo-principal">{t("common.shell.skipLink")}</a>
         <header className="appbar">
           <div className="appbar__inner">
-            <Link to="/" className="appbar__brand" aria-label="MOVA, página inicial">
+            <Link to="/" className="appbar__brand" aria-label={t("common.brand.home")}>
               <BrandLogo variant="header" decorative />
             </Link>
 
             {navItems.length > 0 && (
-              <nav className="topnav" aria-label="Navegação principal">
+              <nav className="topnav" aria-label={t("common.shell.mainNav")}>
                 {navItems.map((item) => {
                   const active = isNavItemActive(item, location.pathname);
                   return (
@@ -66,11 +68,12 @@ export default function AppShell({ children }) {
 
             <span className="appbar__spacer" />
             <span className="appbar__theme"><ThemeToggle /></span>
+            <LanguageSelect className="appbar__lang" />
 
             {isOwner && (
               <Link to="/painel" className="btn btn--secondary appbar__action">
                 <FontAwesomeIcon icon={faGaugeHigh} aria-hidden="true" />
-                Painel do locador
+                {t("common.shell.ownerPanel")}
               </Link>
             )}
             {isRenter && (
@@ -82,13 +85,13 @@ export default function AppShell({ children }) {
                 onClick={(event) => openMenu(event.currentTarget)}
               >
                 <FontAwesomeIcon icon={faUser} aria-hidden="true" />
-                Conta
+                {t("common.shell.account")}
               </button>
             )}
             {!session?.token && (
               <Link to="/login" state={{ from: location }} className="btn btn--secondary appbar__action">
                 <FontAwesomeIcon icon={faRightToBracket} aria-hidden="true" />
-                Entrar
+                {t("common.shell.signIn")}
               </Link>
             )}
           </div>

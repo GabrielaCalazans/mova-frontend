@@ -1,4 +1,5 @@
-﻿const MS_PER_DAY = 24 * 60 * 60 * 1000;
+import { formatCurrency, t } from "../i18n";
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 function parseDatePart(value) {
   const [day, month, year] = String(value || "").split("/").map((part) => Number(part));
@@ -69,11 +70,11 @@ export const DURACAO_MAXIMA_MS = 30 * 24 * 60 * 60 * 1000;
  */
 export function validarPeriodoReserva(inicio, fim, agora = new Date()) {
   if (!(inicio instanceof Date) || Number.isNaN(inicio.getTime())) {
-    return "Selecione a data e o horário de retirada.";
+    return t("validation.period.pickupRequired");
   }
 
   if (inicio.getTime() < agora.getTime()) {
-    return "A data/hora de início não pode estar no passado.";
+    return t("validation.period.startInPast");
   }
 
   if (fim === null || fim === undefined) {
@@ -81,16 +82,16 @@ export function validarPeriodoReserva(inicio, fim, agora = new Date()) {
   }
 
   if (!(fim instanceof Date) || Number.isNaN(fim.getTime())) {
-    return "Selecione a data e o horário de devolução.";
+    return t("validation.period.returnRequired");
   }
 
   if (fim.getTime() <= inicio.getTime()) {
-    return "A data/hora de término deve ser posterior à de início.";
+    return t("validation.period.endBeforeStart");
   }
 
   const duracao = fim.getTime() - inicio.getTime();
   if (duracao < DURACAO_MINIMA_MS || duracao > DURACAO_MAXIMA_MS) {
-    return "A reserva deve ter entre 1 hora e 30 dias de duração.";
+    return t("validation.period.duration");
   }
 
   return null;
@@ -98,27 +99,25 @@ export function validarPeriodoReserva(inicio, fim, agora = new Date()) {
 
 export function calculateReservationDays(pickupDateTime, dropoffDateTime) {
   if (!(pickupDateTime instanceof Date) || Number.isNaN(pickupDateTime.getTime())) {
-    throw new Error("Data de retirada inválida.");
+    throw new Error(t("errors.invalidPickupDate"));
   }
 
   if (!(dropoffDateTime instanceof Date) || Number.isNaN(dropoffDateTime.getTime())) {
-    throw new Error("Data de devolução inválida.");
+    throw new Error(t("errors.invalidReturnDate"));
   }
 
   const diff = dropoffDateTime.getTime() - pickupDateTime.getTime();
 
   if (diff <= 0) {
-    throw new Error("A devolução deve ocorrer após a retirada.");
+    throw new Error(t("errors.returnBeforePickup"));
   }
 
   return Math.max(1, Math.ceil(diff / MS_PER_DAY));
 }
 
+// Moeda sempre BRL; a formatação acompanha o idioma ativo (RNF08).
 export function formatMoneyBRL(value) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(Number(value) || 0);
+  return formatCurrency(value);
 }
 // Mesma regra do backend (ReservaService.calcularValorBase): fração de dia conta como diária.
 export function contarDiarias(inicio, fim) {

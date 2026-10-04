@@ -6,6 +6,7 @@ import BottomNav from "../components/BottomNav";
 import ModalDialog from "../components/ui/ModalDialog";
 import { listGaragens, deleteGaragem } from "../services/garagemService";
 import { getAuthSession } from "../services/authSession";
+import { t } from "../i18n";
 import "../styles/owner.css";
 
 // Status com ícone e texto: nunca só cor.
@@ -26,7 +27,7 @@ export default function CadastroDeGaragens() {
 
   const carregar = useCallback(async () => {
     if (!idLocador) {
-      setErro("Sessão inválida. Faça login novamente.");
+      setErro(t("owner.common.sessionInvalid"));
       return;
     }
 
@@ -36,14 +37,14 @@ export default function CadastroDeGaragens() {
       const resultado = await listGaragens({ idLocador });
       setGaragens(resultado);
     } catch (e) {
-      setErro(e.message || "Não foi possível carregar as garagens.");
+      setErro(e.message || t("owner.garages.loadError"));
     } finally {
       setLoading(false);
     }
   }, [idLocador]);
 
   useEffect(() => {
-    document.title = "MOVA - Cadastro de Garagens";
+    document.title = t("owner.garages.docTitle");
     queueMicrotask(() => {
       void carregar();
     });
@@ -58,7 +59,7 @@ export default function CadastroDeGaragens() {
       setGaragemParaExcluir(null);
       await carregar();
     } catch (e) {
-      setErro(e.message || "Não foi possível excluir a garagem.");
+      setErro(e.message || t("owner.garages.deleteError"));
       setGaragemParaExcluir(null);
     } finally {
       setExcluindo(false);
@@ -68,25 +69,25 @@ export default function CadastroDeGaragens() {
   return (
     <main className="owner-page" aria-labelledby="garagens-title">
       <header className="page-head">
-        <h1 id="garagens-title">Cadastro de Garagens</h1>
-        <p className="page-head__lede">Pontos de retirada e devolução da sua frota, com vagas e status.</p>
+        <h1 id="garagens-title">{t("owner.garages.title")}</h1>
+        <p className="page-head__lede">{t("owner.garages.lede")}</p>
       </header>
 
       <section className="owner-section" aria-labelledby="garagens-lista-title">
         <div className="owner-section__head">
-          <h2 id="garagens-lista-title">Garagens</h2>
+          <h2 id="garagens-lista-title">{t("owner.garages.listTitle")}</h2>
           <button type="button" className="btn" onClick={() => navigate("/cadastro-garagens/novo")}>
             <Plus className="icon" aria-hidden="true" />
-            Adicionar
+            {t("owner.common.add")}
           </button>
         </div>
 
-        {loading && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando garagens…</p>}
+        {loading && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />{t("owner.garages.loading")}</p>}
         {!loading && erro && <p className="alert alert--danger" role="alert">{erro}</p>}
         {!loading && !erro && garagens.length === 0 && (
           <div className="state-block">
-            <p className="state-block__title">Nenhuma garagem cadastrada</p>
-            <p className="state-block__text">Você ainda não cadastrou nenhuma garagem. Toque em "Adicionar" para começar.</p>
+            <p className="state-block__title">{t("owner.garages.emptyTitle")}</p>
+            <p className="state-block__text">{t("owner.garages.emptyText")}</p>
           </div>
         )}
 
@@ -104,12 +105,12 @@ export default function CadastroDeGaragens() {
                     <p className="owner-row__meta">
                       <span className={`badge badge--${tom}`}>
                         {IconeStatus && <IconeStatus className="icon-sm" aria-hidden="true" />}
-                        Status: {rotulo(STATUS_GARAGEM_LABELS, garagem.status)}
+                        {t("owner.garages.statusLabel", { status: rotulo(STATUS_GARAGEM_LABELS, garagem.status) })}
                       </span>
                       <span>{garagem.endereco}</span>
                     </p>
                     <div className="owner-meter">
-                      <span className="owner-row__meta tabular">{disponivel} de {garagem.capacidade} vagas livres</span>
+                      <span className="owner-row__meta tabular">{t("owner.garages.freeSpots", { free: disponivel, total: garagem.capacidade })}</span>
                       <span className="owner-meter__bar" aria-hidden="true"><span className="owner-meter__fill" style={{ width: `${ocupacao}%` }} /></span>
                     </div>
                   </div>
@@ -120,25 +121,25 @@ export default function CadastroDeGaragens() {
                       onClick={() => navigate(`/cadastro-garagens/${garagem.id}/capacidade`)}
                     >
                       <Gauge aria-hidden="true" />
-                      Ver ocupação
+                      {t("owner.garages.viewOccupancy")}
                     </button>
                     <button
                       type="button"
                       className="btn btn--secondary"
-                      aria-label={`Editar ${garagem.nome}`}
+                      aria-label={t("owner.common.editItem", { name: garagem.nome })}
                       onClick={() => navigate(`/cadastro-garagens/${garagem.id}`, { state: { garagem } })}
                     >
                       <Pencil aria-hidden="true" />
-                      Editar
+                      {t("owner.common.edit")}
                     </button>
                     <button
                       type="button"
                       className="btn btn--danger"
-                      aria-label={`Excluir ${garagem.nome}`}
+                      aria-label={t("owner.common.deleteItem", { name: garagem.nome })}
                       onClick={() => setGaragemParaExcluir(garagem)}
                     >
                       <Trash2 aria-hidden="true" />
-                      Excluir
+                      {t("owner.common.delete")}
                     </button>
                   </div>
                 </li>
@@ -158,16 +159,16 @@ export default function CadastroDeGaragens() {
           onClose={() => setGaragemParaExcluir(null)}
           closeDisabled={excluindo}
         >
-          <h2 id="excluir-garagem-title">Deseja excluir essa garagem?</h2>
+          <h2 id="excluir-garagem-title">{t("owner.garages.deleteTitle")}</h2>
           {/* O backend faz exclusão lógica: a garagem vira INATIVA. */}
-          <p id="excluir-garagem-desc">{garagemParaExcluir.nome}. A garagem será desativada (status Inativa) e deixará de aparecer no catálogo público.</p>
+          <p id="excluir-garagem-desc">{t("owner.garages.deleteDesc", { name: garagemParaExcluir.nome })}</p>
           <div className="owner-dialog__actions">
-            <button type="button" className="btn btn--secondary" aria-label="Cancelar exclusão" onClick={() => setGaragemParaExcluir(null)} disabled={excluindo} data-autofocus>
-              Cancelar
+            <button type="button" className="btn btn--secondary" aria-label={t("owner.common.cancelDelete")} onClick={() => setGaragemParaExcluir(null)} disabled={excluindo} data-autofocus>
+              {t("owner.common.cancel")}
             </button>
-            <button type="button" className="btn btn--danger" aria-label="Confirmar exclusão" onClick={confirmarExclusao} disabled={excluindo}>
+            <button type="button" className="btn btn--danger" aria-label={t("owner.common.confirmDelete")} onClick={confirmarExclusao} disabled={excluindo}>
               <Trash2 className="icon" aria-hidden="true" />
-              {excluindo ? "Excluindo…" : "Confirmar exclusão"}
+              {excluindo ? t("owner.common.deleting") : t("owner.common.confirmDelete")}
             </button>
           </div>
         </ModalDialog>

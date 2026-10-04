@@ -4,6 +4,7 @@ import { RouteErrorBoundary, RouteView, RouteLoading } from "../components/layou
 import AppShell from "../components/layout/AppShell";
 import { useAuthSession } from "../hooks/useAuthSession";
 import { getUserCargo, resolveAuthRoute } from "../services/authIdentity";
+import { t } from "../i18n";
 
 const Home = lazy(() => import("../pages/Home"));
 const VehicleDetails = lazy(() => import("../pages/VehicleDetails"));
@@ -107,63 +108,63 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <FocusOnRouteChange />
-      <Suspense fallback={<RouteLoading label="Abrindo MOVA" />}>
+      <Suspense fallback={<RouteLoading text={t("common.route.openingApp")} />}>
         <Routes>
           {/* Telas de acesso: marca própria, sem shell. */}
-          <Route path="/login" element={<Screen Page={Login} label="o login" />} />
-          <Route path="/cadastro" element={<Screen Page={Cadastro} label="o cadastro" />} />
-          <Route path="/cadastro-locatario" element={<Screen Page={Cadastro} label="o cadastro" />} />
-          <Route path="/cadastro-locador" element={<Screen Page={CadastroLocador} label="o cadastro do locador" />} />
-          <Route path="/recuperar-senha" element={<Screen Page={ForgotPassword} label="a recuperação de senha" />} />
-          <Route path="/redefinir-senha" element={<Screen Page={ResetPassword} label="a redefinição de senha" />} />
+          <Route path="/login" element={<Screen Page={Login} label={t("common.route.screens.login")} />} />
+          <Route path="/cadastro" element={<Screen Page={Cadastro} label={t("common.route.screens.signup")} />} />
+          <Route path="/cadastro-locatario" element={<Screen Page={Cadastro} label={t("common.route.screens.signup")} />} />
+          <Route path="/cadastro-locador" element={<Screen Page={CadastroLocador} label={t("common.route.screens.ownerSignup")} />} />
+          <Route path="/recuperar-senha" element={<Screen Page={ForgotPassword} label={t("common.route.screens.forgotPassword")} />} />
+          <Route path="/redefinir-senha" element={<Screen Page={ResetPassword} label={t("common.route.screens.resetPassword")} />} />
 
           {/* Visitante e locatário: AppShell único e persistente. */}
           <Route element={<AppShellLayout />}>
-            <Route path="/" element={<Screen Page={Home} label="a página inicial" />} />
-            <Route path="/home" element={<Screen Page={Home} label="a página inicial" />} />
-            <Route path="/viagem/compartilhada/:token" element={<Screen Page={CompartilhamentoViagem} label="a viagem compartilhada" />} />
-            <Route path="/reservas/:id" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={ReservaDetalhe} label="o detalhe da reserva" /></ProtectedRoute>} />
-            <Route path="/reserva/:id" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={ReservaDetalhe} label="o detalhe da reserva" /></ProtectedRoute>} />
-            <Route path="/carros" element={<Screen Page={TiposDeCarros} label="a escolha do tipo de carro" />} />
-            <Route path="/carros/:id" element={<Screen Page={VehicleDetails} label="os detalhes do veículo" />} />
-            <Route path="/carros/lista" element={<Screen Page={CarrosScreen} label="a lista de carros" />} />
-            <Route path="/escolha-garagem-retirada" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={EscolhaGaragemRetirada} label="a garagem de retirada" /></ProtectedRoute>} />
-            <Route path="/escolha-garagem-devolucao" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={EscolhaGaragemDevolucao} label="a garagem de devolução" /></ProtectedRoute>} />
-            <Route path="/servicos-opcionais" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={ServicosOpcionais} label="os serviços opcionais" /></ProtectedRoute>} />
-            <Route path="/checkout-reserva" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CheckoutReserva} label="o checkout da reserva" /></ProtectedRoute>} />
-            <Route path="/condutores-adicionais" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CondutoresAdicionais} label="os condutores adicionais" /></ProtectedRoute>} />
-            <Route path="/pagamento" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={Pagamento} label="o pagamento" /></ProtectedRoute>} />
-            <Route path="/desbloqueio" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={DesbloqueioDeCarro} label="o desbloqueio" /></ProtectedRoute>} />
-            <Route path="/reserva/:id/localizacao" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={RastreamentoReserva} label="o acompanhamento da reserva" /></ProtectedRoute>} />
-            <Route path="/devolucao" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={DevolucaoReserva} label="a devolução" /></ProtectedRoute>} />
-            <Route path="/cancelamento" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CancelamentoReserva} label="o cancelamento" /></ProtectedRoute>} />
-            <Route path="/avaliacao" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={AvaliacaoReserva} label="a avaliação" /></ProtectedRoute>} />
-            <Route path="/historico" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={Historico} label="o histórico" /></ProtectedRoute>} />
-            <Route path="/pendencias-financeiras" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={PendenciasFinanceiras} label="as pendências financeiras" /></ProtectedRoute>} />
-            <Route path="/interesses" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={InteressesDisponibilidade} label="os avisos de disponibilidade" /></ProtectedRoute>} />
-            <Route path="/carros/disponiveis" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CarrosDisponiveis} label="os carros disponíveis" /></ProtectedRoute>} />
-            <Route path="/carros/favoritos" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CarrosFavoritados} label="os favoritos" /></ProtectedRoute>} />
-            <Route path="*" element={<Screen Page={NotFound} label="a página" />} />
+            <Route path="/" element={<Screen Page={Home} label={t("common.route.screens.home")} />} />
+            <Route path="/home" element={<Screen Page={Home} label={t("common.route.screens.home")} />} />
+            <Route path="/viagem/compartilhada/:token" element={<Screen Page={CompartilhamentoViagem} label={t("common.route.screens.sharedTrip")} />} />
+            <Route path="/reservas/:id" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={ReservaDetalhe} label={t("common.route.screens.reservationDetail")} /></ProtectedRoute>} />
+            <Route path="/reserva/:id" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={ReservaDetalhe} label={t("common.route.screens.reservationDetail")} /></ProtectedRoute>} />
+            <Route path="/carros" element={<Screen Page={TiposDeCarros} label={t("common.route.screens.carTypes")} />} />
+            <Route path="/carros/:id" element={<Screen Page={VehicleDetails} label={t("common.route.screens.vehicleDetails")} />} />
+            <Route path="/carros/lista" element={<Screen Page={CarrosScreen} label={t("common.route.screens.carList")} />} />
+            <Route path="/escolha-garagem-retirada" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={EscolhaGaragemRetirada} label={t("common.route.screens.pickupGarage")} /></ProtectedRoute>} />
+            <Route path="/escolha-garagem-devolucao" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={EscolhaGaragemDevolucao} label={t("common.route.screens.returnGarage")} /></ProtectedRoute>} />
+            <Route path="/servicos-opcionais" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={ServicosOpcionais} label={t("common.route.screens.extras")} /></ProtectedRoute>} />
+            <Route path="/checkout-reserva" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CheckoutReserva} label={t("common.route.screens.checkout")} /></ProtectedRoute>} />
+            <Route path="/condutores-adicionais" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CondutoresAdicionais} label={t("common.route.screens.drivers")} /></ProtectedRoute>} />
+            <Route path="/pagamento" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={Pagamento} label={t("common.route.screens.payment")} /></ProtectedRoute>} />
+            <Route path="/desbloqueio" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={DesbloqueioDeCarro} label={t("common.route.screens.unlock")} /></ProtectedRoute>} />
+            <Route path="/reserva/:id/localizacao" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={RastreamentoReserva} label={t("common.route.screens.tracking")} /></ProtectedRoute>} />
+            <Route path="/devolucao" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={DevolucaoReserva} label={t("common.route.screens.return")} /></ProtectedRoute>} />
+            <Route path="/cancelamento" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CancelamentoReserva} label={t("common.route.screens.cancellation")} /></ProtectedRoute>} />
+            <Route path="/avaliacao" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={AvaliacaoReserva} label={t("common.route.screens.review")} /></ProtectedRoute>} />
+            <Route path="/historico" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={Historico} label={t("common.route.screens.history")} /></ProtectedRoute>} />
+            <Route path="/pendencias-financeiras" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={PendenciasFinanceiras} label={t("common.route.screens.pendingPayments")} /></ProtectedRoute>} />
+            <Route path="/interesses" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={InteressesDisponibilidade} label={t("common.route.screens.availabilityAlerts")} /></ProtectedRoute>} />
+            <Route path="/carros/disponiveis" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CarrosDisponiveis} label={t("common.route.screens.availableCars")} /></ProtectedRoute>} />
+            <Route path="/carros/favoritos" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CarrosFavoritados} label={t("common.route.screens.favorites")} /></ProtectedRoute>} />
+            <Route path="*" element={<Screen Page={NotFound} label={t("common.route.screens.page")} />} />
           </Route>
 
           {/* Conta, suporte e configurações: shell conforme o cargo. */}
-          <Route path="/conta" element={<ProtectedRoute><RoleShell><Screen Page={Conta} label="a conta" /></RoleShell></ProtectedRoute>} />
-          <Route path="/suporte" element={<ProtectedRoute><RoleShell><Screen Page={Suporte} label="o suporte" /></RoleShell></ProtectedRoute>} />
-          <Route path="/configuracoes" element={<ProtectedRoute><RoleShell><Screen Page={Configuracoes} label="as configurações" /></RoleShell></ProtectedRoute>} />
+          <Route path="/conta" element={<ProtectedRoute><RoleShell><Screen Page={Conta} label={t("common.route.screens.account")} /></RoleShell></ProtectedRoute>} />
+          <Route path="/suporte" element={<ProtectedRoute><RoleShell><Screen Page={Suporte} label={t("common.route.screens.support")} /></RoleShell></ProtectedRoute>} />
+          <Route path="/configuracoes" element={<ProtectedRoute><RoleShell><Screen Page={Configuracoes} label={t("common.route.screens.settings")} /></RoleShell></ProtectedRoute>} />
 
           {/* Locador: OwnerAppShell aplicado pelo ProtectedRoute. */}
-          <Route path="/painel" element={<OwnerProtectedRoute><Screen Page={OwnerDashboard} label="o painel do locador" /></OwnerProtectedRoute>} />
-          <Route path="/reservas" element={<OwnerProtectedRoute><Screen Page={OwnerReservations} label="as reservas da frota" /></OwnerProtectedRoute>} />
-          <Route path="/monitoramento" element={<OwnerProtectedRoute><Screen Page={OwnerMonitoring} label="o monitoramento" /></OwnerProtectedRoute>} />
-          <Route path="/relatorios" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={RelatoriosFiltro} label="os relatórios" /></ProtectedRoute>} />
-          <Route path="/relatorios/veiculos" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={RelatoriosVeiculos} label="o relatório de veículos" /></ProtectedRoute>} />
-          <Route path="/relatorios/avaliacoes-filtro" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={RelatoriosAvaliacoesFiltro} label="o filtro de avaliações" /></ProtectedRoute>} />
-          <Route path="/relatorios/avaliacoes" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={RelatoriosAvaliacoes} label="as avaliações" /></ProtectedRoute>} />
-          <Route path="/cadastro-carros" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CadastroDeCarros} label="a frota" /></ProtectedRoute>} />
-          <Route path="/cadastro-carros/:id" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CadastroCarroForm} label="o veículo" /></ProtectedRoute>} />
-          <Route path="/cadastro-garagens" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CadastroDeGaragens} label="as garagens" /></ProtectedRoute>} />
-          <Route path="/cadastro-garagens/:id/capacidade" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CapacidadeGaragem} label="a capacidade da garagem" /></ProtectedRoute>} />
-          <Route path="/cadastro-garagens/:id" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CadastroGaragemForm} label="a garagem" /></ProtectedRoute>} />
+          <Route path="/painel" element={<OwnerProtectedRoute><Screen Page={OwnerDashboard} label={t("common.route.screens.ownerDashboard")} /></OwnerProtectedRoute>} />
+          <Route path="/reservas" element={<OwnerProtectedRoute><Screen Page={OwnerReservations} label={t("common.route.screens.fleetReservations")} /></OwnerProtectedRoute>} />
+          <Route path="/monitoramento" element={<OwnerProtectedRoute><Screen Page={OwnerMonitoring} label={t("common.route.screens.monitoring")} /></OwnerProtectedRoute>} />
+          <Route path="/relatorios" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={RelatoriosFiltro} label={t("common.route.screens.reports")} /></ProtectedRoute>} />
+          <Route path="/relatorios/veiculos" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={RelatoriosVeiculos} label={t("common.route.screens.vehicleReport")} /></ProtectedRoute>} />
+          <Route path="/relatorios/avaliacoes-filtro" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={RelatoriosAvaliacoesFiltro} label={t("common.route.screens.reviewFilter")} /></ProtectedRoute>} />
+          <Route path="/relatorios/avaliacoes" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={RelatoriosAvaliacoes} label={t("common.route.screens.reviews")} /></ProtectedRoute>} />
+          <Route path="/cadastro-carros" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CadastroDeCarros} label={t("common.route.screens.fleet")} /></ProtectedRoute>} />
+          <Route path="/cadastro-carros/:id" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CadastroCarroForm} label={t("common.route.screens.vehicle")} /></ProtectedRoute>} />
+          <Route path="/cadastro-garagens" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CadastroDeGaragens} label={t("common.route.screens.garages")} /></ProtectedRoute>} />
+          <Route path="/cadastro-garagens/:id/capacidade" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CapacidadeGaragem} label={t("common.route.screens.garageCapacity")} /></ProtectedRoute>} />
+          <Route path="/cadastro-garagens/:id" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CadastroGaragemForm} label={t("common.route.screens.garage")} /></ProtectedRoute>} />
 
           {/* Redirecionamentos legados. */}
           <Route path="/locador" element={<Navigate to="/painel" replace />} />

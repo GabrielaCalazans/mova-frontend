@@ -1,4 +1,5 @@
-﻿function onlyDigits(value) {
+import { t } from "../i18n";
+function onlyDigits(value) {
   return value.replace(/\D/g, "");
 }
 
@@ -49,8 +50,8 @@ export function isCnhValida(cnh) {
 }
 
 function cnhError(cnh) {
-  if (!/^[0-9]{11}$/.test(onlyDigits(cnh || ""))) return "CNH deve conter 11 digitos.";
-  return isCnhValida(cnh) ? null : "CNH inválida.";
+  if (!/^[0-9]{11}$/.test(onlyDigits(cnh || ""))) return t("validation.cnhDigits");
+  return isCnhValida(cnh) ? null : t("validation.cnhInvalid");
 }
 
 export function isCnpjValido(cnpj) {
@@ -86,15 +87,15 @@ export function validateLoginForm(values) {
   const nextErrors = {};
 
   if (!values.email.trim()) {
-    nextErrors.email = "Informe seu e-mail.";
+    nextErrors.email = t("validation.emailRequired");
   } else if (!isValidEmail(values.email)) {
-    nextErrors.email = "Digite um e-mail valido.";
+    nextErrors.email = t("validation.emailInvalid");
   }
 
   if (!values.senha.trim()) {
-    nextErrors.senha = "Informe sua senha.";
+    nextErrors.senha = t("validation.passwordRequired");
   } else if (values.senha.length < 8) {
-    nextErrors.senha = "A senha precisa ter mais de 7 caracteres.";
+    nextErrors.senha = t("validation.loginPasswordLength");
   }
 
   return nextErrors;
@@ -104,9 +105,9 @@ export function validateForgotPasswordForm(values) {
   const nextErrors = {};
 
   if (!values.email.trim()) {
-    nextErrors.email = "Informe seu e-mail.";
+    nextErrors.email = t("validation.emailRequired");
   } else if (!isValidEmail(values.email)) {
-    nextErrors.email = "Digite um e-mail valido.";
+    nextErrors.email = t("validation.emailInvalid");
   }
 
   return nextErrors;
@@ -116,20 +117,20 @@ export function validateResetPasswordForm(values) {
   const nextErrors = {};
 
   if (!values.token) {
-    nextErrors.token = "Link de recuperação inválido ou expirado.";
+    nextErrors.token = t("validation.resetLinkInvalid");
   }
 
   if (!values.novaSenha?.trim()) {
-    nextErrors.novaSenha = "Informe a nova senha.";
+    nextErrors.novaSenha = t("validation.newPasswordRequired");
   } else if (!isSenhaForte(values.novaSenha)) {
     nextErrors.novaSenha =
-      "Senha deve ter 8+ caracteres, com maiuscula, minuscula, numero e caractere especial.";
+      t("validation.passwordStrong");
   }
 
   if (!values.confirmarNovaSenha?.trim()) {
-    nextErrors.confirmarNovaSenha = "Confirme a nova senha.";
+    nextErrors.confirmarNovaSenha = t("validation.confirmNewPassword");
   } else if (values.novaSenha !== values.confirmarNovaSenha) {
-    nextErrors.confirmarNovaSenha = "As senhas devem ser iguais.";
+    nextErrors.confirmarNovaSenha = t("validation.passwordsMismatch");
   }
 
   return nextErrors;
@@ -138,44 +139,44 @@ export function validateResetPasswordForm(values) {
 export function validateRegisterForm(values) {
   const nextErrors = {};
 
-  if (!values.name.trim()) nextErrors.name = "Informe seu nome completo.";
+  if (!values.name.trim()) nextErrors.name = t("validation.nameRequired");
 
   if (!values.email.trim()) {
-    nextErrors.email = "Informe seu e-mail.";
+    nextErrors.email = t("validation.emailRequired");
   } else if (!isValidEmail(values.email)) {
-    nextErrors.email = "Digite um e-mail valido.";
+    nextErrors.email = t("validation.emailInvalid");
   }
 
   if (!/^[0-9]{10,11}$/.test(onlyDigits(values.celphone))) {
-    nextErrors.celphone = "Informe celular com DDD (10 ou 11 digitos).";
+    nextErrors.celphone = t("validation.mobileRequired");
   }
 
   if (!/^[0-9]{11}$/.test(onlyDigits(values.cpf))) {
-    nextErrors.cpf = "CPF deve conter 11 digitos.";
+    nextErrors.cpf = t("validation.cpfDigits");
   }
 
   if (!/^[0-9]{11}$/.test(onlyDigits(values.cnh))) {
-    nextErrors.cnh = "CNH deve conter 11 digitos.";
+    nextErrors.cnh = t("validation.cnhDigits");
   }
 
   if (!values.address.trim()) {
-    nextErrors.address = "Informe seu endereco completo.";
+    nextErrors.address = t("validation.addressRequired");
   }
 
   if (!/^[0-9]{8}$/.test(onlyDigits(values.cep))) {
-    nextErrors.cep = "CEP deve conter 8 digitos.";
+    nextErrors.cep = t("validation.cepDigits");
   }
 
   if (!values.password.trim()) {
-    nextErrors.password = "Informe sua senha.";
+    nextErrors.password = t("validation.passwordRequired");
   } else if (values.password.length < 8) {
-    nextErrors.password = "Senha deve ter pelo menos 8 caracteres.";
+    nextErrors.password = t("validation.passwordMinLength");
   }
 
   if (!values.confirmPassword?.trim()) {
-    nextErrors.confirmPassword = "Repita a senha para confirmar.";
+    nextErrors.confirmPassword = t("validation.confirmPassword");
   } else if (values.confirmPassword !== values.password) {
-    nextErrors.confirmPassword = "As senhas devem ser iguais.";
+    nextErrors.confirmPassword = t("validation.passwordsMismatch");
   }
 
   return nextErrors;
@@ -185,16 +186,16 @@ export function validateCadastroContaForm(values) {
   const nextErrors = {};
 
   if (!values.email.trim()) {
-    nextErrors.email = "Informe seu e-mail.";
+    nextErrors.email = t("validation.emailRequired");
   } else if (!isValidEmail(values.email)) {
-    nextErrors.email = "Digite um e-mail valido.";
+    nextErrors.email = t("validation.emailInvalid");
   }
 
   if (!values.password.trim()) {
-    nextErrors.password = "Informe sua senha.";
+    nextErrors.password = t("validation.passwordRequired");
   } else if (!isSenhaForte(values.password)) {
     nextErrors.password =
-      "Senha deve ter 8+ caracteres, com maiuscula, minuscula, numero e caractere especial.";
+      t("validation.passwordStrong");
   }
 
   return nextErrors;
@@ -203,14 +204,14 @@ export function validateCadastroContaForm(values) {
 export function validateCadastroDetalhesForm(values) {
   const nextErrors = {};
 
-  if (!values.name.trim()) nextErrors.name = "Informe seu nome completo.";
+  if (!values.name.trim()) nextErrors.name = t("validation.nameRequired");
 
   if (!/^[0-9]{10,11}$/.test(onlyDigits(values.celphone || ""))) {
-    nextErrors.celphone = "Informe celular com DDD (10 ou 11 digitos).";
+    nextErrors.celphone = t("validation.mobileRequired");
   }
 
   if (!isCpfValido(values.cpf)) {
-    nextErrors.cpf = "CPF invalido. Confira os numeros digitados.";
+    nextErrors.cpf = t("validation.cpfInvalid");
   }
 
   const erroCnh = cnhError(values.cnh);
@@ -218,17 +219,17 @@ export function validateCadastroDetalhesForm(values) {
 
   const rgNormalizado = (values.rg || "").replace(/[.\-\s]/g, "").toUpperCase();
   if (!/^[0-9]{5,13}[0-9X]$/.test(rgNormalizado)) {
-    nextErrors.rg = "RG invalido (apenas numeros, com digito verificador opcional X).";
+    nextErrors.rg = t("validation.rgInvalid");
   }
 
   if (!values.dataNascimento) {
-    nextErrors.dataNascimento = "Informe sua data de nascimento.";
+    nextErrors.dataNascimento = t("validation.birthDateRequired");
   } else {
     const nascimento = new Date(values.dataNascimento);
     const hoje = new Date();
 
     if (Number.isNaN(nascimento.getTime()) || nascimento >= hoje) {
-      nextErrors.dataNascimento = "Data de nascimento invalida.";
+      nextErrors.dataNascimento = t("validation.birthDateInvalid");
     } else {
       let idade = hoje.getFullYear() - nascimento.getFullYear();
       const aindaNaoFezAniversario =
@@ -237,27 +238,27 @@ export function validateCadastroDetalhesForm(values) {
       if (aindaNaoFezAniversario) idade -= 1;
 
       if (idade < 18) {
-        nextErrors.dataNascimento = "E preciso ter ao menos 18 anos para se cadastrar.";
+        nextErrors.dataNascimento = t("validation.minimumAge");
       } else if (idade > 120) {
-        nextErrors.dataNascimento = "Data de nascimento invalida.";
+        nextErrors.dataNascimento = t("validation.birthDateInvalid");
       }
     }
   }
 
   if (!/^[0-9]{5}-?[0-9]{3}$/.test(values.cep || "")) {
-    nextErrors.cep = "CEP deve estar no formato 12345-678.";
+    nextErrors.cep = t("validation.cepFormat");
   }
 
   if (!values.address?.trim()) {
-    nextErrors.address = "Informe seu endereco residencial.";
+    nextErrors.address = t("validation.residentialAddressRequired");
   }
 
   if (!values.agreeTerms) {
-    nextErrors.agreeTerms = "E preciso concordar com os termos de uso.";
+    nextErrors.agreeTerms = t("validation.termsRequired");
   }
 
   if (!values.agreePrivacy) {
-    nextErrors.agreePrivacy = "E preciso concordar com os termos de privacidade.";
+    nextErrors.agreePrivacy = t("validation.privacyRequired");
   }
 
   return nextErrors;
@@ -266,43 +267,43 @@ export function validateCadastroDetalhesForm(values) {
 export function validateLocatarioRegisterForm(values) {
   const nextErrors = {};
 
-  if (!values.name.trim()) nextErrors.name = "Informe seu nome completo.";
+  if (!values.name.trim()) nextErrors.name = t("validation.nameRequired");
 
   if (!values.email.trim()) {
-    nextErrors.email = "Informe seu e-mail.";
+    nextErrors.email = t("validation.emailRequired");
   } else if (!isValidEmail(values.email)) {
-    nextErrors.email = "Digite um e-mail valido.";
+    nextErrors.email = t("validation.emailInvalid");
   }
 
   if (!/^[0-9]{10,11}$/.test(onlyDigits(values.celphone || ""))) {
-    nextErrors.celphone = "Informe telefone com DDD (10 ou 11 digitos).";
+    nextErrors.celphone = t("validation.phoneRequired");
   }
 
   if (!/^[0-9]{11}$/.test(onlyDigits(values.cpf))) {
-    nextErrors.cpf = "CPF deve conter 11 digitos.";
+    nextErrors.cpf = t("validation.cpfDigits");
   }
 
   const erroCnh = cnhError(values.cnh);
   if (erroCnh) nextErrors.cnh = erroCnh;
 
   if (!values.address?.trim()) {
-    nextErrors.address = "Informe seu endereco completo.";
+    nextErrors.address = t("validation.addressRequired");
   }
 
   if (!/^[0-9]{8}$/.test(onlyDigits(values.cep || ""))) {
-    nextErrors.cep = "CEP deve conter 8 digitos.";
+    nextErrors.cep = t("validation.cepDigits");
   }
 
   if (!values.password.trim()) {
-    nextErrors.password = "Informe sua senha.";
+    nextErrors.password = t("validation.passwordRequired");
   } else if (values.password.length < 8) {
-    nextErrors.password = "Senha deve ter pelo menos 8 caracteres.";
+    nextErrors.password = t("validation.passwordMinLength");
   }
 
   if (!values.confirmPassword?.trim()) {
-    nextErrors.confirmPassword = "Repita a senha para confirmar.";
+    nextErrors.confirmPassword = t("validation.confirmPassword");
   } else if (values.confirmPassword !== values.password) {
-    nextErrors.confirmPassword = "As senhas devem ser iguais.";
+    nextErrors.confirmPassword = t("validation.passwordsMismatch");
   }
 
   return nextErrors;
@@ -312,46 +313,46 @@ export function validateLocadorRegisterForm(values) {
   const nextErrors = {};
 
   if (!values.name?.trim()) {
-    nextErrors.name = "Informe o nome do proprietario.";
+    nextErrors.name = t("validation.ownerNameRequired");
   }
 
   if (!values.email.trim()) {
-    nextErrors.email = "Informe seu e-mail.";
+    nextErrors.email = t("validation.emailRequired");
   } else if (!isValidEmail(values.email)) {
-    nextErrors.email = "Digite um e-mail valido.";
+    nextErrors.email = t("validation.emailInvalid");
   }
 
   if (!/^[0-9]{10,11}$/.test(onlyDigits(values.celphone || ""))) {
-    nextErrors.celphone = "Informe telefone com DDD (10 ou 11 digitos).";
+    nextErrors.celphone = t("validation.phoneRequired");
   }
 
   if (!values.empresa.trim()) {
-    nextErrors.empresa = "Informe a empresa.";
+    nextErrors.empresa = t("validation.companyRequired");
   }
 
   if (!isCnpjValido(values.cnpj)) {
-    nextErrors.cnpj = "CNPJ invalido. Confira os numeros digitados.";
+    nextErrors.cnpj = t("validation.cnpjInvalid");
   }
 
   if (!values.address?.trim()) {
-    nextErrors.address = "Informe seu endereco completo.";
+    nextErrors.address = t("validation.addressRequired");
   }
 
   if (!/^[0-9]{8}$/.test(onlyDigits(values.cep || ""))) {
-    nextErrors.cep = "CEP deve conter 8 digitos.";
+    nextErrors.cep = t("validation.cepDigits");
   }
 
   if (!values.password.trim()) {
-    nextErrors.password = "Informe sua senha.";
+    nextErrors.password = t("validation.passwordRequired");
   } else if (!isSenhaForte(values.password)) {
     nextErrors.password =
-      "Senha deve ter 8+ caracteres, com maiuscula, minuscula, numero e caractere especial.";
+      t("validation.passwordStrong");
   }
 
   if (!values.confirmPassword?.trim()) {
-    nextErrors.confirmPassword = "Repita a senha para confirmar.";
+    nextErrors.confirmPassword = t("validation.confirmPassword");
   } else if (values.confirmPassword !== values.password) {
-    nextErrors.confirmPassword = "As senhas devem ser iguais.";
+    nextErrors.confirmPassword = t("validation.passwordsMismatch");
   }
 
   return nextErrors;
@@ -362,56 +363,56 @@ export function validateProfileForm(values) {
   const isLocador = values.cargo === "LOCADOR" || values.profileType === "locador";
 
   if (!values.name.trim()) {
-    nextErrors.name = "Informe seu nome completo.";
+    nextErrors.name = t("validation.nameRequired");
   }
 
   if (!values.email.trim()) {
-    nextErrors.email = "Informe seu e-mail.";
+    nextErrors.email = t("validation.emailRequired");
   } else if (!isValidEmail(values.email)) {
-    nextErrors.email = "Digite um e-mail valido.";
+    nextErrors.email = t("validation.emailInvalid");
   }
 
   if (isLocador) {
     if (!/^[0-9]{10,11}$/.test(onlyDigits(values.celphone || ""))) {
-      nextErrors.celphone = "Informe celular com DDD (10 ou 11 digitos).";
+      nextErrors.celphone = t("validation.mobileRequired");
     }
 
     if (!values.empresa?.trim()) {
-      nextErrors.empresa = "Informe a empresa.";
+      nextErrors.empresa = t("validation.companyRequired");
     }
 
     if (!/^[0-9]{14}$/.test(onlyDigits(values.cnpj || ""))) {
-      nextErrors.cnpj = "CNPJ deve conter 14 digitos.";
+      nextErrors.cnpj = t("validation.cnpjDigits");
     }
 
     if (!values.address?.trim()) {
-      nextErrors.address = "Informe seu endereco completo.";
+      nextErrors.address = t("validation.addressRequired");
     }
 
     if (!/^[0-9]{8}$/.test(onlyDigits(values.cep || ""))) {
-      nextErrors.cep = "CEP deve conter 8 digitos.";
+      nextErrors.cep = t("validation.cepDigits");
     }
 
     return nextErrors;
   }
 
   if (!/^[0-9]{10,11}$/.test(onlyDigits(values.celphone || ""))) {
-    nextErrors.celphone = "Informe celular com DDD (10 ou 11 digitos).";
+    nextErrors.celphone = t("validation.mobileRequired");
   }
 
   if (!isCpfValido(values.cpf)) {
-    nextErrors.cpf = "CPF invalido. Confira os numeros digitados.";
+    nextErrors.cpf = t("validation.cpfInvalid");
   }
 
   const erroCnh = cnhError(values.cnh);
   if (erroCnh) nextErrors.cnh = erroCnh;
 
   if (!values.address?.trim()) {
-    nextErrors.address = "Informe seu endereco completo.";
+    nextErrors.address = t("validation.addressRequired");
   }
 
   if (!/^[0-9]{8}$/.test(onlyDigits(values.cep || ""))) {
-    nextErrors.cep = "CEP deve conter 8 digitos.";
+    nextErrors.cep = t("validation.cepDigits");
   }
 
   return nextErrors;

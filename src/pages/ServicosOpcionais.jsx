@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import JourneySteps from "../components/reservation/JourneySteps";
 import { listServicos } from "../services/servicoService";
 import { getJourneyStep, updateJourneyStep } from "../utils/journeyStorage";
-import { formatMoneyBRL } from "../utils/reservationMath";
+import { formatCurrency, t } from "../i18n";
 import "../styles/journey.css";
 
-const UNIDADE = { POR_DIA: "por dia", POR_RESERVA: "por reserva" };
+// Chaves de tradução por tipo de cobrança (o código vem da API).
+const UNIDADE = { POR_DIA: "journey.services.perDay", POR_RESERVA: "journey.services.perBooking" };
 
 export default function ServicosOpcionais() {
   const navigate = useNavigate();
@@ -16,9 +17,9 @@ export default function ServicosOpcionais() {
   const [erro, setErro] = useState("");
 
   useEffect(() => {
-    document.title = "MOVA - Serviços adicionais";
+    document.title = t("journey.services.documentTitle");
     listServicos().then(setServicos).catch((error) => {
-      setErro(error?.message || "Não foi possível carregar os serviços.");
+      setErro(error?.message || t("journey.services.loadError"));
     }).finally(() => setCarregando(false));
   }, []);
 
@@ -39,13 +40,13 @@ export default function ServicosOpcionais() {
     <main className="journey-page">
       <JourneySteps current="servicos" />
       <header className="journey-head">
-        <h1>Serviços adicionais</h1>
-        <p className="page-head__lede">Escolha serviços para esta reserva. O valor final será recalculado pelo sistema ao confirmar.</p>
+        <h1>{t("journey.services.title")}</h1>
+        <p className="page-head__lede">{t("journey.services.lede")}</p>
       </header>
 
-      {carregando && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando serviços…</p>}
+      {carregando && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />{t("journey.services.loading")}</p>}
       {erro && <p role="alert" className="alert alert--danger">{erro}</p>}
-      {!carregando && !erro && servicos.length === 0 && <p className="journey-muted">Nenhum serviço adicional está disponível.</p>}
+      {!carregando && !erro && servicos.length === 0 && <p className="journey-muted">{t("journey.services.empty")}</p>}
 
       {servicos.length > 0 && (
         <ul className="choice-list">
@@ -60,13 +61,13 @@ export default function ServicosOpcionais() {
                     {servico.descricao && <span className="choice__desc"> — {servico.descricao}</span>}
                   </span>
                   <span className="choice__price tabular">
-                    {formatMoneyBRL(servico.valor)}
-                    {UNIDADE[servico.tipoCobranca] && <span className="choice__unit">{UNIDADE[servico.tipoCobranca]}</span>}
+                    {formatCurrency(servico.valor)}
+                    {UNIDADE[servico.tipoCobranca] && <span className="choice__unit">{t(UNIDADE[servico.tipoCobranca])}</span>}
                   </span>
                 </label>
                 {servico.detalhesCobertura && (
                   <details className="line-list__details">
-                    <summary>Ver detalhes da cobertura</summary>
+                    <summary>{t("journey.services.coverage")}</summary>
                     <p>{servico.detalhesCobertura}</p>
                   </details>
                 )}
@@ -78,15 +79,15 @@ export default function ServicosOpcionais() {
 
       <div className="price-summary">
         <p className="price-summary__total">
-          <span>Estimativa dos serviços</span>
-          <strong className="tabular" data-testid="estimativa-servicos">{formatMoneyBRL(estimativa)}</strong>
+          <span>{t("journey.services.estimate")}</span>
+          <strong className="tabular" data-testid="estimativa-servicos">{formatCurrency(estimativa)}</strong>
         </p>
-        <p className="price-summary__note">Diárias e total final aparecem no resumo, calculados pelo servidor.</p>
+        <p className="price-summary__note">{t("journey.services.note")}</p>
       </div>
 
       <div className="journey-footer">
-        <button type="button" className="btn btn--secondary" onClick={() => navigate("/escolha-garagem-devolucao")}>Voltar para devolução</button>
-        <button type="button" className="btn btn--lg" onClick={continuar}>Continuar para checkout</button>
+        <button type="button" className="btn btn--secondary" onClick={() => navigate("/escolha-garagem-devolucao")}>{t("journey.services.back")}</button>
+        <button type="button" className="btn btn--lg" onClick={continuar}>{t("journey.services.next")}</button>
       </div>
     </main>
   );

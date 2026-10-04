@@ -164,12 +164,12 @@ describe("Fluxo de autenticacao", () => {
     ).toBeInTheDocument();
 
     const submitButton = screen.getByRole("button", {
-      name: /enviar link de recuperacao/i,
+      name: /enviar link de recuperação/i,
     });
 
     await user.click(submitButton);
 
-    expect(await screen.findByText(/informe um e-mail valido para continuar\./i)).toBeInTheDocument();
+    expect(await screen.findByText(/informe um e-mail válido para continuar\./i)).toBeInTheDocument();
     expect(await screen.findByText(/informe seu e-mail\./i)).toBeInTheDocument();
 
     const emailInput = screen.getByRole("textbox", { name: /e-mail/i });

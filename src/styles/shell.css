@@ -36,6 +36,29 @@
   .appbar__theme { display: inline-flex; }
   .brand-logo--header { width: 132px; }
 }
+/* 320 px: marca + idioma + ação cabem numa linha; se não couber, quebra em vez de vazar. */
+@media (max-width: 359px) {
+  .appbar__inner, .owner-header__inner { flex-wrap: wrap; }
+  .brand-logo--header { width: 96px; }
+  .appbar__action { padding-inline: var(--space-2); }
+}
+
+/* ---------------------------------------------------------------- idioma */
+.langselect { display: inline-flex; flex-direction: column; gap: var(--space-1); flex: none; }
+.langselect__control {
+  min-height: var(--control-h); min-width: var(--control-h);
+  padding: 0 var(--space-2);
+  background: var(--surface-sunken); color: var(--text-primary);
+  border: 1px solid var(--border-default); border-radius: var(--radius-sm);
+  font-size: var(--text-label); font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+.langselect__control:hover { border-color: var(--border-strong); }
+.langselect--labeled { width: 100%; max-width: 26rem; }
+.langselect--labeled .langselect__control {
+  width: 100%; padding-inline: var(--space-3);
+  background: var(--surface-secondary); border-color: var(--border-strong); font-weight: var(--weight-regular);
+}
 @media (min-width: 1024px) {
   .appbar__inner, .owner-header__inner { min-height: var(--appbar-h-lg); padding-inline: var(--space-8); gap: var(--space-3); }
   .appbar__account { display: inline-flex; }

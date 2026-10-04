@@ -1,22 +1,9 @@
 import { useState } from "react";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { formatDate, t } from "../i18n";
 
-const MESES = [
-  "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO",
-  "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO",
-];
-
-const DIAS_SEMANA = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"];
-
-const DATAS_COMEMORATIVAS = {
-  "01-01": "Ano Novo",
-  "10-08": "Dia dos Pais",
-  "07-09": "Independência do Brasil",
-  "12-10": "Dia das Crianças / Nossa Sra. Aparecida",
-  "02-11": "Finados",
-  "15-11": "Proclamação da República",
-  "25-12": "Natal",
-};
+// Nomes das datas em journey.datePicker.holidays.<dd-mm> (traduzidos no render).
+const DATAS_COMEMORATIVAS = new Set(["01-01", "10-08", "07-09", "12-10", "02-11", "15-11", "25-12"]);
 
 function pad(value) {
   return String(value).padStart(2, "0");
@@ -40,15 +27,17 @@ function buildMonthCells(refDate) {
       key: `day-${day}`,
       day,
       weekend: weekday === 5 || weekday === 6,
-      holidayLabel: DATAS_COMEMORATIVAS[`${pad(day)}-${pad(month + 1)}`],
+      holidayLabel: DATAS_COMEMORATIVAS.has(`${pad(day)}-${pad(month + 1)}`)
+        ? t(`journey.datePicker.holidays.${pad(day)}-${pad(month + 1)}`)
+        : undefined,
     });
   }
   return cells;
 }
 
-function formatarDataBR(data) {
-  if (!data) return "";
-  return `${pad(data.getDate())}/${pad(data.getMonth() + 1)}/${data.getFullYear()}`;
+// pt-BR continua dd/mm/aaaa; en-US vira mm/dd/aaaa.
+function formatarData(data) {
+  return formatDate(data, { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
 /**
@@ -73,10 +62,10 @@ export default function FiltroDataPicker({ dataSelecionada, onChange }) {
   return (
     <>
       <div className="field datepick">
-        <span className="field__label" id="filtro-data-label">Data</span>
+        <span className="field__label" id="filtro-data-label">{t("journey.datePicker.label")}</span>
         <button type="button" className="datepick__trigger" aria-labelledby="filtro-data-label filtro-data-valor" aria-haspopup="dialog" onClick={() => setCalOpen(true)}>
           <span id="filtro-data-valor" className={dataSelecionada ? undefined : "datepick__placeholder"}>
-            {dataSelecionada ? formatarDataBR(dataSelecionada) : "Selecionar data (dd/mm/aaaa)"}
+            {dataSelecionada ? formatarData(dataSelecionada) : t("journey.datePicker.placeholder")}
           </span>
           <Calendar aria-hidden="true" />
         </button>
@@ -85,31 +74,31 @@ export default function FiltroDataPicker({ dataSelecionada, onChange }) {
       {calOpen && (
         <div className="datepick__overlay" onClick={() => setCalOpen(false)} onKeyDown={(event) => event.key === "Escape" && setCalOpen(false)}>
           <div className="datepick__panel" role="dialog" aria-modal="true" aria-labelledby="filtro-cal-titulo" onClick={(event) => event.stopPropagation()}>
-            <p className="datepick__title" id="filtro-cal-titulo">Seleção de data</p>
+            <p className="datepick__title" id="filtro-cal-titulo">{t("journey.datePicker.title")}</p>
             <div className="datepick__month">
               <button
                 type="button"
                 className="icon-btn icon-btn--outlined"
                 onClick={() => setCalRef((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
-                aria-label="Mês anterior"
+                aria-label={t("journey.datePicker.prevMonth")}
               >
                 <ChevronLeft className="icon" aria-hidden="true" />
               </button>
               <h3 aria-live="polite">
-                {MESES[calRef.getMonth()].toLowerCase()} {calRef.getFullYear()}
+                {formatDate(calRef, { month: "long" })} {calRef.getFullYear()}
               </h3>
               <button
                 type="button"
                 className="icon-btn icon-btn--outlined"
                 onClick={() => setCalRef((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
-                aria-label="Próximo mês"
+                aria-label={t("journey.datePicker.nextMonth")}
               >
                 <ChevronRight className="icon" aria-hidden="true" />
               </button>
             </div>
 
             <div className="datepick__days" aria-hidden="true">
-              {DIAS_SEMANA.map((dia) => (
+              {t("journey.datePicker.weekdays").map((dia) => (
                 <span key={dia}>{dia}</span>
               ))}
             </div>
@@ -133,7 +122,7 @@ export default function FiltroDataPicker({ dataSelecionada, onChange }) {
                     type="button"
                     className={`datepick__day${cell.weekend ? " datepick__day--weekend" : ""}`}
                     aria-pressed={isSelected}
-                    aria-label={`${cell.day} de ${MESES[calRef.getMonth()].toLowerCase()}${cell.holidayLabel ? `, ${cell.holidayLabel}` : ""}`}
+                    aria-label={`${formatDate(new Date(calRef.getFullYear(), calRef.getMonth(), cell.day), { day: "numeric", month: "long" })}${cell.holidayLabel ? `, ${cell.holidayLabel}` : ""}`}
                     onClick={() => pickDay(cell.day)}
                   >
                     {cell.day}
@@ -148,7 +137,7 @@ export default function FiltroDataPicker({ dataSelecionada, onChange }) {
               </p>
             )}
             <div className="datepick__close">
-              <button type="button" className="btn" onClick={() => setCalOpen(false)}>Concluir</button>
+              <button type="button" className="btn" onClick={() => setCalOpen(false)}>{t("journey.datePicker.done")}</button>
             </div>
           </div>
         </div>

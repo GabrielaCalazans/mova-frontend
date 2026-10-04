@@ -2,11 +2,12 @@ import { useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDesktop, faMoon, faSun } from "@fortawesome/free-solid-svg-icons";
 import { useTheme } from "../../context/useTheme";
+import { t } from "../../i18n";
 
 const OPTIONS = [
-  { value: "system", label: "Sistema", icon: faDesktop },
-  { value: "light", label: "Claro", icon: faSun },
-  { value: "dark", label: "Escuro", icon: faMoon },
+  { value: "system", icon: faDesktop },
+  { value: "light", icon: faSun },
+  { value: "dark", icon: faMoon },
 ];
 
 /**
@@ -31,7 +32,7 @@ export default function ThemeToggle({ labeled = false }) {
   }
 
   return (
-    <div className={`themetoggle${labeled ? " themetoggle--labeled" : ""}`} role="radiogroup" aria-label="Tema da interface">
+    <div className={`themetoggle${labeled ? " themetoggle--labeled" : ""}`} role="radiogroup" aria-label={t("common.theme.group")}>
       {OPTIONS.map((option) => {
         const checked = preference === option.value;
         return (
@@ -47,7 +48,7 @@ export default function ThemeToggle({ labeled = false }) {
             onClick={() => setPreference(option.value)}
           >
             <FontAwesomeIcon icon={option.icon} aria-hidden="true" />
-            <span className={labeled ? undefined : "sr-only"}>{option.label}</span>
+            <span className={labeled ? undefined : "sr-only"}>{t(`common.theme.${option.value}`)}</span>
           </button>
         );
       })}
