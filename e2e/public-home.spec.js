@@ -498,7 +498,8 @@ test("Home autenticada mostra reserva ativa e aba Alugar somente com dado real",
   await page.goto("/");
   await expect(page.getByRole("complementary", { name: /sua reserva ativa/i })).toBeVisible();
   await expect(page.getByRole("complementary", { name: /sua reserva ativa/i }).getByText("Fiat Argo")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Alugar" })).toBeVisible();
+  // Destinos de navegação agora são links (antes botões com navigate()).
+  await expect(page.getByRole("link", { name: "Alugar" })).toBeVisible();
 });
 
 test("menu de conta mantém foco por teclado e devolve foco ao acionador", async ({ page }) => {
@@ -518,11 +519,13 @@ test("menu de conta mantém foco por teclado e devolve foco ao acionador", async
   });
 
   await page.goto("/");
-  const trigger = page.getByRole("button", { name: "Menu" });
+  // Task 8: o acionador mostra e anuncia "Conta" (antes aria-label "Menu"
+  // escondia o texto visível — WCAG 2.5.3); o menu mistura links e botões.
+  const trigger = page.getByRole("button", { name: "Conta" });
   await trigger.click();
 
   const dialog = page.getByRole("dialog", { name: "Menu da conta" });
-  const buttons = dialog.getByRole("button");
+  const buttons = dialog.locator('a[href], button:not([tabindex="-1"])');
   await expect(dialog).toBeVisible();
   await expect(buttons.first()).toBeFocused();
 

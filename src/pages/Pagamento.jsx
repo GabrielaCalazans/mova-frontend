@@ -1,27 +1,40 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle } from "lucide-react";
-import BottomNav from "../components/BottomNav";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleCheck, faCircleExclamation, faCircleInfo } from "@fortawesome/free-solid-svg-icons";
+import JourneySteps from "../components/reservation/JourneySteps";
+import VehicleMedia from "../components/vehicle/VehicleMedia";
 import { getJourneyStep, updateJourneyStep } from "../utils/journeyStorage";
 import {
   METODO_PAGAMENTO,
   METODO_PAGAMENTO_LABELS,
   STATUS_PAGAMENTO,
+  STATUS_PAGAMENTO_LABELS,
+  rotulo,
 } from "../services/apiEnums";
 import { getPagamentoReserva, getReservaById, iniciarPagamento } from "../services/reservaService";
 import { formatMoneyBRL } from "../utils/reservationMath";
-import "../styles/carselect.css";
-import "../styles/auth.css";
+import { vehicleTitle } from "../utils/vehicleDisplay";
+import "../styles/vehicle.css";
+import "../styles/journey.css";
 import "../styles/payment.css";
-import {
-  QrPlaceholder,
-  QrCell,
-  ModalOverlay,
-  SuccessModal,
-  IconCircle,
-  SuccessTitle,
-  SuccessSubtitle,
-} from "../styles/authStyle";
+import "../styles/postcompra.css";
+
+const TIMEZONE_EXIBICAO = import.meta.env.VITE_TIMEZONE_EXIBICAO || "America/Sao_Paulo";
+
+function formatarDataHora(valor) {
+  if (!valor) return "Data não informada";
+  const data = new Date(valor);
+  if (Number.isNaN(data.getTime())) return "Data não informada";
+  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: TIMEZONE_EXIBICAO }).format(data);
+}
+
+const TOM_PAGAMENTO = {
+  [STATUS_PAGAMENTO.AGUARDANDO_PAGAMENTO]: "warning",
+  [STATUS_PAGAMENTO.PROCESSANDO]: "info",
+  [STATUS_PAGAMENTO.SUCESSO]: "success",
+  [STATUS_PAGAMENTO.FALHA]: "danger",
+};
 
 // Pagamento em SANDBOX.
 //
@@ -89,6 +102,7 @@ export default function Pagamento() {
 
   const montado = useRef(true);
   const timer = useRef(null);
+  const pixTrigger = useRef(null);
 
   const reservaId = getJourneyStep("reserva")?.id;
 
@@ -269,280 +283,331 @@ export default function Pagamento() {
     ? "Não encontramos sua reserva. Volte para o checkout e confirme a reserva antes de pagar."
     : erroCarregamento;
 
+  const head = (
+    <>
+      <JourneySteps current="pagamento" />
+      <header className="journey-head">
+        <h1>Pagamento</h1>
+        <p className="page-head__lede">Ambiente de teste: nenhum valor é cobrado de verdade.</p>
+      </header>
+    </>
+  );
+
   if (carregando && !semReserva) {
     return (
-      <main className="carro-page">
-        <div className="carro-header">
-          <h1>Pagamento</h1>
-        </div>
-        <div className="carro-content">
-          <p role="status" aria-live="polite">
-            Carregando sua reserva...
-          </p>
-        </div>
-        <BottomNav />
+      <main className="journey-page">
+        {head}
+        <p className="loading-state" role="status" aria-live="polite">
+          <span className="spinner" aria-hidden="true" />
+          Carregando sua reserva...
+        </p>
       </main>
     );
   }
 
   if (mensagemDeErro) {
     return (
-      <main className="carro-page">
-        <div className="carro-header">
-          <h1>Pagamento</h1>
-        </div>
-        <div className="carro-content">
-          <p
-            className="auth-feedback auth-feedback--error"
-            role="status"
-            aria-live="polite"
-          >
-            {mensagemDeErro}
-          </p>
-          <button
-            type="button"
-            className="carro-button"
-            onClick={() => navigate("/checkout-reserva")}
-          >
+      <main className="journey-page">
+        {head}
+        <div className="state-block state-block--error" role="status" aria-live="polite">
+          <h2 className="state-block__title">Não foi possível abrir o pagamento</h2>
+          <p className="state-block__text">{mensagemDeErro}</p>
+          <button type="button" className="btn" onClick={() => navigate("/checkout-reserva")}>
             Voltar ao checkout
           </button>
         </div>
-        <BottomNav />
       </main>
     );
   }
 
-  return (
-    <main className="carro-page">
-      <div className="carro-header">
-        <h1>Pagamento</h1>
-      </div>
-
-      <div className="carro-content">
-        {reservaForaDaEtapaDePagamento ? (
-          <section className="payment-method-card" role="status">
-            <h2>
-              {reserva?.status === "CANCELADA"
-                ? "Reserva cancelada"
-                : reserva?.status === "REALIZADA"
-                  ? "Reserva concluída"
-                  : "Locação em andamento"}
-            </h2>
-            <p>
-              {reserva?.status === "CANCELADA"
-                ? "Esta reserva não pode receber pagamento nem liberar o veículo."
-                : reserva?.status === "REALIZADA"
-                  ? "O pagamento e a retirada já foram encerrados para esta reserva."
-                  : "O pagamento já foi confirmado e a locação está em andamento."}
-            </p>
-            <button type="button" className="carro-button" onClick={() => navigate("/historico")}>
-              Ver minhas reservas
-            </button>
-          </section>
-        ) : (
-          <>
-        <section className="payment-method-card">
-          <h2>Valor da reserva</h2>
-          {/* Valor calculado pelo backend — o frontend só exibe. */}
-          <p className="payment-total" data-testid="valor-reserva">
-            {formatMoneyBRL(reserva?.valorTotal)}
+  if (reservaForaDaEtapaDePagamento) {
+    return (
+      <main className="journey-page">
+        <header className="journey-head">
+          <h1>Pagamento</h1>
+        </header>
+        <section className="state-block" role="status">
+          <h2 className="state-block__title">
+            {reserva?.status === "CANCELADA"
+              ? "Reserva cancelada"
+              : reserva?.status === "REALIZADA"
+                ? "Reserva concluída"
+                : "Locação em andamento"}
+          </h2>
+          <p className="state-block__text">
+            {reserva?.status === "CANCELADA"
+              ? "Esta reserva não pode receber pagamento nem liberar o veículo."
+              : reserva?.status === "REALIZADA"
+                ? "O pagamento e a retirada já foram encerrados para esta reserva."
+                : "O pagamento já foi confirmado e a locação está em andamento."}
           </p>
-          <p className="payment-modal-note">Pagamento e estorno simulados — nenhum dinheiro real movimentado.</p>
-          {pagamento && <p role="status">Status do estorno: {pagamento.statusEstorno}. Valor pago: {formatMoneyBRL(pagamento.valorPago)}.</p>}
-        </section>
-
-        <p className="payment-subtitle">Escolha seu método de pagamento</p>
-
-        <form className="auth-form" onSubmit={handleFinalizar} noValidate>
-          <div className="auth-field">
-            <label htmlFor="metodoPagamento">Método de pagamento*</label>
-            <select
-              id="metodoPagamento"
-              value={metodo}
-              onChange={(e) => setMetodo(e.target.value)}
-            >
-              {METODOS.map((codigo) => (
-                <option key={codigo} value={codigo}>
-                  {METODO_PAGAMENTO_LABELS[codigo]}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {usaCartao && (
-            <div className="payment-method-card">
-              <h2>{METODO_PAGAMENTO_LABELS[metodo]}</h2>
-              <p className="payment-modal-note">
-                Ambiente de teste: use qualquer cartão fictício. Final 0000
-                simula recusa e final 0001 simula análise.
-              </p>
-
-              <div className="auth-field">
-                <label htmlFor="numeroCartao">Número do Cartão*</label>
-                <input
-                  id="numeroCartao"
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="Número do cartão"
-                  value={numeroCartao}
-                  onChange={(e) =>
-                    setNumeroCartao(formatCardNumber(e.target.value))
-                  }
-                />
-              </div>
-
-              <div className="auth-field">
-                <label htmlFor="nomeTitular">Nome do Titular*</label>
-                <input
-                  id="nomeTitular"
-                  type="text"
-                  placeholder="Nome do Titular"
-                  value={nomeTitular}
-                  onChange={(e) => setNomeTitular(e.target.value.toUpperCase())}
-                />
-              </div>
-
-              <div className="auth-field">
-                <label htmlFor="validade">Validade (MM/AA)</label>
-                <input
-                  id="validade"
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="Validade (MM/AA)"
-                  value={validade}
-                  onChange={(e) => setValidade(formatValidade(e.target.value))}
-                />
-              </div>
-
-              <div className="auth-field">
-                <label htmlFor="cvv">CVV*</label>
-                <input
-                  id="cvv"
-                  type="password"
-                  inputMode="numeric"
-                  maxLength={4}
-                  placeholder="CVV"
-                  value={cvv}
-                  onChange={(e) =>
-                    setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))
-                  }
-                />
-              </div>
-            </div>
-          )}
-
-          {metodo === METODO_PAGAMENTO.PIX && (
-            <div className="payment-method-card payment-method-card--action">
-              <h2>Pix</h2>
-              <button
-                type="button"
-                className="carro-button"
-                onClick={() => setPixModalOpen(true)}
-              >
-                Ver QR Code
-              </button>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            className="carro-button payment-finalizar"
-            disabled={processando}
-          >
-            {processando ? "Processando..." : "Pagar"}
+          <button type="button" className="btn" onClick={() => navigate("/historico")}>
+            Ver minhas reservas
           </button>
-        </form>
+        </section>
+      </main>
+    );
+  }
 
-        {erroPagamento && (
-          <p
-            className="auth-feedback auth-feedback--error"
-            role="status"
-            aria-live="polite"
-          >
-            {erroPagamento}
-          </p>
-        )}
+  const veiculo = reserva?.veiculo;
+  const tomPagamento = TOM_PAGAMENTO[statusPagamento] ?? "neutral";
 
-        <p className="payment-secure-note">
-          🔒 Ambiente de teste — nenhum valor é cobrado de verdade
+  const resumo = (
+    <section className="price-summary pay-summary" aria-labelledby="pay-summary-title">
+      <h2 id="pay-summary-title">O que você está pagando</h2>
+      <div className="vehicle-strip pay-summary__vehicle">
+        <VehicleMedia vehicle={veiculo} />
+        <div>
+          <p className="vehicle-strip__name">{veiculo ? vehicleTitle(veiculo) : "Veículo da reserva"}</p>
+          {veiculo?.placa ? <p className="journey-muted">Placa <span className="tabular">{veiculo.placa}</span></p> : null}
+        </div>
+      </div>
+      <dl className="price-summary__rows">
+        <div>
+          <dt>Retirada</dt>
+          <dd>
+            <span className="pay-summary__garage">{reserva?.garagemRetirada?.nome || "Garagem não informada"}</span>
+            <span className="tabular">{formatarDataHora(reserva?.dataHoraInicio)}</span>
+          </dd>
+        </div>
+        <div>
+          <dt>Devolução</dt>
+          <dd>
+            <span className="pay-summary__garage">{reserva?.garagemDevolucao?.nome || "Garagem não informada"}</span>
+            <span className="tabular">{formatarDataHora(reserva?.dataHoraFim)}</span>
+          </dd>
+        </div>
+        {statusPagamento ? (
+          <div>
+            <dt>Pagamento</dt>
+            <dd><span className={`badge badge--${tomPagamento}`}>{rotulo(STATUS_PAGAMENTO_LABELS, statusPagamento)}</span></dd>
+          </div>
+        ) : null}
+      </dl>
+      <div className="price-summary__total">
+        <span>Total</span>
+        {/* Valor calculado pelo backend — o frontend só exibe. */}
+        <strong className="tabular" data-testid="valor-reserva">{formatMoneyBRL(reserva?.valorTotal)}</strong>
+      </div>
+      <p className="price-summary__note">Pagamento e estorno simulados — nenhum dinheiro real movimentado.</p>
+      {pagamento?.statusEstorno && (
+        <p className="price-summary__note" role="status">
+          Status do estorno: {pagamento.statusEstorno}. Valor pago: <span className="tabular">{formatMoneyBRL(pagamento.valorPago)}</span>.
         </p>
-        <p className="payment-footer-text">
-          Dúvidas? <a href="#">Fale com o suporte</a>
-        </p>
-          </>
-        )}
+      )}
+    </section>
+  );
+
+  return (
+    <main className="journey-page">
+      {head}
+
+      <div className="journey-layout pay-layout">
+        <div className="journey-layout__main">
+          {/* Sucesso só aparece com a confirmação REAL do backend. */}
+          {aprovado ? (
+            <section className="pay-success" aria-labelledby="pay-success-title" role="status">
+              <p className="pay-success__title" id="pay-success-title">
+                <FontAwesomeIcon icon={faCircleCheck} aria-hidden="true" />
+                Pagamento aprovado
+              </p>
+              <p>Sua reserva está confirmada.</p>
+              {reserva?.codigoDesbloqueio ? (
+                <div className="pay-success__code">
+                  <span className="journey-muted">Código de desbloqueio</span>
+                  <strong className="unlock-code">{reserva.codigoDesbloqueio}</strong>
+                </div>
+              ) : null}
+              <div className="journey-actions">
+                <button type="button" className="btn btn--lg" onClick={() => navigate("/desbloqueio")}>
+                  Desbloquear veículo
+                </button>
+                <button type="button" className="btn btn--secondary btn--lg" onClick={() => navigate("/historico")}>
+                  Ver minhas reservas
+                </button>
+              </div>
+            </section>
+          ) : (
+            <section className="journey-section" aria-labelledby="pay-method-title">
+              <h2 id="pay-method-title">Como você quer pagar</h2>
+
+              {processando && (
+                <div className="pay-status" role="status" aria-live="polite">
+                  <span className="spinner" aria-hidden="true" />
+                  <div>
+                    <p className="pay-status__title">Processando pagamento</p>
+                    <p className="journey-muted">Aguardando a confirmação do gateway. Não é preciso pagar de novo.</p>
+                  </div>
+                </div>
+              )}
+
+              <form className="pay-form" onSubmit={handleFinalizar} noValidate aria-busy={processando || undefined}>
+                <div className="field">
+                  <label className="field__label" htmlFor="metodoPagamento">Método de pagamento</label>
+                  <select
+                    id="metodoPagamento"
+                    className="field__control"
+                    value={metodo}
+                    disabled={processando}
+                    onChange={(e) => setMetodo(e.target.value)}
+                  >
+                    {METODOS.map((codigo) => (
+                      <option key={codigo} value={codigo}>
+                        {METODO_PAGAMENTO_LABELS[codigo]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {usaCartao && (
+                  <fieldset className="fieldset form-panel pay-card" disabled={processando}>
+                    <legend>{METODO_PAGAMENTO_LABELS[metodo]}</legend>
+                    <p className="field__hint">
+                      Ambiente de teste: use qualquer cartão fictício. Final 0000
+                      simula recusa e final 0001 simula análise.
+                    </p>
+
+                    <div className="field">
+                      <label className="field__label" htmlFor="numeroCartao">Número do cartão</label>
+                      <input
+                        id="numeroCartao"
+                        className="field__control tabular"
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="off"
+                        aria-required="true"
+                        value={numeroCartao}
+                        onChange={(e) => setNumeroCartao(formatCardNumber(e.target.value))}
+                      />
+                    </div>
+
+                    <div className="field">
+                      <label className="field__label" htmlFor="nomeTitular">Nome do titular</label>
+                      <input
+                        id="nomeTitular"
+                        className="field__control"
+                        type="text"
+                        autoComplete="off"
+                        aria-required="true"
+                        value={nomeTitular}
+                        onChange={(e) => setNomeTitular(e.target.value.toUpperCase())}
+                      />
+                    </div>
+
+                    <div className="pay-card__row">
+                      <div className="field">
+                        <label className="field__label" htmlFor="validade">Validade (MM/AA)</label>
+                        <input
+                          id="validade"
+                          className="field__control tabular"
+                          type="text"
+                          inputMode="numeric"
+                          autoComplete="off"
+                          value={validade}
+                          onChange={(e) => setValidade(formatValidade(e.target.value))}
+                        />
+                      </div>
+
+                      <div className="field">
+                        <label className="field__label" htmlFor="cvv">CVV</label>
+                        <input
+                          id="cvv"
+                          className="field__control tabular"
+                          type="password"
+                          inputMode="numeric"
+                          autoComplete="off"
+                          aria-required="true"
+                          maxLength={4}
+                          value={cvv}
+                          onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                        />
+                      </div>
+                    </div>
+                  </fieldset>
+                )}
+
+                {metodo === METODO_PAGAMENTO.PIX && (
+                  <div className="form-panel pay-pix">
+                    <p>Pix em ambiente de teste. O QR Code é ilustrativo.</p>
+                    <button type="button" className="btn btn--secondary" ref={pixTrigger} onClick={() => setPixModalOpen(true)} disabled={processando}>
+                      Ver QR Code
+                    </button>
+                  </div>
+                )}
+
+                {erroPagamento && (
+                  <div className="alert alert--danger" role="status" aria-live="polite">
+                    <FontAwesomeIcon icon={faCircleExclamation} aria-hidden="true" />
+                    <div className="alert__body">
+                      <p>{erroPagamento}</p>
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  className="btn btn--lg btn--block"
+                  disabled={processando}
+                  aria-busy={processando || undefined}
+                >
+                  {processando ? "Processando..." : "Pagar"}
+                </button>
+                <p className="journey-muted">
+                  Depois da confirmação, o código de desbloqueio aparece aqui e em Minhas reservas.
+                </p>
+              </form>
+
+              <p className="journey-muted">
+                Dúvidas?{" "}
+                <button type="button" className="btn btn--quiet" onClick={() => navigate("/suporte")}>
+                  Fale com o suporte
+                </button>
+              </p>
+            </section>
+          )}
+        </div>
+
+        <aside className="journey-layout__aside">{resumo}</aside>
       </div>
 
-      {pixModalOpen && (
-        <div
-          className="payment-validating-overlay"
-          onClick={() => setPixModalOpen(false)}
-        >
-          <div
-            className="payment-validating-card"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <h2>Pix</h2>
-            <QrPlaceholder style={{ margin: "0 auto" }}>
-              {QR_PATTERN.map((filled, i) => (
-                <QrCell key={i} filled={filled} />
-              ))}
-            </QrPlaceholder>
-            <p className="payment-modal-note">
-              QR Code ilustrativo; nenhuma transferência é feita.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {processando && (
-        <div
-          className="payment-validating-overlay"
-          role="status"
-          aria-live="polite"
-        >
-          <div className="payment-validating-card">
-            <h2>Processando pagamento</h2>
-            <p className="payment-modal-note">
-              Aguardando a confirmação do gateway.
-            </p>
-            <div className="payment-spinner" />
-          </div>
-        </div>
-      )}
-
-      {/* Sucesso só aparece com a confirmação REAL do backend. */}
-      {aprovado && (
-        <ModalOverlay>
-          <SuccessModal>
-            <IconCircle>
-              <CheckCircle size={48} color="#2e7d32" strokeWidth={1.5} />
-            </IconCircle>
-            <SuccessTitle>Pagamento aprovado</SuccessTitle>
-            <SuccessSubtitle>
-              Sua reserva está confirmada.
-              {reserva?.codigoDesbloqueio
-                ? ` Código de desbloqueio: ${reserva.codigoDesbloqueio}`
-                : ""}
-            </SuccessSubtitle>
-            <button
-              type="button"
-              className="carro-button"
-              onClick={() => navigate("/desbloqueio")}
-            >
-              Desbloquear veículo
-            </button>
-            <button
-              type="button"
-              className="carro-button"
-              onClick={() => navigate("/historico")}
-            >
-              Ver minhas reservas
-            </button>
-          </SuccessModal>
-        </ModalOverlay>
-      )}
-      <BottomNav />
+      {pixModalOpen && <PixDialog onClose={() => { setPixModalOpen(false); pixTrigger.current?.focus(); }} />}
     </main>
+  );
+}
+
+// Diálogo modal do QR ilustrativo: foco no botão de fechar, Esc fecha e o
+// Tab fica preso no único controle (é o único elemento focável).
+function PixDialog({ onClose }) {
+  const closeRef = useRef(null);
+  useEffect(() => { closeRef.current?.focus(); }, []);
+
+  return (
+    <div className="pay-dialog__scrim" onClick={onClose}>
+      <div
+        className="pay-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pix-dialog-title"
+        onClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") onClose();
+          if (event.key === "Tab") event.preventDefault();
+        }}
+      >
+        <h2 id="pix-dialog-title">Pix</h2>
+        <div className="pay-qr" aria-hidden="true">
+          {QR_PATTERN.map((filled, i) => (
+            <span key={i} className={filled ? "pay-qr__cell pay-qr__cell--on" : "pay-qr__cell"} />
+          ))}
+        </div>
+        <p className="alert alert--info">
+          <FontAwesomeIcon icon={faCircleInfo} aria-hidden="true" />
+          <span className="alert__body">QR Code ilustrativo; nenhuma transferência é feita.</span>
+        </p>
+        <button type="button" className="btn btn--block" ref={closeRef} onClick={onClose}>
+          Fechar
+        </button>
+      </div>
+    </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import BottomNav from "../components/BottomNav";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleCheck, faCircleExclamation, faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { getJourneyStep, updateJourneyStep } from "../utils/journeyStorage";
 import { getAuthSession } from "../services/authSession";
 import { STATUS_PAGAMENTO, STATUS_RESERVA } from "../services/apiEnums";
@@ -10,8 +11,9 @@ import {
   getReservaById,
   listReservasDoLocatario,
 } from "../services/reservaService";
-import "../styles/carselect.css";
+import "../styles/journey.css";
 import "../styles/payment.css";
+import "../styles/postcompra.css";
 
 // TASK 05 — esta tela NUNCA declara o veiculo desbloqueado por conta propria.
 // "Veiculo Desbloqueado" so aparece depois que POST /reserva/:id/desbloqueio
@@ -227,222 +229,151 @@ export default function TelaDeDesbloqueio() {
   const temCodigo = Boolean(reserva?.codigoDesbloqueio);
 
   return (
-    <main className="carro-page">
-      <div className="carro-header">
+    <main className="journey-page">
+      <header className="journey-head">
         <h1>Desbloqueio</h1>
-      </div>
+      </header>
 
-      <div
-        className="carro-content"
-        style={{ marginTop: "-1.75rem", textAlign: "center" }}
-      >
-        {carregando && <p className="carro-status">Carregando sua reserva…</p>}
+      {carregando && (
+        <p className="loading-state" role="status">
+          <span className="spinner" aria-hidden="true" />
+          Carregando sua reserva…
+        </p>
+      )}
 
-        {!carregando && erroCarregamento && (
-          <>
-            <p className="carro-status" role="alert">
-              {erroCarregamento}
-            </p>
-            <button
-              type="button"
-              className="carro-button"
-              onClick={() => navigate("/historico")}
-            >
+      {!carregando && erroCarregamento && (
+        <div className="state-block state-block--error">
+          <p className="state-block__title">Não foi possível abrir o desbloqueio</p>
+          <p className="state-block__text" role="alert">{erroCarregamento}</p>
+          <button type="button" className="btn" onClick={() => navigate("/historico")}>
+            Ver minhas reservas
+          </button>
+        </div>
+      )}
+
+      {!carregando && !erroCarregamento && reserva && desbloqueado && (
+        <section className="pay-success" aria-labelledby="titulo-desbloqueado">
+          <h2 className="pay-success__title" id="titulo-desbloqueado" data-testid="titulo-desbloqueado">
+            <FontAwesomeIcon icon={faCircleCheck} aria-hidden="true" />
+            Veículo Desbloqueado
+          </h2>
+          <p>
+            Desbloqueio confirmado pelo sistema em{" "}
+            <span className="tabular">{formatarDataHora(reserva.codigoUsadoEm)}</span>.
+          </p>
+          <p className="journey-muted" data-testid="status-reserva">
+            Status da reserva: {reserva.status}
+          </p>
+          <p className="journey-muted">
+            Depois de devolver o veículo, você pode avaliar sua experiência a
+            qualquer momento pela tela de Histórico.
+          </p>
+          <div className="journey-actions">
+            <button type="button" className="btn btn--lg" onClick={() => navigate("/historico")}>
               Ver minhas reservas
             </button>
-          </>
+          </div>
+        </section>
+      )}
+
+      {!carregando &&
+        !erroCarregamento &&
+        reserva &&
+        !desbloqueado &&
+        (!pagamentoConfirmado || !temCodigo) && (
+          <section className="state-block">
+            <h2 className="state-block__title">Pagamento ainda não confirmado</h2>
+            <p className="state-block__text">
+              O código de desbloqueio é gerado quando o gateway confirma o
+              pagamento. Conclua o pagamento para continuar.
+            </p>
+            <button type="button" className="btn" onClick={() => navigate("/pagamento")}>
+              Ir para o pagamento
+            </button>
+          </section>
         )}
 
-        {!carregando && !erroCarregamento && reserva && desbloqueado && (
-          <>
-            <h2
-              style={{
-                color: "var(--color-primary-strong)",
-                fontSize: "1.3rem",
-                margin: "2.5rem 0 1.5rem",
-              }}
-              data-testid="titulo-desbloqueado"
-            >
-              Veículo Desbloqueado
-            </h2>
+      {!carregando &&
+        !erroCarregamento &&
+        reserva &&
+        !desbloqueado &&
+        pagamentoConfirmado &&
+        temCodigo && (
+          <form
+            className="post-panel unlock-panel"
+            aria-labelledby="desbloqueio-titulo"
+            aria-busy={desbloqueando || undefined}
+            onSubmit={(evento) => {
+              evento.preventDefault();
+              enviarDesbloqueio(false);
+            }}
+          >
+            <h2 id="desbloqueio-titulo">Desbloqueie seu veículo</h2>
 
-            <div className="payment-method-card">
-              <p style={{ margin: 0, color: "var(--color-primary-strong)" }}>
-                Desbloqueio confirmado pelo sistema em{" "}
-                {formatarDataHora(reserva.codigoUsadoEm)}.
-              </p>
-              <p
-                style={{
-                  margin: "0.75rem 0 0",
-                  color: "var(--color-text-secondary)",
-                }}
-                data-testid="status-reserva"
-              >
-                Status da reserva: {reserva.status}
-              </p>
+            <div className="pay-success__code">
+              <span className="journey-muted">Seu código de desbloqueio é:</span>
+              <strong className="unlock-code" data-testid="codigo-desbloqueio">
+                {reserva.codigoDesbloqueio}
+              </strong>
+              <span className="journey-muted">
+                Válido a partir de <span className="tabular">{formatarDataHora(reserva.dataHoraInicio)}</span>,
+                para este veículo e de uso único.
+              </span>
             </div>
 
-            <p
-              style={{
-                marginTop: "1.25rem",
-                color: "var(--color-text-secondary)",
-                fontSize: "0.85rem",
-              }}
-            >
-              Depois de devolver o veículo, você pode avaliar sua experiência a
-              qualquer momento pela tela de Histórico.
+            <p className="alert alert--info">
+              <FontAwesomeIcon icon={faLocationDot} aria-hidden="true" />
+              <span className="alert__body">
+                Ao desbloquear, o navegador pede sua localização. O servidor confere se você está perto do veículo.
+              </span>
             </p>
 
-            <button
-              type="button"
-              className="carro-button"
-              onClick={() => navigate("/historico")}
-            >
-              Ver minhas reservas
-            </button>
-          </>
-        )}
-
-        {!carregando &&
-          !erroCarregamento &&
-          reserva &&
-          !desbloqueado &&
-          (!pagamentoConfirmado || !temCodigo) && (
-            <>
-              <h2
-                style={{
-                  color: "var(--color-primary-strong)",
-                  fontSize: "1.2rem",
-                  margin: "2.5rem 0 1rem",
-                }}
-              >
-                Pagamento ainda não confirmado
-              </h2>
-              <p className="carro-status">
-                O código de desbloqueio é gerado quando o gateway confirma o
-                pagamento. Conclua o pagamento para continuar.
-              </p>
+            {qrToken && (
               <button
                 type="button"
-                className="carro-button"
-                onClick={() => navigate("/pagamento")}
+                className="btn btn--secondary btn--lg"
+                onClick={() => enviarDesbloqueio(true)}
+                disabled={desbloqueando}
               >
-                Ir para o pagamento
+                {desbloqueando ? "Desbloqueando…" : "Desbloquear pelo QR Code"}
               </button>
-            </>
-          )}
+            )}
 
-        {!carregando &&
-          !erroCarregamento &&
-          reserva &&
-          !desbloqueado &&
-          pagamentoConfirmado &&
-          temCodigo && (
-            <form
-              onSubmit={(evento) => {
-                evento.preventDefault();
-                enviarDesbloqueio(false);
-              }}
-            >
-              <h2
-                style={{
-                  color: "var(--color-primary-strong)",
-                  fontSize: "1.2rem",
-                  margin: "2.5rem 0 1rem",
-                }}
-              >
-                Desbloqueie seu veículo
-              </h2>
-
-              <div className="payment-method-card">
-                <p
-                  style={{
-                    margin: "0 0 0.5rem",
-                    color: "var(--color-primary-strong)",
-                  }}
-                >
-                  Seu código de desbloqueio é:
-                </p>
-                <p
-                  style={{
-                    margin: 0,
-                    color: "var(--color-primary-strong)",
-                    fontSize: "1.4rem",
-                    fontWeight: 700,
-                  }}
-                  data-testid="codigo-desbloqueio"
-                >
-                  {reserva.codigoDesbloqueio}
-                </p>
-                <p
-                  style={{
-                    margin: "0.75rem 0 0",
-                    color: "var(--color-text-secondary)",
-                    fontSize: "0.8rem",
-                  }}
-                >
-                  Válido a partir de {formatarDataHora(reserva.dataHoraInicio)},
-                  para este veículo e de uso único.
-                </p>
-              </div>
-
-              {qrToken && (
-                <button
-                  type="button"
-                  className="carro-button"
-                  onClick={() => enviarDesbloqueio(true)}
-                  disabled={desbloqueando}
-                >
-                  {desbloqueando
-                    ? "Desbloqueando…"
-                    : "Desbloquear pelo QR Code"}
-                </button>
-              )}
-
-              <label
-                htmlFor="codigo-desbloqueio"
-                style={{
-                  display: "block",
-                  margin: "1.25rem 0 0.4rem",
-                  color: "var(--color-primary-strong)",
-                }}
-              >
+            <div className="field">
+              <label className="field__label" htmlFor="codigo-desbloqueio">
                 Código de desbloqueio
               </label>
               <input
                 id="codigo-desbloqueio"
                 name="codigo"
-                className="payment-input"
+                className="field__control unlock-input"
                 value={codigo}
-                onChange={(evento) =>
-                  setCodigo(evento.target.value.toUpperCase())
-                }
+                onChange={(evento) => setCodigo(evento.target.value.toUpperCase())}
                 placeholder="XXXX-XXXX"
                 maxLength={9}
                 autoComplete="off"
+                aria-invalid={erroDesbloqueio ? "true" : undefined}
+                aria-describedby={erroDesbloqueio ? "erro-desbloqueio" : undefined}
               />
+            </div>
 
-              <button
-                type="submit"
-                className="carro-button"
-                disabled={desbloqueando || codigo.trim().length === 0}
-              >
-                {desbloqueando ? "Desbloqueando…" : "Desbloquear veículo"}
-              </button>
+            <button
+              type="submit"
+              className="btn btn--lg"
+              disabled={desbloqueando || codigo.trim().length === 0}
+              aria-busy={desbloqueando || undefined}
+            >
+              {desbloqueando ? "Desbloqueando…" : "Desbloquear veículo"}
+            </button>
 
-              {erroDesbloqueio && (
-                <p
-                  className="carro-status"
-                  role="alert"
-                  style={{ color: "#c0392b" }}
-                >
-                  {erroDesbloqueio}
-                </p>
-              )}
-            </form>
-          )}
-      </div>
-      <BottomNav />
+            {erroDesbloqueio && (
+              <div className="alert alert--danger" id="erro-desbloqueio">
+                <FontAwesomeIcon icon={faCircleExclamation} aria-hidden="true" />
+                <p className="alert__body" role="alert">{erroDesbloqueio}</p>
+              </div>
+            )}
+          </form>
+        )}
     </main>
   );
 }

@@ -1,140 +1,58 @@
-.payment-subtitle {
-  text-align: center;
-  color: var(--color-primary-strong);
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin: 0 0 var(--space-md);
-}
+/* =============================================================================
+   MOVA — pagamento (Task 8). Reaproveita journey.css (resumo, layout) e
+   base.css (campos, alertas). Aqui só o que é próprio do pagamento.
+   ========================================================================== */
 
-.payment-method-card {
-  background: var(--color-surface-muted, #f2f2f4);
-  border-radius: 16px;
-  padding: 1.1rem 1.2rem 1.3rem;
-  margin-bottom: var(--space-md);
-}
+/* No mobile o resumo (o que e quanto) vem antes do formulário. */
+.pay-layout .journey-layout__aside { order: -1; }
+@media (min-width: 1024px) { .pay-layout .journey-layout__aside { order: 0; } }
 
-.payment-method-card h2 {
-  text-align: center;
-  color: var(--color-primary-strong);
-  margin: 0 0 1rem;
-  font-size: 1.05rem;
-}
+.pay-summary__vehicle { padding: 0; background: none; border: 0; }
+.pay-summary .price-summary__rows > div { align-items: flex-start; }
+.pay-summary .price-summary__rows dd { display: flex; flex-direction: column; align-items: flex-end; text-align: right; min-width: 0; }
+.pay-summary__garage { font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
 
-.payment-method-card--action {
-  text-align: center;
-}
+/* ---------------------------------------------------------------- formulário */
+.pay-form { display: flex; flex-direction: column; gap: var(--space-5); }
+.pay-card { display: flex; flex-direction: column; gap: var(--space-4); }
+.pay-card > legend { float: left; width: 100%; padding: 0; font-size: var(--text-h3); font-weight: var(--weight-semibold); }
+.pay-card__row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.pay-pix { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); font-size: var(--text-meta); color: var(--text-secondary); }
 
-.payment-method-card--action .carro-button {
-  max-width: 260px;
-  margin: 0 auto;
+/* ---------------------------------------------------------------- processando */
+.pay-status {
+  display: flex; gap: var(--space-3); align-items: flex-start;
+  padding: var(--space-4); border: 1px solid var(--border-default); border-radius: var(--radius-sm);
+  background: var(--feedback-info-bg);
 }
+.pay-status .spinner { margin-top: 4px; }
+.pay-status__title { font-weight: var(--weight-semibold); color: var(--text-primary); }
 
-.payment-modal-note {
-  margin: 0.75rem 0 0;
-  text-align: center;
-  color: var(--color-primary-strong);
-  font-size: 0.88rem;
-  line-height: 1.4;
+/* ---------------------------------------------------------------- aprovado */
+.pay-success {
+  display: flex; flex-direction: column; gap: var(--space-4);
+  padding: var(--space-6); border: 1px solid var(--feedback-success-fg); border-radius: var(--radius-md);
+  background: var(--feedback-success-bg); color: var(--text-primary);
 }
+.pay-success__title { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-h2); font-weight: var(--weight-semibold); color: var(--feedback-success-fg); }
+.pay-success__code { display: flex; flex-direction: column; gap: var(--space-1); }
 
-.payment-modal-note a {
-  color: var(--color-primary-strong);
-  text-decoration: underline;
-  font-weight: 600;
+/* ---------------------------------------------------------------- diálogo Pix */
+.pay-dialog__scrim {
+  position: fixed; inset: 0; z-index: var(--z-dialog);
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-4); background: var(--surface-scrim);
 }
-
-.payment-generated {
-  margin-top: 0.9rem;
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
+.pay-dialog {
+  display: flex; flex-direction: column; gap: var(--space-4);
+  width: 100%; max-width: 22rem; padding: var(--space-6);
+  background: var(--surface-elevated); color: var(--text-primary);
+  border: 1px solid var(--border-default); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
 }
-
-.payment-generated strong {
-  color: var(--color-primary-strong);
+.pay-dialog h2 { font-size: var(--text-h3); }
+.pay-qr {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+  width: 168px; aspect-ratio: 1; margin-inline: auto; padding: var(--space-2);
+  background: var(--neutral-white); border: 1px solid var(--border-default);
 }
-
-.payment-finalizar {
-  margin-top: 0.5rem;
-}
-
-.payment-secure-note {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  color: var(--color-text-secondary);
-  font-size: 0.78rem;
-  margin: var(--space-md) 0 0.25rem;
-}
-
-.payment-footer-text {
-  text-align: center;
-  font-size: 0.8rem;
-  color: var(--color-text-secondary);
-  margin: 0.25rem 0 0;
-}
-
-.payment-footer-text a {
-  color: var(--color-primary-strong);
-  font-weight: 600;
-}
-
-/* ── Validando pagamento overlay ─────────────────────────────────── */
-.payment-validating-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(120, 140, 165, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 40;
-  padding: var(--space-lg);
-}
-
-.payment-validating-card {
-  background: var(--color-background-start);
-  border-radius: 18px;
-  padding: var(--space-lg) var(--space-lg);
-  text-align: center;
-  max-width: 280px;
-  width: 100%;
-}
-
-.payment-validating-card h2 {
-  margin: 0 0 var(--space-md);
-  color: var(--color-primary-strong);
-  font-size: 1.05rem;
-}
-
-.payment-spinner {
-  width: 42px;
-  height: 42px;
-  margin: 0 auto;
-  border-radius: 50%;
-  border: 4px solid rgba(0, 51, 102, 0.15);
-  border-top-color: var(--color-primary-strong);
-  animation: payment-spin 0.9s linear infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .payment-spinner { animation: none; }
-}
-
-@keyframes payment-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* ══ Telas grandes ═════════════════════════════════════════════
-   Cards de pagamento/confirmacao fora de um <form> (ex: tela de
-   desbloqueio) tambem ficam centralizados e com largura de leitura
-   confortavel, em vez de esticar ate a largura da .carro-content. */
-@media (min-width: 720px) {
-  .carro-content > .payment-method-card {
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-}
+.pay-qr__cell--on { background: var(--brand-deep); }

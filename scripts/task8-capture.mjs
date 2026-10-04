@@ -53,8 +53,8 @@ const RESERVA_ATIVA = {
 };
 const RESERVAS = [
   RESERVA_ATIVA,
-  { ...RESERVA_ATIVA, id: "res-2", status: "PENDENTE", statusPagamento: "AGUARDANDO_PAGAMENTO", dataHoraInicio: "2030-11-10T12:00:00.000Z", dataHoraFim: "2030-11-12T12:00:00.000Z", veiculo: VEICULOS[1] },
-  { ...RESERVA_ATIVA, id: "res-3", status: "FINALIZADA", statusPagamento: "SUCESSO", dataHoraInicio: "2026-08-01T12:00:00.000Z", dataHoraFim: "2026-08-03T12:00:00.000Z", veiculo: VEICULOS[2] },
+  { ...RESERVA_ATIVA, id: "res-2", status: "AGUARDANDO_PAGAMENTO", statusPagamento: "AGUARDANDO_PAGAMENTO", dataHoraInicio: "2030-11-10T12:00:00.000Z", dataHoraFim: "2030-11-12T12:00:00.000Z", veiculo: VEICULOS[1] },
+  { ...RESERVA_ATIVA, id: "res-3", status: "REALIZADA", statusPagamento: "SUCESSO", dataHoraInicio: "2026-08-01T12:00:00.000Z", dataHoraFim: "2026-08-03T12:00:00.000Z", veiculo: VEICULOS[2] },
   { ...RESERVA_ATIVA, id: "res-4", status: "CANCELADA", statusPagamento: "ESTORNADO", dataHoraInicio: "2026-07-01T12:00:00.000Z", dataHoraFim: "2026-07-02T12:00:00.000Z", veiculo: VEICULOS[3] },
 ];
 

@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Star } from "lucide-react";
-import BottomNav from "../components/BottomNav";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleCheck, faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { getJourneyStep } from "../utils/journeyStorage";
 import { METODO_PAGAMENTO_LABELS, rotulo, STATUS_RESERVA } from "../services/apiEnums";
 import { formatMoneyBRL } from "../utils/reservationMath";
 import { getReservaById } from "../services/reservaService";
 import { createAvaliacao, getAvaliacaoDaReserva } from "../services/avaliacaoService";
-import "../styles/carselect.css";
-import "../styles/payment.css";
+import "../styles/journey.css";
+import "../styles/postcompra.css";
 
 function resolveField(value, fallback = "—") {
   return value === undefined || value === null || value === "" ? fallback : value;
@@ -122,111 +123,110 @@ export default function AvaliacaoReserva() {
       .finally(() => setEnviando(false));
   }
 
+  const notaExibida = hoverRating || rating;
+
   return (
-    <main className="carro-page">
-      <div className="carro-header">
+    <main className="journey-page">
+      <header className="journey-head">
         <h1>Avalie sua Experiência</h1>
-      </div>
+      </header>
 
-      <div className="carro-content">
-        {!semReservaId && carregando && <p className="carro-status">Carregando dados da reserva…</p>}
+      {!semReservaId && carregando && (
+        <p className="loading-state" aria-live="polite"><span className="spinner" aria-hidden="true" />Carregando dados da reserva…</p>
+      )}
 
-        {((semReservaId || !carregando) && mensagemCarregamento && !reserva) && (
-          <p className="carro-status" role="alert">{mensagemCarregamento}</p>
-        )}
+      {((semReservaId || !carregando) && mensagemCarregamento && !reserva) && (
+        <div className="alert alert--danger">
+          <FontAwesomeIcon icon={faCircleExclamation} aria-hidden="true" />
+          <p className="alert__body" role="alert">{mensagemCarregamento}</p>
+        </div>
+      )}
 
-        {!carregando && (reserva || veiculoJourney) && (
-          <div className="payment-method-card" style={{ textAlign: "center" }}>
-            <div style={{ textAlign: "left" }}>
-              <h2 style={{ color: "var(--color-primary-strong)", fontSize: "1.05rem", margin: "0 0 0.6rem" }}>
-                Informações da Reserva
-              </h2>
-              <p className="carro-list-card__specs" style={{ marginBottom: "1rem" }}>
-                Início: {resolveField(formatarDataHora(reserva?.dataHoraInicio))}
-                <br />
-                Fim: {resolveField(formatarDataHora(reserva?.dataHoraFim))}
-                <br />
-                Preço: {reserva?.valorTotal != null ? formatMoneyBRL(reserva.valorTotal) : "—"}
-                <br />
-                Forma de Pagamento:{" "}
-                {resolveField(
-                  rotulo(METODO_PAGAMENTO_LABELS, reserva?.metodoPagamento),
-                )}
-              </p>
-
-              <h2 style={{ color: "var(--color-primary-strong)", fontSize: "1.05rem", margin: "0 0 0.6rem" }}>
-                Informações do Veículo
-              </h2>
-              <p className="carro-list-card__specs" style={{ marginBottom: "1.1rem" }}>
-                Veículo: {nomeVeiculo}
-              </p>
-            </div>
+      {!carregando && (reserva || veiculoJourney) && (
+        <div className="journey-layout">
+          <section className="post-panel" aria-labelledby="avaliacao-titulo">
+            <h2 id="avaliacao-titulo">Sua nota</h2>
 
             {jaAvaliada && (
-              <div role="status" style={{ color: "var(--color-primary-strong)", fontWeight: 600, marginBottom: "0.8rem" }}>
-                <p>Você já avaliou esta reserva com nota {avaliacaoExistente.nota}.</p>
-                {avaliacaoExistente.comentario && <p style={{ fontWeight: 400 }}>“{avaliacaoExistente.comentario}”</p>}
+              <div className="alert alert--success" role="status">
+                <FontAwesomeIcon icon={faCircleCheck} aria-hidden="true" />
+                <div className="alert__body">
+                  <p>Você já avaliou esta reserva com nota {avaliacaoExistente.nota}.</p>
+                  {avaliacaoExistente.comentario && <p>“{avaliacaoExistente.comentario}”</p>}
+                </div>
               </div>
             )}
 
-            <div
-              role="radiogroup"
-              aria-label="Avaliação em estrelas"
-              style={{ display: "flex", justifyContent: "center", gap: "0.35rem", marginBottom: "1.25rem" }}
-            >
-              {[1, 2, 3, 4, 5].map((star) => {
-                const filled = star <= (hoverRating || rating);
-                return (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => !jaAvaliada && setRating(star)}
-                    onMouseEnter={() => !jaAvaliada && setHoverRating(star)}
-                    onMouseLeave={() => !jaAvaliada && setHoverRating(0)}
-                    aria-label={`${star} estrela${star > 1 ? "s" : ""}`}
-                    aria-pressed={star === rating}
-                    disabled={jaAvaliada}
-                    style={{ background: "none", border: "none", cursor: jaAvaliada ? "default" : "pointer", padding: 0 }}
-                  >
-                    <Star
-                      size={28}
-                      color="var(--color-primary-strong)"
-                      fill={filled ? "var(--color-primary-strong)" : "none"}
-                    />
-                  </button>
-                );
-              })}
+            <div className="rating">
+              <p className="rating__label" id="rating-label">Avaliação em estrelas</p>
+              <div className="rating__stars" role="group" aria-labelledby="rating-label">
+                {[1, 2, 3, 4, 5].map((star) => {
+                  const filled = star <= notaExibida;
+                  return (
+                    <button
+                      key={star}
+                      type="button"
+                      className="rating__star"
+                      onClick={() => !jaAvaliada && setRating(star)}
+                      onMouseEnter={() => !jaAvaliada && setHoverRating(star)}
+                      onMouseLeave={() => !jaAvaliada && setHoverRating(0)}
+                      aria-label={`${star} estrela${star > 1 ? "s" : ""}`}
+                      aria-pressed={star === rating}
+                      disabled={jaAvaliada}
+                    >
+                      <Star size={28} aria-hidden="true" fill={filled ? "currentColor" : "none"} />
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="rating__value" aria-live="polite">
+                Nota selecionada: <span className="tabular">{rating}</span> de 5
+              </p>
             </div>
 
             {erroAvaliacao && (
-              <p className="auth-feedback auth-feedback--error" role="alert">
-                {erroAvaliacao}
-              </p>
+              <div className="alert alert--danger">
+                <FontAwesomeIcon icon={faCircleExclamation} aria-hidden="true" />
+                <p className="alert__body" role="alert">{erroAvaliacao}</p>
+              </div>
             )}
 
-            {!jaAvaliada && !podeAvaliar && <p>A avaliação fica disponível após a devolução da reserva.</p>}
+            {!jaAvaliada && !podeAvaliar && <p className="journey-muted">A avaliação fica disponível após a devolução da reserva.</p>}
 
             {!jaAvaliada && podeAvaliar && <>
-              <label htmlFor="comentario-avaliacao" style={{ display: "block", textAlign: "left", marginBottom: "0.35rem" }}>Comentário (opcional)</label>
-              <textarea
-                id="comentario-avaliacao"
-                value={comentario}
-                onChange={(event) => setComentario(event.target.value)}
-                maxLength={255}
-                rows={4}
-                placeholder="Conte como foi sua experiência"
-                style={{ width: "100%", boxSizing: "border-box", marginBottom: "0.25rem" }}
-              />
-              <p style={{ marginTop: 0, textAlign: "right", fontSize: "0.8rem" }}>{comentario.length}/255</p>
-              <button type="button" className="carro-button" onClick={handleEnviarAvaliacao} disabled={enviando}>
-                {enviando ? "Enviando..." : "Enviar Avaliação"}
-              </button>
+              <div className="field">
+                <label className="field__label" htmlFor="comentario-avaliacao">Comentário (opcional)</label>
+                <textarea
+                  id="comentario-avaliacao"
+                  className="field__control"
+                  value={comentario}
+                  onChange={(event) => setComentario(event.target.value)}
+                  maxLength={255}
+                  rows={4}
+                  aria-describedby="comentario-contador"
+                />
+                <p className="rating__counter tabular" id="comentario-contador">{comentario.length}/255</p>
+              </div>
+              <div className="journey-actions">
+                <button type="button" className="btn btn--lg" onClick={handleEnviarAvaliacao} disabled={enviando} aria-busy={enviando || undefined}>
+                  {enviando ? "Enviando..." : "Enviar Avaliação"}
+                </button>
+              </div>
             </>}
-          </div>
-        )}
-      </div>
+          </section>
 
-      <BottomNav />
+          <aside className="post-panel" aria-labelledby="avaliacao-reserva">
+            <h2 id="avaliacao-reserva">Informações da Reserva</h2>
+            <ul className="post-facts">
+              <li>Veículo: {nomeVeiculo}</li>
+              <li>Início: <span className="tabular">{resolveField(formatarDataHora(reserva?.dataHoraInicio))}</span></li>
+              <li>Fim: <span className="tabular">{resolveField(formatarDataHora(reserva?.dataHoraFim))}</span></li>
+              <li>Preço: <span className="tabular">{reserva?.valorTotal != null ? formatMoneyBRL(reserva.valorTotal) : "—"}</span></li>
+              <li>Forma de Pagamento: {resolveField(rotulo(METODO_PAGAMENTO_LABELS, reserva?.metodoPagamento))}</li>
+            </ul>
+          </aside>
+        </div>
+      )}
     </main>
   );
 }

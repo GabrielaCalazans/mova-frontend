@@ -1,0 +1,121 @@
+/* =============================================================================
+   MOVA — pós-compra (Task 8): lista de reservas, desbloqueio, devolução,
+   cancelamento, avaliação, pendências e telas avulsas. Complementa
+   journey.css e base.css; nenhuma cor fora dos tokens.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------- histórico */
+.historico { display: flex; flex-direction: column; gap: var(--space-8); min-width: 0; }
+.historico__pendencias { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); padding-top: var(--space-5); border-top: 1px solid var(--border-default); }
+
+/* ---------------------------------------------------------------- lista de reservas */
+.booking-list { display: flex; flex-direction: column; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+.booking {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--surface-secondary); border: 1px solid var(--border-default); border-radius: var(--radius-md);
+}
+.booking__media { border-radius: var(--radius-sm); }
+/* Mobile: miniatura ao lado do nome; o resto ocupa a largura toda. */
+@media (max-width: 639px) {
+  .booking { grid-template-columns: 96px minmax(0, 1fr); gap: var(--space-4) var(--space-3); }
+  .booking > .booking__body { display: contents; }
+  .booking__body > * { grid-column: 1 / -1; }
+  .booking__body > .booking__top { grid-column: 2; flex-direction: column; align-items: flex-start; align-self: center; }
+}
+@media (min-width: 640px) {
+  .booking { grid-template-columns: 200px minmax(0, 1fr); padding: var(--space-5); gap: var(--space-5); }
+}
+.booking__body { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.booking__top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3); }
+.booking__name { font-size: var(--text-h3); overflow-wrap: anywhere; }
+
+.booking__facts { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); margin: 0; font-size: var(--text-meta); }
+@media (min-width: 520px) { .booking__facts { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.booking__facts dt { color: var(--text-muted); }
+.booking__facts dd { margin: 0; display: flex; flex-direction: column; color: var(--text-primary); min-width: 0; }
+.booking__garage { color: var(--text-secondary); overflow-wrap: anywhere; }
+
+.booking__services { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.booking__total { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border-default); }
+.booking__total span { color: var(--text-secondary); font-size: var(--text-meta); }
+.booking__total strong { font-size: var(--text-price); font-weight: var(--weight-bold); }
+
+.booking__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.booking__actions > .btn:not(.btn--quiet) { flex: 1 1 12rem; }
+@media (min-width: 720px) { .booking__actions > .btn:not(.btn--quiet) { flex: 0 0 auto; } }
+.booking__cancel { color: var(--feedback-danger-fg); }
+
+.booking__share { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); font-size: var(--text-meta); }
+.booking__share a { display: inline-flex; align-items: center; min-height: var(--control-h); font-weight: var(--weight-semibold); }
+.booking__error { color: var(--feedback-danger-fg); }
+
+.booking-pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); font-size: var(--text-meta); color: var(--text-secondary); }
+
+/* ---------------------------------------------------------------- painel e fatos */
+.post-panel {
+  display: flex; flex-direction: column; gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--surface-secondary); border: 1px solid var(--border-default); border-radius: var(--radius-md);
+}
+.post-panel h2 { font-size: var(--text-h3); }
+.post-panel__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3); }
+.post-confirm, .post-result { display: flex; flex-direction: column; gap: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--border-default); }
+.post-facts { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; font-size: var(--text-meta); color: var(--text-primary); }
+.post-facts > li { padding-block: var(--space-2); border-bottom: 1px solid var(--border-default); overflow-wrap: anywhere; }
+.post-facts > li:last-child { border-bottom: 0; }
+.post-amount { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); }
+.post-amount strong { font-size: var(--text-price); font-weight: var(--weight-bold); font-variant-numeric: tabular-nums; }
+
+/* ---------------------------------------------------------------- desbloqueio */
+/* Código de desbloqueio: grande, tabular, espaçado e selecionável inteiro. */
+.unlock-code {
+  display: inline-block; width: fit-content; max-width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-secondary); color: var(--text-primary);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  font-size: var(--text-price-lg); font-weight: var(--weight-bold); line-height: var(--leading-tight);
+  font-variant-numeric: tabular-nums; letter-spacing: 0.12em;
+  overflow-wrap: anywhere; user-select: all;
+}
+
+.unlock-panel { align-items: flex-start; }
+.unlock-panel .field { width: 100%; max-width: 22rem; }
+.unlock-input { font-size: var(--text-h3); letter-spacing: 0.12em; font-variant-numeric: tabular-nums; text-transform: uppercase; }
+
+/* ---------------------------------------------------------------- avaliação */
+.rating { display: flex; flex-direction: column; gap: var(--space-2); }
+.rating__label { font-size: var(--text-label); font-weight: var(--weight-semibold); }
+.rating__stars { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.rating__star {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: var(--control-h); height: var(--control-h); padding: 0;
+  background: transparent; color: var(--action-primary);
+  border: 1px solid transparent; border-radius: var(--radius-sm);
+}
+.rating__star:hover:not(:disabled) { background: var(--action-quiet-hover); }
+.rating__star[aria-pressed="true"] { border-color: var(--action-primary); }
+.rating__star:disabled { cursor: default; }
+.rating__value { color: var(--text-secondary); font-size: var(--text-meta); }
+.rating__counter { align-self: flex-end; color: var(--text-muted); font-size: var(--text-meta); }
+textarea.field__control { min-height: 7rem; padding-block: var(--space-2); resize: vertical; }
+
+/* ---------------------------------------------------------------- listas simples */
+.post-list { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
+.post-item {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface-secondary); border: 1px solid var(--border-default); border-radius: var(--radius-md);
+}
+.post-item__body { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; flex: 1 1 14rem; }
+.post-item__title { font-size: var(--text-label); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+.post-item__meta { color: var(--text-secondary); font-size: var(--text-meta); overflow-wrap: anywhere; }
+.post-item > .btn { flex: 1 1 12rem; }
+@media (min-width: 640px) { .post-item > .btn { flex: 0 0 auto; } }
+
+/* ---------------------------------------------------------------- 404 */
+.notfound__code { color: var(--text-muted); font-size: var(--text-meta); font-variant-numeric: tabular-nums; }
+
+/* state-block__title em <p> (sem heading disponível na hierarquia) mantém o peso do título. */
+p.state-block__title { font-weight: var(--weight-semibold); }

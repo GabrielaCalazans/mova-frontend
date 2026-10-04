@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { listarCobrancasPendentes, pagarCobranca } from "../services/cobrancaService";
+
+import "../styles/journey.css";
+import "../styles/postcompra.css";
 
 const formatarValor = (valor) =>
   Number(valor).toLocaleString("pt-BR", {
@@ -40,20 +45,39 @@ export default function PendenciasFinanceiras() {
   };
 
   return (
-    <main>
-      <h1>Pendências financeiras</h1>
-      {loading && <p>Carregando pendências...</p>}
-      {erro && <p role="alert">{erro}</p>}
-      {!loading && !erro && itens.length === 0 && (
-        <p>Você não possui pendências financeiras.</p>
+    <main className="journey-page">
+      <header className="journey-head">
+        <h1>Pendências financeiras</h1>
+        <p className="page-head__lede">Pagamento em ambiente de teste (sandbox): nenhum valor é cobrado de verdade.</p>
+      </header>
+      {loading && (
+        <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando pendências...</p>
       )}
-      {itens.map((c) => (
-        <article key={c.id}>
-          <p>{c.tipo} — R$ {formatarValor(c.valor)}</p>
-          <p>Status: {c.statusPagamento}</p>
-          <button onClick={() => pagar(c.id)}>Pagar via Pix (sandbox)</button>
-        </article>
-      ))}
+      {erro && (
+        <div className="alert alert--danger">
+          <FontAwesomeIcon icon={faCircleExclamation} aria-hidden="true" />
+          <p className="alert__body" role="alert">{erro}</p>
+        </div>
+      )}
+      {!loading && !erro && itens.length === 0 && (
+        <div className="state-block">
+          <p className="state-block__title">Tudo em dia</p>
+          <p className="state-block__text">Você não possui pendências financeiras.</p>
+        </div>
+      )}
+      {itens.length > 0 && (
+        <ul className="post-list">
+          {itens.map((c) => (
+            <li key={c.id} className="post-item">
+              <div className="post-item__body">
+                <p className="post-item__title tabular">{c.tipo} — R$ {formatarValor(c.valor)}</p>
+                <p className="post-item__meta">Status: {c.statusPagamento}</p>
+              </div>
+              <button type="button" className="btn" onClick={() => pagar(c.id)}>Pagar via Pix (sandbox)</button>
+            </li>
+          ))}
+        </ul>
+      )}
     </main>
   );
 }

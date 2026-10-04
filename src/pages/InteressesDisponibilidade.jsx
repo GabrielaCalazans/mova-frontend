@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import BottomNav from "../components/BottomNav";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleCheck, faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
 import {
   cancelarInteresse,
   listarInteresses,
@@ -9,8 +10,8 @@ import {
   registrarInteresse,
 } from "../services/interesseService";
 import { formatMoneyBRL } from "../utils/reservationMath";
-import "../styles/carselect.css";
-import "../styles/relatorios.css";
+import "../styles/journey.css";
+import "../styles/postcompra.css";
 
 function nomeVeiculo(veiculo) {
   return `${veiculo.marca ?? ""} ${veiculo.modelo ?? ""}`.trim() || "Veículo";
@@ -83,72 +84,87 @@ export default function InteressesDisponibilidade() {
   }
 
   return (
-    <main className="carro-page">
-      <div className="carro-header">
+    <main className="journey-page">
+      <header className="journey-head">
         <h1>Avisos de disponibilidade</h1>
+        <p className="page-head__lede">Escolha um veículo indisponível para receber um aviso quando ele voltar a ficar disponível.</p>
+      </header>
+
+      {loading && (
+        <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando veículos indisponíveis…</p>
+      )}
+      {!loading && erro && (
+        <div className="alert alert--danger" role="alert">
+          <FontAwesomeIcon icon={faCircleExclamation} aria-hidden="true" />
+          <p className="alert__body">{erro}</p>
+        </div>
+      )}
+      {!loading && !erro && veiculos.length === 0 && (
+        <div className="state-block">
+          <p className="state-block__text">Nenhum veículo indisponível encontrado.</p>
+        </div>
+      )}
+
+      {!loading && !erro && veiculos.length > 0 && (
+        <ul className="post-list">
+          {veiculos.map((veiculo) => {
+            const id = String(veiculo.id);
+            const ativo = interesses.has(id);
+            const busy = processando.has(id);
+            return (
+              <li className="post-item" key={veiculo.id}>
+                <div className="post-item__body">
+                  <h2 className="post-item__title">{nomeVeiculo(veiculo)}</h2>
+                  <p className="post-item__meta">
+                    Indisponível — {veiculo.status}
+                    {veiculo.garagem?.status && veiculo.garagem.status !== "ATIVA"
+                      ? ` (garagem ${veiculo.garagem.status})`
+                      : ""}
+                  </p>
+                  {veiculo.ano && <p className="post-item__meta">Ano <span className="tabular">{veiculo.ano}</span></p>}
+                  {veiculo.valorDiaria != null && <p className="post-item__meta tabular">{formatMoneyBRL(veiculo.valorDiaria)} /dia</p>}
+                  {veiculo.garagem?.nome && <p className="post-item__meta">{veiculo.garagem.nome}</p>}
+                </div>
+                <button
+                  type="button"
+                  className={ativo ? "btn btn--secondary" : "btn"}
+                  aria-pressed={ativo}
+                  disabled={busy}
+                  aria-busy={busy || undefined}
+                  onClick={() => alternarInteresse(veiculo.id)}
+                >
+                  {ativo ? "Cancelar aviso" : "Avisar quando disponível"}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {feedback && (
+        <p className="alert alert--success" role="status">
+          <FontAwesomeIcon icon={faCircleCheck} aria-hidden="true" />
+          <span className="alert__body">{feedback}</span>
+        </p>
+      )}
+
+      {notificacoes.length > 0 && (
+        <section className="journey-section" aria-labelledby="avisos-recebidos">
+          <h2 id="avisos-recebidos">Avisos recebidos</h2>
+          <ul className="line-list">
+            {notificacoes.map((notificacao) => (
+              <li key={notificacao.id} className="line-list__item">
+                <span className="post-item__title">{notificacao.assunto}</span>
+                <span className="badge badge--neutral">{notificacao.status}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <div className="journey-actions">
+        <button type="button" className="btn btn--secondary" onClick={() => navigate("/carros")}>Voltar ao catálogo</button>
       </div>
-      <div className="carro-content">
-        <p>Escolha um veículo indisponível para receber um aviso quando ele voltar a ficar disponível.</p>
-
-        {loading && <p className="carro-status">Carregando veículos indisponíveis…</p>}
-        {!loading && erro && <p className="carro-status">{erro}</p>}
-        {!loading && !erro && veiculos.length === 0 && (
-          <p className="carro-empty-state">Nenhum veículo indisponível encontrado.</p>
-        )}
-
-        {!loading && !erro && veiculos.length > 0 && (
-          <div className="fav-list">
-            {veiculos.map((veiculo) => {
-              const id = String(veiculo.id);
-              const ativo = interesses.has(id);
-              const busy = processando.has(id);
-              return (
-                <article className="fav-card" key={veiculo.id}>
-                  <div className="fav-card__info">
-                    <h2>{nomeVeiculo(veiculo)}</h2>
-                    <p>
-                      Indisponível — {veiculo.status}
-                      {veiculo.garagem?.status && veiculo.garagem.status !== "ATIVA"
-                        ? ` (garagem ${veiculo.garagem.status})`
-                        : ""}
-                    </p>
-                    {veiculo.ano && <p>Ano {veiculo.ano}</p>}
-                    {veiculo.valorDiaria != null && <p>{formatMoneyBRL(veiculo.valorDiaria)} /dia</p>}
-                    {veiculo.garagem?.nome && <p>{veiculo.garagem.nome}</p>}
-                  </div>
-                  <button
-                    type="button"
-                    className="carro-button"
-                    aria-pressed={ativo}
-                    disabled={busy}
-                    onClick={() => alternarInteresse(veiculo.id)}
-                  >
-                    {ativo ? "Cancelar aviso" : "Avisar quando disponível"}
-                  </button>
-                </article>
-              );
-            })}
-          </div>
-        )}
-
-        {feedback && <p role="status">{feedback}</p>}
-
-        {notificacoes.length > 0 && (
-          <section aria-labelledby="avisos-recebidos">
-            <h2 id="avisos-recebidos">Avisos recebidos</h2>
-            <ul>
-              {notificacoes.map((notificacao) => (
-                <li key={notificacao.id}>
-                  <span>{notificacao.assunto}</span> — {notificacao.status}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        <button type="button" onClick={() => navigate("/carros")}>Voltar ao catálogo</button>
-      </div>
-      <BottomNav />
     </main>
   );
 }

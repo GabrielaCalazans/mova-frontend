@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AuthenticatedLayout from "../layout/AuthenticatedLayout";
+import VehicleMedia from "./vehicle/VehicleMedia";
 import { getAuthSession } from "../services/authSession";
 import {
   criarCompartilhamentoReserva,
@@ -11,11 +11,31 @@ import { formatMoneyBRL } from "../utils/reservationMath";
 import { updateJourneyStep } from "../utils/journeyStorage";
 import {
   STATUS_PAGAMENTO,
+  STATUS_PAGAMENTO_LABELS,
   STATUS_RESERVA,
   STATUS_RESERVA_LABELS,
   rotulo,
 } from "../services/apiEnums";
-import "../styles/carselect.css";
+import "../styles/vehicle.css";
+import "../styles/journey.css";
+import "../styles/postcompra.css";
+
+// Tom e rótulo do status da reserva: sempre texto, nunca só cor.
+// PENDENTE/FINALIZADA são grafias antigas que ainda aparecem em dados legados.
+const STATUS_VISUAL = {
+  [STATUS_RESERVA.AGUARDANDO_PAGAMENTO]: ["warning", "Pagamento pendente"],
+  PENDENTE: ["warning", "Pagamento pendente"],
+  [STATUS_RESERVA.CONFIRMADA]: ["success", STATUS_RESERVA_LABELS.CONFIRMADA],
+  [STATUS_RESERVA.EM_ANDAMENTO]: ["info", STATUS_RESERVA_LABELS.EM_ANDAMENTO],
+  [STATUS_RESERVA.REALIZADA]: ["neutral", STATUS_RESERVA_LABELS.REALIZADA],
+  FINALIZADA: ["neutral", STATUS_RESERVA_LABELS.REALIZADA],
+  [STATUS_RESERVA.CANCELADA]: ["danger", STATUS_RESERVA_LABELS.CANCELADA],
+};
+
+export function StatusBadge({ status, ...props }) {
+  const [tom, texto] = STATUS_VISUAL[status] ?? ["neutral", rotulo(STATUS_RESERVA_LABELS, status) || "Status não informado"];
+  return <span className={`badge badge--${tom}`} {...props}>{texto}</span>;
+}
 
 // A resposta da reserva agora traz o veículo aninhado (veiculo.modeloVeiculo),
 // no mesmo formato de GET /api/veiculo/:id.
@@ -28,23 +48,13 @@ function resolveVeiculoNome(reserva) {
   return nome || "Veículo";
 }
 
-function formatarData(valor) {
-  if (!valor) return "";
+function formatarDataHora(valor) {
+  if (!valor) return "Data não informada";
   const data = new Date(valor);
-  if (Number.isNaN(data.getTime())) return "";
+  if (Number.isNaN(data.getTime())) return "Data não informada";
   return new Intl.DateTimeFormat("pt-BR", {
     dateStyle: "short",
-    timeZone: import.meta.env.VITE_TIMEZONE_EXIBICAO || "America/Sao_Paulo",
-  }).format(data);
-}
-
-function formatarHora(valor) {
-  if (!valor) return "";
-  const data = new Date(valor);
-  if (Number.isNaN(data.getTime())) return "";
-  return new Intl.DateTimeFormat("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
+    timeStyle: "short",
     timeZone: import.meta.env.VITE_TIMEZONE_EXIBICAO || "America/Sao_Paulo",
   }).format(data);
 }
@@ -86,20 +96,6 @@ function podeExibirRastreamento(reserva, agora = new Date()) {
   return Number.isFinite(inicio) && Number.isFinite(fim) && inicio <= instante && instante <= fim;
 }
 
-function agruparPorData(reservas) {
-  const grupos = new Map();
-
-  for (const reserva of reservas) {
-    const chave = formatarData(reserva.dataHoraInicio) || "Data não informada";
-    if (!grupos.has(chave)) {
-      grupos.set(chave, []);
-    }
-    grupos.get(chave).push(reserva);
-  }
-
-  return Array.from(grupos.entries());
-}
-
 async function copiarLink(link) {
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(link);
@@ -119,8 +115,8 @@ async function copiarLink(link) {
 }
 
 /**
- * Lista de reservas do locatario, agrupada por data. Usada tanto pelo
- * "Historico" (todas as reservas) quanto por "Corridas Realizadas"
+ * Lista de reservas do locatario, da mais recente para a mais antiga. Usada
+ * tanto pelo "Historico" (todas as reservas) quanto por "Corridas Realizadas"
  * (somente as com status REALIZADA), via a prop somenteConcluidas.
  */
 export default function ReservasList({ title, documentTitle, somenteConcluidas = false, emptyMessage }) {
@@ -171,7 +167,6 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
     [reservas, somenteConcluidas]
   );
 
-  const gruposPorData = useMemo(() => agruparPorData(reservasExibidas), [reservasExibidas]);
   const erroExibido = !idLocatario ? "Sessão inválida. Faça login novamente." : erro;
 
   const compartilhar = async (reserva) => {
@@ -231,186 +226,229 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
     }
   };
 
-  return (
-    <AuthenticatedLayout title={title} align="left">
-      <div style={{ textAlign: "left" }}>
-        {loading && <p className="carro-status">Carregando…</p>}
-        {!loading && erroExibido && <p className="carro-status">{erroExibido}</p>}
+  function renderReserva(reserva) {
+    const acao = acaoDaReserva(reserva);
+    const compartilhamento = compartilhamentos[reserva.id] ?? {};
+    const prepararReserva = () => {
+      updateJourneyStep("reserva", {
+        id: reserva.id,
+        valorTotal: reserva.valorTotal,
+        codigoDesbloqueio: reserva.codigoDesbloqueio || "",
+      });
+    };
+    const abrirDetalhe = () => {
+      prepararReserva();
+      navigate(`/reservas/${reserva.id}`, { state: { reservaId: reserva.id } });
+    };
+    const abrirAcao = () => {
+      if (!acao) return;
+      prepararReserva();
+      navigate(acao.rota, { state: { reservaId: reserva.id } });
+    };
+    const nome = resolveVeiculoNome(reserva);
 
-        {!loading && !erroExibido && reservasExibidas.length === 0 && (
-          <p className="carro-empty-state">{emptyMessage}</p>
-        )}
+    return (
+      <li className="booking" key={reserva.id}>
+        <VehicleMedia vehicle={reserva.veiculo} className="booking__media" />
 
-        {!loading && !erroExibido && gruposPorData.map(([data, reservasDoDia]) => (
-          <div key={data} style={{ marginBottom: "1.5rem" }}>
-            <p style={{ color: "var(--color-primary-strong)", fontWeight: 700, margin: "0 0 0.6rem" }}>
-              {data}
-            </p>
+        <div className="booking__body">
+          <div className="booking__top">
+            <h2 className="booking__name">{nome}</h2>
+            <StatusBadge status={reserva.status} />
+          </div>
 
-            <div className="frota-list">
-              {reservasDoDia.map((reserva) => (
-                (() => {
-                  const acao = acaoDaReserva(reserva);
-                  const prepararReserva = () => {
-                    updateJourneyStep("reserva", {
-                      id: reserva.id,
-                      valorTotal: reserva.valorTotal,
-                      codigoDesbloqueio: reserva.codigoDesbloqueio || "",
-                    });
-                  };
-                  const abrirDetalhe = () => {
-                    prepararReserva();
-                    navigate(`/reservas/${reserva.id}`, { state: { reservaId: reserva.id } });
-                  };
-                  const abrirAcao = () => {
-                    if (!acao) return;
-                    prepararReserva();
-                    navigate(acao.rota, { state: { reservaId: reserva.id } });
-                  };
-                  return (
-                <div
-                  className="frota-card"
-                  key={reserva.id}
-                >
-                  <div className="frota-card__info">
-                    <button type="button" onClick={abrirDetalhe}>Ver detalhes da reserva</button>
-                    {(() => {
-                      const compartilhamento = compartilhamentos[reserva.id] ?? {};
-                      return (
-                        <div aria-label="Compartilhamento da viagem">
-                          <button
-                            type="button"
-                            disabled={compartilhamento.loading}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              void compartilhar(reserva);
-                            }}
-                          >
-                            {compartilhamento.loading ? "Gerando link…" : "Compartilhar viagem"}
-                          </button>
-                          {compartilhamento.url && (
-                            <>
-                              <p>
-                                <a
-                                  href={compartilhamento.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  aria-label="Link da viagem"
-                                  onClick={(event) => event.stopPropagation()}
-                                >
-                                  Link da viagem
-                                </a>
-                              </p>
-                              <button
-                                type="button"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  void copiarLink(compartilhamento.url)
-                                    .then(() => setCompartilhamentos((atual) => ({
-                                      ...atual,
-                                      [reserva.id]: { ...atual[reserva.id], mensagem: "Link copiado." },
-                                    })))
-                                    .catch((error) => setCompartilhamentos((atual) => ({
-                                      ...atual,
-                                      [reserva.id]: { ...atual[reserva.id], erro: error.message },
-                                    })));
-                                }}
-                              >
-                                Copiar link
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  void revogar(reserva);
-                                }}
-                              >
-                                Revogar compartilhamento
-                              </button>
-                            </>
-                          )}
-                          {compartilhamento.mensagem && <p aria-live="polite">{compartilhamento.mensagem}</p>}
-                          {compartilhamento.erro && <p aria-live="assertive">{compartilhamento.erro}</p>}
-                        </div>
-                      );
-                    })()}
-                    <h3>{resolveVeiculoNome(reserva)}</h3>
-                    <p>
-                      {formatarHora(reserva.dataHoraInicio)} — {formatarHora(reserva.dataHoraFim)}
-                    </p>
-                    <p>{rotulo(STATUS_RESERVA_LABELS, reserva.status)}</p>
-                    <p>Retirada: {nomeGaragem(reserva.garagemRetirada, reserva.idGaragemRetirada)}</p>
-                    <p>Devolução: {nomeGaragem(reserva.garagemDevolucao, reserva.idGaragemDevolucao)}</p>
-                    <p>Pagamento: {reserva.statusPagamento}</p>
-                    <p>
-                      {reserva.valorTotal != null ? formatMoneyBRL(reserva.valorTotal) : "Valor não informado"}
-                    </p>
-                    {reserva.servicos?.length > 0 && (
-                      <div aria-label="Serviços contratados">
-                        <p>Serviços contratados:</p>
-                        <ul>
-                          {reserva.servicos.map((servico) => (
-                            <li key={servico.idServico}>
-                              {servico.nome} — {formatMoneyBRL(servico.valor)}
-                              {servico.descricao && <p>{servico.descricao}</p>}
-                              {servico.detalhesCobertura && (
-                                <details>
-                                  <summary>Ver detalhes da cobertura</summary>
-                                  <p>{servico.detalhesCobertura}</p>
-                                </details>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {(reserva.status === STATUS_RESERVA.AGUARDANDO_PAGAMENTO || reserva.status === STATUS_RESERVA.CONFIRMADA) && (
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          navigate("/cancelamento", { state: { reservaId: reserva.id } });
-                        }}
-                      >
-                        Cancelar reserva
-                      </button>
-                    )}
-                    {acao && (
-                      <button type="button" onClick={abrirAcao}>
-                        {acao.rotulo}
-                      </button>
-                    )}
-                    {podeExibirRastreamento(reserva) && (
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          navigate(`/reserva/${reserva.id}/localizacao`);
-                        }}
-                      >
-                        Acompanhar veículo
-                      </button>
-                    )}
-                  </div>
-                </div>
-                  );
-                })()
-              ))}
+          <dl className="booking__facts">
+            <div>
+              <dt>Retirada</dt>
+              <dd>
+                <span className="tabular">{formatarDataHora(reserva.dataHoraInicio)}</span>
+                <span className="booking__garage">{nomeGaragem(reserva.garagemRetirada, reserva.idGaragemRetirada)}</span>
+              </dd>
             </div>
+            <div>
+              <dt>Devolução</dt>
+              <dd>
+                <span className="tabular">{formatarDataHora(reserva.dataHoraFim)}</span>
+                <span className="booking__garage">{nomeGaragem(reserva.garagemDevolucao, reserva.idGaragemDevolucao)}</span>
+              </dd>
+            </div>
+            <div>
+              <dt>Pagamento</dt>
+              <dd>{rotulo(STATUS_PAGAMENTO_LABELS, reserva.statusPagamento) || "Não informado"}</dd>
+            </div>
+          </dl>
+
+          {reserva.servicos?.length > 0 && (
+            <div className="booking__services" aria-label="Serviços contratados">
+              <p className="journey-muted">Serviços contratados</p>
+              <ul className="line-list">
+                {reserva.servicos.map((servico) => (
+                  <li key={servico.idServico} className="line-list__item">
+                    <div>
+                      <span>{servico.nome} — {formatMoneyBRL(servico.valor)}</span>
+                      {servico.descricao && <p className="line-list__desc">{servico.descricao}</p>}
+                      {servico.detalhesCobertura && (
+                        <details className="line-list__details">
+                          <summary>Ver detalhes da cobertura</summary>
+                          <p>{servico.detalhesCobertura}</p>
+                        </details>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="booking__total">
+            <span>Total</span>
+            <strong className="tabular">
+              {reserva.valorTotal != null ? formatMoneyBRL(reserva.valorTotal) : "Valor não informado"}
+            </strong>
           </div>
-        ))}
-        {!loading && !erroExibido && paginacao.totalPages > 1 && (
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginTop: "1rem" }}>
-            <button type="button" disabled={pagina <= 1} onClick={() => setPagina((atual) => atual - 1)}>
-              Anterior
+
+          <div className="booking__actions">
+            {acao && (
+              <button type="button" className="btn" onClick={abrirAcao}>
+                {acao.rotulo}
+              </button>
+            )}
+            {podeExibirRastreamento(reserva) && (
+              <button
+                type="button"
+                className="btn btn--secondary"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  navigate(`/reserva/${reserva.id}/localizacao`);
+                }}
+              >
+                Acompanhar veículo
+              </button>
+            )}
+            <button type="button" className="btn btn--secondary" onClick={abrirDetalhe}>Ver detalhes da reserva</button>
+            <button
+              type="button"
+              className="btn btn--quiet"
+              disabled={compartilhamento.loading}
+              aria-busy={compartilhamento.loading || undefined}
+              onClick={(event) => {
+                event.stopPropagation();
+                void compartilhar(reserva);
+              }}
+            >
+              {compartilhamento.loading ? "Gerando link…" : "Compartilhar viagem"}
             </button>
-            <span>Página {paginacao.page} de {paginacao.totalPages} ({paginacao.total})</span>
-            <button type="button" disabled={pagina >= paginacao.totalPages} onClick={() => setPagina((atual) => atual + 1)}>
-              Próxima
-            </button>
+            {(reserva.status === STATUS_RESERVA.AGUARDANDO_PAGAMENTO || reserva.status === STATUS_RESERVA.CONFIRMADA) && (
+              <button
+                type="button"
+                className="btn btn--quiet booking__cancel"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  navigate("/cancelamento", { state: { reservaId: reserva.id } });
+                }}
+              >
+                Cancelar reserva
+              </button>
+            )}
           </div>
-        )}
-      </div>
-    </AuthenticatedLayout>
+
+          {(compartilhamento.url || compartilhamento.mensagem || compartilhamento.erro) && (
+            <div className="booking__share" aria-label="Compartilhamento da viagem">
+              {compartilhamento.url && (
+                <>
+                  <a
+                    href={compartilhamento.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Link da viagem"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    Link da viagem
+                  </a>
+                  <button
+                    type="button"
+                    className="btn btn--quiet"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void copiarLink(compartilhamento.url)
+                        .then(() => setCompartilhamentos((atual) => ({
+                          ...atual,
+                          [reserva.id]: { ...atual[reserva.id], mensagem: "Link copiado." },
+                        })))
+                        .catch((error) => setCompartilhamentos((atual) => ({
+                          ...atual,
+                          [reserva.id]: { ...atual[reserva.id], erro: error.message },
+                        })));
+                    }}
+                  >
+                    Copiar link
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn--quiet"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void revogar(reserva);
+                    }}
+                  >
+                    Revogar compartilhamento
+                  </button>
+                </>
+              )}
+              {compartilhamento.mensagem && <p className="journey-muted" aria-live="polite">{compartilhamento.mensagem}</p>}
+              {compartilhamento.erro && <p className="booking__error" aria-live="assertive">{compartilhamento.erro}</p>}
+            </div>
+          )}
+        </div>
+      </li>
+    );
+  }
+
+  return (
+    <main className="journey-page">
+      <header className="journey-head">
+        <h1>{title}</h1>
+      </header>
+
+      {loading && (
+        <p className="loading-state" role="status">
+          <span className="spinner" aria-hidden="true" />
+          Carregando…
+        </p>
+      )}
+
+      {!loading && erroExibido && (
+        <div className="state-block state-block--error" role="alert">
+          <p className="state-block__title">Não foi possível carregar as reservas</p>
+          <p className="state-block__text">{erroExibido}</p>
+        </div>
+      )}
+
+      {!loading && !erroExibido && reservasExibidas.length === 0 && (
+        <div className="state-block">
+          <p className="state-block__title">Nenhuma reserva por aqui</p>
+          <p className="state-block__text">{emptyMessage}</p>
+          <button type="button" className="btn" onClick={() => navigate("/carros")}>
+            Ver carros disponíveis
+          </button>
+        </div>
+      )}
+
+      {!loading && !erroExibido && reservasExibidas.length > 0 && (
+        <ul className="booking-list">{reservasExibidas.map(renderReserva)}</ul>
+      )}
+
+      {!loading && !erroExibido && paginacao.totalPages > 1 && (
+        <nav className="booking-pager" aria-label="Paginação das reservas">
+          <button type="button" className="btn btn--secondary" disabled={pagina <= 1} onClick={() => setPagina((atual) => atual - 1)}>
+            Anterior
+          </button>
+          <span className="tabular">Página {paginacao.page} de {paginacao.totalPages} ({paginacao.total})</span>
+          <button type="button" className="btn btn--secondary" disabled={pagina >= paginacao.totalPages} onClick={() => setPagina((atual) => atual + 1)}>
+            Próxima
+          </button>
+        </nav>
+      )}
+    </main>
   );
 }
