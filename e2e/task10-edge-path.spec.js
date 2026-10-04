@@ -192,4 +192,50 @@ test.describe("Task 10 — edge path (API local real)", () => {
     expect(financeiro.valorElegivelEstorno).toBe(financeiro.valorPago);
     expect(financeiro.statusEstorno).toBe("CONCLUIDO");
   });
+
+  // Task 10.1 — Bug A: veículo indisponível depois da reserva não paga.
+  test("pagamento de reserva com veículo em manutenção é recusado sem cobrança nem código", async ({ page }) => {
+    const { renter, owner, reserva } = await reservarNoVeiculoDoLocador(page);
+    const manutencao = await page.request.put(`${apiBaseUrl}/veiculo/${reserva.idVeiculo}`, { headers: owner, data: { status: "MANUTENCAO" } });
+    expect(manutencao.status()).toBe(200);
+
+    await uiLogin(page, renterEmail, renterPassword);
+    await page.goto(`/reservas/${reserva.id}`);
+    await page.getByRole("button", { name: "Pagar reserva" }).click();
+    await page.getByLabel(/Método de pagamento/i).selectOption("PIX");
+    await page.getByRole("button", { name: /^Pagar$/ }).click();
+    await expect(page.getByText(/veículo desta reserva está indisponível/i)).toBeVisible();
+    await expect(page.getByText(/Pagamento aprovado/i)).toHaveCount(0);
+
+    const depois = (await (await page.request.get(`${apiBaseUrl}/reserva/${reserva.id}`, { headers: renter })).json()).result;
+    expect(depois.status).toBe("AGUARDANDO_PAGAMENTO");
+    expect(depois.statusPagamento).not.toBe("SUCESSO");
+    expect(depois.codigoDesbloqueio).toBeNull();
+
+    await page.request.put(`${apiBaseUrl}/veiculo/${reserva.idVeiculo}`, { headers: owner, data: { status: "DISPONIVEL" } });
+    await page.request.post(`${apiBaseUrl}/reserva/${reserva.id}/cancelar`, { headers: renter });
+  });
+
+  // Task 10.1 — Bug B: garagem ainda necessária a uma reserva paga.
+  test("locador não coloca em manutenção a garagem de retirada de uma reserva paga (409)", async ({ page }) => {
+    const { renter, owner, reserva } = await reservarNoVeiculoDoLocador(page);
+    expect((await page.request.post(`${apiBaseUrl}/reserva/${reserva.id}/pagamento`, { headers: renter, data: { metodoPagamento: "PIX" } })).status()).toBe(202);
+    const garagemId = reserva.idGaragemRetirada;
+
+    await uiLogin(page, ownerEmail, ownerPassword);
+    await page.goto(`/cadastro-garagens/${garagemId}`);
+    const status = page.getByLabel("Status");
+    await expect(status).toHaveValue("ATIVA");
+    await status.selectOption("MANUTENCAO");
+    await page.getByRole("button", { name: "Editar" }).click();
+    await expect(page.getByRole("status").filter({ hasText: /reservas confirmadas que ainda dependem/ })).toBeVisible();
+    await expect(status).toHaveValue("ATIVA");
+
+    const intacta = (await (await page.request.get(`${apiBaseUrl}/reserva/${reserva.id}`, { headers: renter })).json()).result;
+    expect(intacta).toMatchObject({ status: "CONFIRMADA", idGaragemRetirada: garagemId });
+    const garagens = (await (await page.request.get(`${apiBaseUrl}/garagem?limit=100`, { headers: owner })).json()).result || [];
+    expect(garagens.find((g) => g.id === garagemId)?.status).toBe("ATIVA");
+
+    await page.request.post(`${apiBaseUrl}/reserva/${reserva.id}/cancelar`, { headers: owner });
+  });
 });

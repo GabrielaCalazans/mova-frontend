@@ -205,6 +205,23 @@ describe("Pagamento", () => {
   });
 
   // 6. Erro da API
+  // Task 10.1 (Bug A): veículo indisponível → 409; nada de sucesso, botão segue disponível.
+  it("veículo indisponível: mostra o motivo, não confirma e permite tentar de novo", async () => {
+    iniciarPagamento.mockRejectedValue(Object.assign(
+      new Error("O veículo desta reserva está indisponível no momento. O pagamento não foi confirmado e nenhum valor foi cobrado."),
+      { status: 409, code: "VEICULO_INDISPONIVEL_PARA_CONFIRMAR_RESERVA" },
+    ));
+    render(<Pagamento />);
+    await screen.findByTestId("valor-reserva");
+    await userEvent.selectOptions(screen.getByLabelText(/Método de pagamento/i), "PIX");
+    await userEvent.click(screen.getByRole("button", { name: /^Pagar$/i }));
+
+    expect(await screen.findByText(/veículo desta reserva está indisponível/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Pagamento aprovado/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Pagar$/i })).toBeEnabled();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
   it("erro da API: mostra a mensagem e não confirma nada", async () => {
     iniciarPagamento.mockRejectedValue(
       new Error("O pagamento desta reserva já foi aprovado."),
