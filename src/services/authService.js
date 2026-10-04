@@ -667,6 +667,9 @@ export async function updateUserProfile(values) {
       authToken: token,
       body: JSON.stringify({
         ...buildProfileUpdatePayload(values),
+        // O backend não altera e-mail pelo perfil; não enviar evita sugerir
+        // que a troca aconteceu (JSON.stringify omite undefined).
+        email: undefined,
       }),
     });
 

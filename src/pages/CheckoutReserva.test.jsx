@@ -30,7 +30,10 @@ const { navigateMock, journey, getAuthSessionMock } = vi.hoisted(() => ({
 
 vi.mock("react-router-dom", () => ({ useNavigate: () => navigateMock }));
 vi.mock("../layout/AuthenticatedLayout", () => ({ default: ({ children }) => <div>{children}</div> }));
-vi.mock("../services/authSession", () => ({ getAuthSession: getAuthSessionMock }));
+vi.mock("../services/authSession", () => ({ getAuthSession: getAuthSessionMock, saveAuthSession: vi.fn() }));
+vi.mock("../services/deficienciaService", () => ({
+  listDeficiencias: vi.fn().mockResolvedValue([{ id: "def-1", descricao: "Mobilidade reduzida" }]),
+}));
 vi.mock("../utils/journeyStorage", () => ({
   getJourneyStep: (step) => journey[step],
   updateJourneyStep: vi.fn(),
@@ -85,6 +88,7 @@ describe("CheckoutReserva — RF10", () => {
   });
 
   it("confirma a reserva usando os IDs de serviços do contrato", async () => {
+    getAuthSessionMock.mockReturnValue({ user: { id: "locatario-1", deficienciaId: "def-perfil" } });
     createReserva.mockResolvedValueOnce({ id: "reserva-1", valorTotal: 149.9, codigoDesbloqueio: null });
     render(<CheckoutReserva />);
     await screen.findByText("Seguro adicional");
@@ -95,8 +99,28 @@ describe("CheckoutReserva — RF10", () => {
       idVeiculo: "veiculo-1",
       idLocatario: "locatario-1",
       servicosIds: ["seguro-1"],
+      deficienciaId: "def-perfil",
     }));
     expect(navigateMock).toHaveBeenCalledWith("/condutores-adicionais");
+    expect(screen.queryByLabelText(/Deficiência declarada/)).not.toBeInTheDocument();
+  });
+
+  it("RN01: veículo adaptado sem deficiência no perfil exige declaração na reserva", async () => {
+    getAuthSessionMock.mockReturnValue({ user: { id: "locatario-1" } });
+    createReserva.mockResolvedValueOnce({ id: "reserva-1", valorTotal: 149.9, codigoDesbloqueio: null });
+    const { default: userEvent } = await import("@testing-library/user-event");
+    render(<CheckoutReserva />);
+    const select = await screen.findByLabelText(/Deficiência declarada/);
+
+    await userEvent.click(screen.getByRole("button", { name: /confirmar e seguir/i }));
+    expect(createReserva).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toHaveTextContent(/informe sua deficiência/i);
+    expect(select).toHaveFocus();
+
+    await screen.findByRole("option", { name: "Mobilidade reduzida" });
+    await userEvent.selectOptions(select, "def-1");
+    await userEvent.click(screen.getByRole("button", { name: /confirmar e seguir/i }));
+    expect(createReserva).toHaveBeenCalledWith(expect.objectContaining({ deficienciaId: "def-1" }));
   });
 
   it("shows real characteristics and omits autonomy, fuel and old mocks", async () => {

@@ -120,3 +120,9 @@ export function formatMoneyBRL(value) {
     currency: "BRL",
   }).format(Number(value) || 0);
 }
+// Mesma regra do backend (ReservaService.calcularValorBase): fração de dia conta como diária.
+export function contarDiarias(inicio, fim) {
+  const ms = new Date(fim).getTime() - new Date(inicio).getTime();
+  if (!Number.isFinite(ms)) return null;
+  return Math.max(1, Math.ceil(ms / (24 * 60 * 60 * 1000)));
+}

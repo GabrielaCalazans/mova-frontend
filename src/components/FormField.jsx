@@ -37,6 +37,7 @@ function FormField({
   inputMode,
   autoComplete,
   disabled = false,
+  readOnly = false,
 }) {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -74,6 +75,7 @@ function FormField({
           inputMode={inputMode}
           autoComplete={autoComplete}
           disabled={disabled}
+          readOnly={readOnly}
         />
 
         {isPasswordField && (

@@ -6,7 +6,8 @@ import FormField from "../components/FormField";
 import { useFormState } from "../hooks/useFormState";
 import { useFormSubmit } from "../hooks/useFormSubmit";
 import { getUserCargo } from "../services/authIdentity";
-import { ModalOverlay, StatusMessage, SuccessModal, SuccessTitle, SuccessSubtitle } from "../styles/authStyle";
+import ModalDialog from "../components/ui/ModalDialog";
+import { StatusMessage } from "../styles/authStyle";
 import { clearAuthSession, getAuthSession } from "../services/authSession";
 import {
   changePassword,
@@ -16,6 +17,19 @@ import {
 } from "../services/authService";
 import { maskCelphone, maskCep, maskCpf, maskCnpj } from "../utils/inputMasks";
 import { validateProfileForm, isSenhaForte } from "../utils/formValidators";
+import { anonimizarMinhaConta, exportarMeusDados } from "../services/lgpdService";
+import "../styles/owner.css";
+
+function baixarJson(dados, nomeArquivo) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = nomeArquivo;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
 
 function ProfileMenuRow({ label, open, onToggle, tone = "default", children }) {
   const isExpandable = Boolean(children);
@@ -58,6 +72,10 @@ function Conta() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isAnonymizeModalOpen, setIsAnonymizeModalOpen] = useState(false);
+  const [isAnonymizing, setIsAnonymizing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [lgpdFeedback, setLgpdFeedback] = useState(null);
   const [openSection, setOpenSection] = useState(null);
 
   function toggleSection(key) {
@@ -253,13 +271,50 @@ function Conta() {
       setIsDeleteModalOpen(false);
       navigate("/login", { replace: true });
     } catch (error) {
-      setFeedback({
-        type: "error",
-        message: error instanceof Error ? error.message : "Nao foi possivel deletar a conta.",
-      });
+      if (error?.status === 409 || error?.code === "ACCOUNT_HAS_HISTORY") {
+        // A mensagem crua do backend cita a rota da API; o usuário precisa do caminho na tela.
+        setFeedback({
+          type: "error",
+          message: "Sua conta tem histórico de reservas e não pode ser excluída. Você pode anonimizar seus dados em Privacidade (LGPD), logo abaixo.",
+        });
+        setOpenSection("lgpd");
+      } else {
+        setFeedback({
+          type: "error",
+          message: error instanceof Error ? error.message : "Nao foi possivel deletar a conta.",
+        });
+      }
       setIsDeleteModalOpen(false);
     } finally {
       setIsDeletingAccount(false);
+    }
+  }
+
+  async function handleExportarDados() {
+    setLgpdFeedback(null);
+    try {
+      setIsExporting(true);
+      baixarJson(await exportarMeusDados(), "meus-dados-mova.json");
+      setLgpdFeedback({ type: "success", message: "Download dos seus dados iniciado (meus-dados-mova.json)." });
+    } catch (error) {
+      setLgpdFeedback({ type: "error", message: error?.message || "Não foi possível exportar seus dados." });
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
+  async function confirmAnonimizar() {
+    try {
+      setIsAnonymizing(true);
+      await anonimizarMinhaConta();
+      setIsAnonymizeModalOpen(false);
+      clearAuthSession();
+      navigate("/", { replace: true });
+    } catch (error) {
+      setIsAnonymizeModalOpen(false);
+      setLgpdFeedback({ type: "error", message: error?.message || "Não foi possível anonimizar a conta." });
+    } finally {
+      setIsAnonymizing(false);
     }
   }
 
@@ -412,6 +467,7 @@ function Conta() {
               value={passwordValues.senhaAtual}
               onChange={(e) => handlePasswordFieldChange("senhaAtual", e.target.value)}
               required
+              autoComplete="current-password"
               disabled={profileStatus === "loading"}
             />
             <FormField
@@ -423,6 +479,7 @@ function Conta() {
               value={passwordValues.novaSenha}
               onChange={(e) => handlePasswordFieldChange("novaSenha", e.target.value)}
               required
+              autoComplete="new-password"
               disabled={profileStatus === "loading"}
             />
             <FormField
@@ -434,6 +491,7 @@ function Conta() {
               value={passwordValues.confirmarNovaSenha}
               onChange={(e) => handlePasswordFieldChange("confirmarNovaSenha", e.target.value)}
               required
+              autoComplete="new-password"
               disabled={profileStatus === "loading"}
             />
             <button type="submit" className="auth-button" disabled={isChangingPassword || profileStatus === "loading"}>
@@ -443,11 +501,12 @@ function Conta() {
         </ProfileMenuRow>
 
         <ProfileMenuRow
-          label="Alterar E-Mail"
+          label="E-mail"
           open={openSection === "email"}
           onToggle={() => toggleSection("email")}
         >
-          <form className="auth-form" onSubmit={handleSubmit} noValidate>
+          {/* O backend não altera e-mail pelo perfil: o campo é só leitura. */}
+          <div className="auth-form">
             <FormField
               id="email"
               name="email"
@@ -455,16 +514,11 @@ function Conta() {
               placeholder="E-mail"
               ariaLabel="E-mail"
               value={values.email}
-              onChange={(e) => handleChange("email", e.target.value)}
-              required
-              error={errors.email}
+              readOnly
+              helperText="O e-mail não pode ser alterado."
               autoComplete="email"
-              disabled={profileStatus === "loading"}
             />
-            <button type="submit" className="auth-button" disabled={isSubmitting || profileStatus === "loading"}>
-              {isSubmitting ? "Salvando..." : "Salvar"}
-            </button>
-          </form>
+          </div>
         </ProfileMenuRow>
 
         <ProfileMenuRow
@@ -626,6 +680,29 @@ function Conta() {
         )}
 
         <ProfileMenuRow
+          label="Privacidade (LGPD)"
+          open={openSection === "lgpd"}
+          onToggle={() => toggleSection("lgpd")}
+        >
+          <div className="auth-form">
+            {lgpdFeedback && (
+              <p className={`auth-feedback auth-feedback--${lgpdFeedback.type}`} role="status" aria-live="polite">
+                {lgpdFeedback.message}
+              </p>
+            )}
+            <p className="auth-message auth-message--warning">
+              Baixe uma cópia dos seus dados pessoais ou anonimize a conta. A anonimização mantém o histórico de reservas sem identificar você e encerra o acesso.
+            </p>
+            <button type="button" className="auth-button-secondary" onClick={handleExportarDados} disabled={isExporting}>
+              {isExporting ? "Preparando arquivo..." : "Baixar meus dados"}
+            </button>
+            <button type="button" className="auth-button auth-button--danger" onClick={() => setIsAnonymizeModalOpen(true)}>
+              Anonimizar minha conta
+            </button>
+          </div>
+        </ProfileMenuRow>
+
+        <ProfileMenuRow
           label="Sair"
           tone="muted"
           open={false}
@@ -641,39 +718,49 @@ function Conta() {
       </div>
 
       {isDeleteModalOpen && (
-        <ModalOverlay
-          role="presentation"
-          onClick={(event) => {
-            if (event.target === event.currentTarget && !isDeletingAccount) {
-              setIsDeleteModalOpen(false);
-            }
-          }}
+        <ModalDialog
+          role="alertdialog"
+          className="owner-dialog"
+          panelClassName="owner-dialog__panel"
+          labelledBy="excluir-conta-title"
+          describedBy="excluir-conta-desc"
+          onClose={() => setIsDeleteModalOpen(false)}
+          closeDisabled={isDeletingAccount}
         >
-          <SuccessModal role="dialog" aria-modal="true" aria-label="Confirmar exclusao da conta">
-            <SuccessTitle>Excluir conta</SuccessTitle>
-            <SuccessSubtitle>
-              Tem certeza que deseja excluir sua conta? Essa acao nao pode ser desfeita.
-            </SuccessSubtitle>
-            <div className="auth-actions auth-actions--split" style={{ width: "100%" }}>
-              <button
-                type="button"
-                className="auth-button-secondary"
-                onClick={() => setIsDeleteModalOpen(false)}
-                disabled={isDeletingAccount}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                className="auth-button auth-button--danger"
-                onClick={confirmDeleteAccount}
-                disabled={isDeletingAccount}
-              >
-                {isDeletingAccount ? "Deletando..." : "Excluir conta"}
-              </button>
-            </div>
-          </SuccessModal>
-        </ModalOverlay>
+          <h2 id="excluir-conta-title">Excluir conta</h2>
+          <p id="excluir-conta-desc">Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita.</p>
+          <div className="owner-dialog__actions">
+            <button type="button" className="auth-button-secondary" onClick={() => setIsDeleteModalOpen(false)} disabled={isDeletingAccount} data-autofocus>
+              Cancelar
+            </button>
+            <button type="button" className="auth-button auth-button--danger" onClick={confirmDeleteAccount} disabled={isDeletingAccount}>
+              {isDeletingAccount ? "Deletando..." : "Excluir conta"}
+            </button>
+          </div>
+        </ModalDialog>
+      )}
+
+      {isAnonymizeModalOpen && (
+        <ModalDialog
+          role="alertdialog"
+          className="owner-dialog"
+          panelClassName="owner-dialog__panel"
+          labelledBy="anonimizar-conta-title"
+          describedBy="anonimizar-conta-desc"
+          onClose={() => setIsAnonymizeModalOpen(false)}
+          closeDisabled={isAnonymizing}
+        >
+          <h2 id="anonimizar-conta-title">Anonimizar conta</h2>
+          <p id="anonimizar-conta-desc">Seus dados pessoais serão substituídos por valores anônimos e você não poderá mais entrar com esta conta. Essa ação não pode ser desfeita.</p>
+          <div className="owner-dialog__actions">
+            <button type="button" className="auth-button-secondary" onClick={() => setIsAnonymizeModalOpen(false)} disabled={isAnonymizing} data-autofocus>
+              Cancelar
+            </button>
+            <button type="button" className="auth-button auth-button--danger" onClick={confirmAnonimizar} disabled={isAnonymizing}>
+              {isAnonymizing ? "Anonimizando..." : "Anonimizar conta"}
+            </button>
+          </div>
+        </ModalDialog>
       )}
     </AuthenticatedLayout>
   );

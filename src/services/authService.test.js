@@ -285,7 +285,6 @@ describe("updateUserProfile two-step flow", () => {
       authToken: "token-123",
       body: JSON.stringify({
         nome: "Nome Atualizado",
-        email: "user@mova.com",
         telefone: "11988887777",
         endereco: "Rua A",
         cep: "00000000",
@@ -402,7 +401,6 @@ describe("updateUserProfile two-step flow", () => {
       authToken: "token-456",
       body: JSON.stringify({
         nome: "Empresa Atualizada",
-        email: "empresa@mova.com",
         telefone: "11988887777",
         endereco: "Rua B",
         cep: "01001000",
@@ -478,7 +476,6 @@ describe("updateUserProfile two-step flow", () => {
       authToken: "token-legacy",
       body: JSON.stringify({
         nome: "Usuario Legacy Atualizado",
-        email: "legacy@mova.com",
         telefone: "11977776666",
         endereco: "",
         cep: "",

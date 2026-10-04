@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import QRCode from "qrcode";
 import { faArrowLeft, faArrowRightFromBracket, faArrowRightToBracket } from "@fortawesome/free-solid-svg-icons";
 import { StatusBadge } from "../components/ReservasList";
 import VehicleMedia from "../components/vehicle/VehicleMedia";
 import {
   criarCompartilhamentoReserva,
   getPagamentoReserva,
+  getQrDesbloqueio,
   getReservaById,
   revogarCompartilhamentoReserva,
 } from "../services/reservaService";
@@ -16,7 +18,7 @@ import {
   STATUS_RESERVA,
   rotulo,
 } from "../services/apiEnums";
-import { formatMoneyBRL } from "../utils/reservationMath";
+import { contarDiarias, formatMoneyBRL } from "../utils/reservationMath";
 import { updateJourneyStep } from "../utils/journeyStorage";
 import "../styles/vehicle.css";
 import "../styles/journey.css";
@@ -84,6 +86,7 @@ export default function ReservaDetalhe() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [compartilhamento, setCompartilhamento] = useState({});
+  const [qr, setQr] = useState({});
 
   useEffect(() => {
     document.title = "MOVA - Detalhe da reserva";
@@ -149,6 +152,21 @@ export default function ReservaDetalhe() {
         carregando: false,
         erro: error?.message || "Não foi possível compartilhar.",
       }));
+    }
+  }
+
+  // RF15: o QR é gerado pelo app a partir do token assinado do backend e aponta
+  // para o próprio fluxo de desbloqueio (/desbloqueio?qr=...).
+  async function mostrarQr() {
+    setQr({ carregando: true });
+    try {
+      const token = await getQrDesbloqueio(reserva.id);
+      const link = `/desbloqueio?qr=${encodeURIComponent(token)}`;
+      const svg = await QRCode.toString(`${window.location.origin}${link}`, { type: "svg", margin: 1 });
+      const imagem = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      setQr({ link, imagem });
+    } catch (error) {
+      setQr({ erro: error?.message || "Não foi possível gerar o QR de desbloqueio." });
     }
   }
 
@@ -243,6 +261,20 @@ export default function ReservaDetalhe() {
               <h2 id="codigo-title">Código de desbloqueio</h2>
               <strong className="unlock-code">{reserva.codigoDesbloqueio}</strong>
               <p className="journey-muted">Use o código somente na janela autorizada. O servidor valida reserva, usuário, horário e localização.</p>
+              {reserva.status === STATUS_RESERVA.CONFIRMADA && (
+                <div className="detail-qr">
+                  {!qr.imagem && (
+                    <button type="button" className="btn btn--secondary" disabled={qr.carregando} aria-busy={qr.carregando || undefined} onClick={() => void mostrarQr()}>
+                      {qr.carregando ? "Gerando QR…" : "Mostrar QR de desbloqueio"}
+                    </button>
+                  )}
+                  {qr.imagem && <>
+                    <img src={qr.imagem} width="240" height="240" alt="QR de desbloqueio desta reserva" />
+                    <p><a href={qr.link} onClick={(event) => { event.preventDefault(); navigate(qr.link); }}>Usar este QR neste dispositivo</a></p>
+                  </>}
+                  {qr.erro && <p className="alert alert--danger" role="alert">{qr.erro}</p>}
+                </div>
+              )}
             </section>
           )}
 
@@ -268,6 +300,9 @@ export default function ReservaDetalhe() {
           <section className="price-summary" aria-labelledby="financeiro-title">
             <h2 id="financeiro-title">Resumo financeiro</h2>
             <dl className="price-summary__rows">
+              {contarDiarias(reserva.dataHoraInicio, reserva.dataHoraFim) && (
+                <div><dt>Diárias</dt><dd className="tabular">{contarDiarias(reserva.dataHoraInicio, reserva.dataHoraFim)}</dd></div>
+              )}
               <div><dt>Pagamento</dt><dd>{rotulo(STATUS_PAGAMENTO_LABELS, statusPagamentoAtual) || "Não informado"}</dd></div>
               {pagamento?.statusEstorno && <>
                 <div><dt>Valor pago</dt><dd className="tabular">{formatMoneyBRL(pagamento.valorPago)}</dd></div>

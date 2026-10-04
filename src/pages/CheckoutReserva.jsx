@@ -14,7 +14,8 @@ import {
 import { getVeiculoById } from "../services/veiculoService";
 import { getReservationPricing } from "../services/reservationPricing";
 import { createReserva } from "../services/reservaService";
-import { getAuthSession } from "../services/authSession";
+import { getAuthSession, saveAuthSession } from "../services/authSession";
+import { listDeficiencias } from "../services/deficienciaService";
 import "../styles/vehicle.css";
 import "../styles/journey.css";
 
@@ -91,6 +92,27 @@ export default function CheckoutReserva() {
   const [pricing, setPricing] = useState(null);
   const [confirmando, setConfirmando] = useState(false);
   const [confirmError, setConfirmError] = useState("");
+  // RN01: deficiência pode ser declarada no cadastro OU na reserva.
+  const [deficiencias, setDeficiencias] = useState([]);
+  const [deficienciaDeclarada, setDeficienciaDeclarada] = useState("");
+  const deficienciaPerfil = getAuthSession()?.user?.deficienciaId;
+  const exigeDeclaracao = Boolean(
+    vehicle &&
+      ((vehicle.adaptado ?? veiculoSalvo?.adaptado) ||
+        resolveVehicleField(vehicle, veiculoSalvo, "categoria") === "PCD") &&
+      !deficienciaPerfil,
+  );
+
+  useEffect(() => {
+    if (!exigeDeclaracao) return;
+    let active = true;
+    listDeficiencias().then((lista) => {
+      if (active) setDeficiencias(lista);
+    });
+    return () => {
+      active = false;
+    };
+  }, [exigeDeclaracao]);
 
   async function handleConfirmar() {
     setConfirmError("");
@@ -117,6 +139,11 @@ export default function CheckoutReserva() {
       setConfirmError("Selecione a garagem de devolução.");
       return;
     }
+    if (exigeDeclaracao && !deficienciaDeclarada) {
+      setConfirmError("Veículo adaptado: informe sua deficiência para reservar (RN01).");
+      document.getElementById("checkout-deficiencia")?.focus();
+      return;
+    }
 
     setConfirmando(true);
     try {
@@ -135,11 +162,16 @@ export default function CheckoutReserva() {
         ...(devolucao?.garageId ? { idGaragemDevolucao: devolucao.garageId } : {}),
         // RN01: só é necessário quando o veículo é adaptado/PCD e o locatário
         // ainda não tem deficiência cadastrada no perfil.
-        ...(sessionUser?.deficienciaId
-          ? { deficienciaId: sessionUser.deficienciaId }
+        ...(sessionUser?.deficienciaId || deficienciaDeclarada
+          ? { deficienciaId: sessionUser?.deficienciaId || deficienciaDeclarada }
           : {}),
         ...(servicosIds.length > 0 ? { servicosIds } : {}),
       });
+
+      // O backend associa a deficiência declarada ao perfil na mesma transação.
+      if (deficienciaDeclarada && sessionUser) {
+        saveAuthSession({ ...getAuthSession(), user: { ...sessionUser, deficienciaId: deficienciaDeclarada } });
+      }
 
       // valorTotal vem calculado pelo backend (fonte de verdade); o que o
       // checkout mostrou era só estimativa.
@@ -292,6 +324,29 @@ export default function CheckoutReserva() {
               </div>
             </div>
           </section>
+
+          {exigeDeclaracao && (
+            <section className="journey-section" aria-labelledby="checkout-pcd">
+              <h2 id="checkout-pcd">Acessibilidade</h2>
+              <p className="journey-muted" id="checkout-deficiencia-ajuda">
+                Este veículo é adaptado. Para reservá-lo, informe sua deficiência; ela fica registrada no seu perfil.
+              </p>
+              <label className="field__label" htmlFor="checkout-deficiencia">Deficiência declarada (obrigatório)</label>
+              <select
+                id="checkout-deficiencia"
+                className="field__control"
+                required
+                aria-describedby="checkout-deficiencia-ajuda"
+                value={deficienciaDeclarada}
+                onChange={(event) => setDeficienciaDeclarada(event.target.value)}
+              >
+                <option value="">Selecione</option>
+                {deficiencias.map((item) => (
+                  <option key={item.id} value={item.id}>{item.descricao}</option>
+                ))}
+              </select>
+            </section>
+          )}
 
           <section className="journey-section" aria-labelledby="checkout-quando">
             <h2 id="checkout-quando">Quando e onde</h2>

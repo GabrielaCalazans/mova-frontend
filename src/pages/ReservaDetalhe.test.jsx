@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import ReservaDetalhe from "./ReservaDetalhe";
 import {
   criarCompartilhamentoReserva,
+  getQrDesbloqueio,
   getReservaById,
 } from "../services/reservaService";
 import { updateJourneyStep } from "../utils/journeyStorage";
@@ -20,6 +21,7 @@ vi.mock("../layout/AuthenticatedLayout", () => ({
 vi.mock("../services/reservaService", () => ({
   criarCompartilhamentoReserva: vi.fn(),
   getPagamentoReserva: vi.fn(),
+  getQrDesbloqueio: vi.fn(),
   getReservaById: vi.fn(),
   revogarCompartilhamentoReserva: vi.fn(),
 }));
@@ -67,6 +69,32 @@ describe("ReservaDetalhe", () => {
     expect(screen.getByText("AB12-CD34")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Desbloquear veículo" })).toBeInTheDocument();
     expect(getReservaById).toHaveBeenCalledWith("reserva-1");
+  });
+
+  it("RF13-A: mostra o total de diárias com a regra do backend", async () => {
+    getReservaById.mockResolvedValue(reserva({ dataHoraFim: "2026-09-19T13:00:00.000Z" }));
+    render(<ReservaDetalhe />);
+    const linha = (await screen.findByText("Diárias")).closest("div");
+    expect(linha).toHaveTextContent("2");
+  });
+
+  it("RF15: gera o QR de desbloqueio a partir do token do backend", async () => {
+    getQrDesbloqueio.mockResolvedValue("token.assinado");
+    render(<ReservaDetalhe />);
+    await userEvent.click(await screen.findByRole("button", { name: "Mostrar QR de desbloqueio" }));
+
+    const imagem = await screen.findByRole("img", { name: "QR de desbloqueio desta reserva" });
+    expect(imagem.getAttribute("src")).toMatch(/^data:image\/svg\+xml/);
+    expect(getQrDesbloqueio).toHaveBeenCalledWith("reserva-1");
+    await userEvent.click(screen.getByRole("link", { name: "Usar este QR neste dispositivo" }));
+    expect(navigateMock).toHaveBeenCalledWith("/desbloqueio?qr=token.assinado");
+  });
+
+  it("não oferece QR fora de reserva confirmada", async () => {
+    getReservaById.mockResolvedValue(reserva({ status: "EM_ANDAMENTO" }));
+    render(<ReservaDetalhe />);
+    await screen.findByText("Fiat Argo");
+    expect(screen.queryByRole("button", { name: "Mostrar QR de desbloqueio" })).not.toBeInTheDocument();
   });
 
   it("preserva reserva real ao navegar para ação", async () => {

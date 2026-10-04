@@ -16,3 +16,5 @@
 
 .detail-actions { display: flex; flex-direction: column; gap: var(--space-2); }
 .detail-share > .btn--quiet { flex: 0 0 auto; }
+.detail-qr { display: grid; justify-items: start; gap: var(--space-2); margin-top: var(--space-3); }
+.detail-qr img { background: #fff; padding: var(--space-2); border-radius: var(--radius-md, 8px); }
