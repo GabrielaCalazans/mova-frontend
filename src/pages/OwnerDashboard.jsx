@@ -66,22 +66,22 @@ export default function OwnerDashboard() {
         <dl className="owner-summary">
           <div className="owner-summary__item">
             <dt>{t("owner.dashboard.vehicles")}</dt>
-            {errors.frota ? <dd role="alert">{errors.frota}</dd> : <dd>{show(frota?.veiculos?.total, (value) => t("owner.dashboard.vehiclesTotal", { value }))}</dd>}
+            {errors.frota ? <dd><span role="alert">{errors.frota}</span></dd> : <dd>{show(frota?.veiculos?.total, (value) => t("owner.dashboard.vehiclesTotal", { value }))}</dd>}
             <dd className="owner-summary__link"><Link className="owner-link" to="/cadastro-carros">{t("owner.dashboard.openFleet")} <ChevronRight aria-hidden="true" /></Link></dd>
           </div>
           <div className="owner-summary__item">
             <dt>{t("owner.dashboard.reservations")}</dt>
-            {errors.reservas ? <dd role="alert">{errors.reservas}</dd> : <dd>{show(reservas?.total, (value) => t("owner.dashboard.reservationsPeriod", { value }))}</dd>}
+            {errors.reservas ? <dd><span role="alert">{errors.reservas}</span></dd> : <dd>{show(reservas?.total, (value) => t("owner.dashboard.reservationsPeriod", { value }))}</dd>}
             <dd className="owner-summary__link"><Link className="owner-link" to="/reservas">{t("owner.dashboard.viewReservations")} <ChevronRight aria-hidden="true" /></Link></dd>
           </div>
           <div className="owner-summary__item">
             <dt>{t("owner.dashboard.occupancy")}</dt>
-            {errors.utilizacao ? <dd role="alert">{errors.utilizacao}</dd> : <dd>{show(utilizacao?.taxaOcupacao, (value) => t("owner.dashboard.occupancyValue", { rate: formatNumber(Number(value) * 100), allocated: valueOrUnavailable(utilizacao?.veiculosAlocados, String) }))}</dd>}
+            {errors.utilizacao ? <dd><span role="alert">{errors.utilizacao}</span></dd> : <dd>{show(utilizacao?.taxaOcupacao, (value) => t("owner.dashboard.occupancyValue", { rate: formatNumber(Number(value) * 100), allocated: valueOrUnavailable(utilizacao?.veiculosAlocados, String) }))}</dd>}
             <dd className="owner-summary__link"><Link className="owner-link" to="/relatorios/veiculos">{t("owner.dashboard.viewReports")} <ChevronRight aria-hidden="true" /></Link></dd>
           </div>
           <div className="owner-summary__item">
             <dt>{t("owner.dashboard.revenue")}</dt>
-            {errors.financeiro ? <dd role="alert">{errors.financeiro}</dd> : <dd>{show(financeiro?.faturamentoBruto, formatCurrency)}</dd>}
+            {errors.financeiro ? <dd><span role="alert">{errors.financeiro}</span></dd> : <dd>{show(financeiro?.faturamentoBruto, formatCurrency)}</dd>}
             <dd className="owner-summary__link"><Link className="owner-link" to="/relatorios/veiculos">{t("owner.dashboard.openFinance")} <ChevronRight aria-hidden="true" /></Link></dd>
           </div>
         </dl>

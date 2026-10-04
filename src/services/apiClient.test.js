@@ -224,3 +224,26 @@ describe("apiRequestPaginado — interpreta a paginação", () => {
     await expect(apiRequestPaginado("/reserva/locatario/x")).resolves.toEqual([]);
   });
 });
+
+describe("apiClient — Task 11: erro interno nunca vira texto técnico", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("traduz HTTP 500 para a mensagem genérica e preserva status e requestId", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      respostaJson(envelope({ code: "INTERNAL_ERROR", message: "Internal Server Error", requestId: "req-500" }), 500),
+    );
+
+    const erro = await apiRequest("/veiculo").catch((e) => e);
+
+    expect(erro).toBeInstanceOf(ApiError);
+    expect(erro.status).toBe(500);
+    expect(erro.message).toBe("Não foi possível concluir a operação. Tente novamente.");
+    expect(erro.message).not.toMatch(/Internal Server Error/);
+  });
+});

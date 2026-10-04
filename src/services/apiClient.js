@@ -123,7 +123,9 @@ function apiRequestWithUploadProgress(path, options) {
         return;
       }
 
-      const message = parseApiErrorMessage(payload) || t("errors.apiHttp", { status: xhr.status });
+      const message = xhr.status >= 500
+        ? t("errors.generic")
+        : parseApiErrorMessage(payload) || t("errors.apiHttp", { status: xhr.status });
       const requestId = payload?.requestId ?? xhr.getResponseHeader("x-request-id");
       if (xhr.status === 401) {
         saveAuthFeedback({ type: "error", message });
@@ -182,7 +184,11 @@ export async function apiRequest(path, options = {}) {
 
   if (!response.ok) {
     const parsedMessage = parseApiErrorMessage(payload);
-    const message = parsedMessage || t("errors.apiHttp", { status: response.status });
+    // Task 11: erro interno do servidor nunca vira texto técnico na tela
+    // ("Internal Server Error"); o requestId continua no console para suporte.
+    const message = response.status >= 500
+      ? t("errors.generic")
+      : parsedMessage || t("errors.apiHttp", { status: response.status });
     const requestId = payload?.requestId ?? response.headers.get("x-request-id");
 
     if (response.status === 401) {

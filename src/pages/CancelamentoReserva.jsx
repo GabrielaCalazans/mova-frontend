@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck, faCircleExclamation, faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import { StatusBadge } from "../components/ReservasList";
 import { getJourneyStep } from "../utils/journeyStorage";
-import { STATUS_RESERVA } from "../services/apiEnums";
+import { rotulo, STATUS_ESTORNO_LABELS, STATUS_RESERVA } from "../services/apiEnums";
 import { cancelarReserva, getPagamentoReserva, getReservaById } from "../services/reservaService";
 import { formatMoneyBRL } from "../utils/reservationMath";
 import { formatDate, t } from "../i18n";
@@ -125,7 +125,7 @@ export default function CancelamentoReserva() {
               </p>
               <ul className="post-facts">
                 <li>{t("payment.summary.sandboxNote")}</li>
-                <li>{t("reservation.cancel.refundStatus")} {pagamento?.statusEstorno || t("reservation.cancel.awaitingServer")}</li>
+                <li>{t("reservation.cancel.refundStatus")} {pagamento?.statusEstorno ? rotulo(STATUS_ESTORNO_LABELS, pagamento.statusEstorno) : t("reservation.cancel.awaitingServer")}</li>
                 <li>{t("reservation.cancel.refundableAmount")} {pagamento?.valorElegivelEstorno != null ? <span className="tabular">{formatMoneyBRL(pagamento.valorElegivelEstorno)}</span> : t("reservation.cancel.awaitingServer")}</li>
               </ul>
               <div className="journey-actions">

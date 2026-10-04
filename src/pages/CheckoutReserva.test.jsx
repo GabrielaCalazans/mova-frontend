@@ -167,3 +167,24 @@ describe("CheckoutReserva — RNF08 (idiomas)", () => {
     expect(screen.getByText("Ver detalles de la cobertura")).toBeInTheDocument();
   });
 });
+
+// Task 11 (T11-P2): sem data de retirada o checkout mostrava o TypeError de
+// `toISOString`; agora mostra a mesma validação do botão Confirmar.
+describe("CheckoutReserva — jornada sem período (Task 11)", () => {
+  const retiradaOriginal = journey.retirada;
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getAuthSessionMock.mockReturnValue({ user: { id: "locatario-1", deficienciaId: "def-perfil" } });
+    journey.retirada = { ...retiradaOriginal, date: "", time: "" };
+  });
+  afterEach(() => {
+    journey.retirada = retiradaOriginal;
+  });
+
+  it("mostra mensagem de validação, nunca o erro técnico", async () => {
+    render(<CheckoutReserva />);
+    const alerta = await screen.findByRole("alert");
+    expect(alerta).toHaveTextContent("Selecione a data e o horário de retirada.");
+    expect(alerta.textContent).not.toMatch(/toISOString|Cannot read/);
+  });
+});

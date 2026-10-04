@@ -498,7 +498,7 @@ export default function Pagamento() {
                         className="field__control tabular"
                         type="text"
                         inputMode="numeric"
-                        autoComplete="off"
+                        autoComplete="cc-number"
                         aria-required="true"
                         value={numeroCartao}
                         onChange={(e) => setNumeroCartao(formatCardNumber(e.target.value))}
@@ -511,7 +511,7 @@ export default function Pagamento() {
                         id="nomeTitular"
                         className="field__control"
                         type="text"
-                        autoComplete="off"
+                        autoComplete="cc-name"
                         aria-required="true"
                         value={nomeTitular}
                         onChange={(e) => setNomeTitular(e.target.value.toUpperCase())}
@@ -526,7 +526,7 @@ export default function Pagamento() {
                           className="field__control tabular"
                           type="text"
                           inputMode="numeric"
-                          autoComplete="off"
+                          autoComplete="cc-exp"
                           value={validade}
                           onChange={(e) => setValidade(formatValidade(e.target.value))}
                         />
@@ -539,7 +539,7 @@ export default function Pagamento() {
                           className="field__control tabular"
                           type="password"
                           inputMode="numeric"
-                          autoComplete="off"
+                          autoComplete="cc-csc"
                           aria-required="true"
                           maxLength={4}
                           value={cvv}

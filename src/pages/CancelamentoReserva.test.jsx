@@ -62,3 +62,22 @@ describe("CancelamentoReserva", () => {
     expect(screen.queryByText("Cancelamento confirmado pelo sistema.")).toBeNull();
   });
 });
+
+// Task 11: o status do estorno vem do enum do backend e precisa aparecer traduzido.
+describe("CancelamentoReserva — rótulo do estorno (Task 11)", () => {
+  beforeEach(() => { vi.clearAllMocks(); getReservaById.mockResolvedValue(confirmada); });
+
+  it("mostra o rótulo traduzido do status do estorno, não o código do enum", async () => {
+    const { getPagamentoReserva } = await import("../services/reservaService");
+    getPagamentoReserva.mockResolvedValue({ statusEstorno: "SOLICITADO", valorElegivelEstorno: 400 });
+    cancelarReserva.mockResolvedValue({ ...confirmada, status: "CANCELADA", multaCancelamento: 0 });
+    render(<CancelamentoReserva />);
+    await screen.findByText(/Veículo: Fiat Argo/);
+    await userEvent.click(screen.getByRole("button", { name: "Solicitar cancelamento" }));
+    await screen.findByRole("dialog", { name: "Confirmar cancelamento" });
+    await userEvent.click(screen.getByRole("button", { name: "Confirmar cancelamento" }));
+    await screen.findByTestId("multa-cancelamento");
+    expect(await screen.findByText(/Solicitado/)).toBeInTheDocument();
+    expect(screen.queryByText(/SOLICITADO/)).toBeNull();
+  });
+});

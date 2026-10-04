@@ -7,7 +7,13 @@ import { t } from "../i18n";
 import "../styles/owner.css";
 import "../styles/relatorios.css";
 
-const csvValue = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
+// Texto iniciado por = + - @ ou tab/CR seria interpretado como fórmula pela
+// planilha (CSV injection); prefixa com apóstrofo. Números não são afetados.
+const csvValue = (value) => {
+  const texto = String(value ?? "");
+  const seguro = typeof value === "string" && /^[=+\-@\t\r]/.test(texto) ? `'${texto}` : texto;
+  return `"${seguro.replaceAll('"', '""')}"`;
+};
 
 function csvAvaliacoes(rows) {
   return [[t("reports.vehicles.csvVehicle"), t("reports.ratings.csvCount"), t("reports.ratings.csvAverage"), t("reports.ratings.csvMax"), t("reports.ratings.csvMin")], ...rows.map(({ veiculo, quantidade, media, maior, menor }) => [veiculo?.placa, quantidade, media, maior, menor])]

@@ -49,7 +49,7 @@
       "AGUARDANDO_PAGAMENTO": "Pendiente de pago",
       "CONFIRMADA": "Confirmada",
       "EM_ANDAMENTO": "En curso",
-      "REALIZADA": "Finalizada",
+      "REALIZADA": "Completada",
       "CANCELADA": "Cancelada"
     }
   }

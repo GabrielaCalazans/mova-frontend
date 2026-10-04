@@ -206,6 +206,11 @@ export default function CheckoutReserva() {
 
         const sessionUser = getAuthSession()?.user;
         if (!sessionUser?.id) throw new Error(t("journey.checkout.invalidSession"));
+        // Task 11: sem data de retirada/devolução (acesso direto ao checkout ou
+        // jornada incompleta) o usuário via o TypeError de `toISOString`. As
+        // demais regras do período (RN05, passado) continuam no botão Confirmar.
+        if (!pickupDateTime) throw new Error(t("validation.period.pickupRequired"));
+        if (!dropoffDateTime) throw new Error(t("validation.period.returnRequired"));
         const [vehicleDetails, pricingDetails] = await Promise.all([
           getVeiculoById(veiculoSalvo.id),
           getReservationPricing({

@@ -67,7 +67,7 @@
       "AGUARDANDO_PAGAMENTO": "Pendiente de pago",
       "CONFIRMADA": "Confirmada",
       "EM_ANDAMENTO": "En curso",
-      "REALIZADA": "Realizada",
+      "REALIZADA": "Completada",
       "CANCELADA": "Cancelada"
     },
     "filterHelp": "Las fechas son días UTC inclusivos. Horas mostradas en {timeZone}.",

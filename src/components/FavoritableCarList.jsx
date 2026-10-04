@@ -36,7 +36,8 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
       ]);
       setFavoritos(new Set(favoritosApi.map((item) => String(item.idVeiculo))));
       setInteresses(new Set(interessesApi.map((item) => String(item.idVeiculo))));
-      setVeiculos(onlyFavorites ? favoritosApi.map((item) => normalizeVeiculo(item.veiculo)) : resultado);
+      // Favorito órfão (veículo removido) não pode derrubar a lista inteira.
+      setVeiculos(onlyFavorites ? favoritosApi.map((item) => normalizeVeiculo(item.veiculo)).filter(Boolean) : resultado);
     } catch (e) {
       setErro(e.message || t("tenant.carList.loadError"));
     } finally {

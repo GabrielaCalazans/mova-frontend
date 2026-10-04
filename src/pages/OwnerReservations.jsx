@@ -161,7 +161,7 @@ export default function OwnerReservations() {
                 <thead><tr><th scope="col">{t("owner.common.vehicle")}</th><th scope="col">{t("owner.reservations.colPeriod")}</th><th scope="col">{t("owner.common.status")}</th><th scope="col">{t("owner.reservations.colPickup")}</th></tr></thead>
                 <tbody>{report.reservas.map((reserva) => (
                   <tr key={reserva.id}>
-                    <th scope="row">{[reserva.veiculo?.marca || reserva.veiculo?.modeloVeiculo?.marca, reserva.veiculo?.modelo || reserva.veiculo?.modeloVeiculo?.modelo].filter(Boolean).join(" ") || reserva.idVeiculo}</th>
+                    <th scope="row" data-label={t("owner.common.vehicle")}>{[reserva.veiculo?.marca || reserva.veiculo?.modeloVeiculo?.marca, reserva.veiculo?.modelo || reserva.veiculo?.modeloVeiculo?.modelo].filter(Boolean).join(" ") || reserva.idVeiculo}</th>
                     <td data-label={t("owner.reservations.colPeriod")}><span><time dateTime={reserva.dataHoraInicio}>{formatDateTime(reserva.dataHoraInicio)}</time> — <time dateTime={reserva.dataHoraFim}>{formatDateTime(reserva.dataHoraFim)}</time></span></td>
                     <td data-label={t("owner.common.status")}><ReservationStatus status={reserva.status} /></td>
                     <td data-label={t("owner.reservations.colPickup")}>{reserva.garagemRetirada?.nome || t("owner.reservations.garageNotInformed")}</td>

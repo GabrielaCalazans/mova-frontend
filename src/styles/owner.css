@@ -126,7 +126,7 @@ select.field__control { padding-right: var(--space-8); }
   .owner-table tbody th::before, .owner-table tbody td::before {
     color: var(--text-muted); font-size: var(--text-eyebrow); font-weight: var(--weight-semibold);
   }
-  .owner-table tbody th::before { content: "Veículo"; }
+  .owner-table tbody th::before { content: attr(data-label); }
   .owner-table tbody td::before { content: attr(data-label); }
   .owner-table tbody td > * { justify-self: start; }
 }

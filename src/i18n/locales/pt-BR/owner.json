@@ -67,7 +67,7 @@
       "AGUARDANDO_PAGAMENTO": "Aguardando pagamento",
       "CONFIRMADA": "Confirmada",
       "EM_ANDAMENTO": "Em andamento",
-      "REALIZADA": "Realizada",
+      "REALIZADA": "Concluída",
       "CANCELADA": "Cancelada"
     },
     "filterHelp": "Datas são dias UTC inclusivos no contrato. Horários exibidos em {timeZone}.",

@@ -26,6 +26,8 @@ export default function InteressesDisponibilidade() {
   const [notificacoes, setNotificacoes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
+  // Erro de uma ação (avisar/cancelar) não esconde a lista nem o retry.
+  const [erroAcao, setErroAcao] = useState(null);
   const [feedback, setFeedback] = useState(null);
   const [processando, setProcessando] = useState(new Set());
 
@@ -60,6 +62,7 @@ export default function InteressesDisponibilidade() {
     if (processando.has(chave)) return;
     setProcessando((atual) => new Set(atual).add(chave));
     setFeedback(null);
+    setErroAcao(null);
     try {
       if (interesses.has(chave)) {
         await cancelarInteresse(idVeiculo);
@@ -75,7 +78,7 @@ export default function InteressesDisponibilidade() {
         setFeedback(t("tenant.interests.activated"));
       }
     } catch (error) {
-      setErro(error.message || t("tenant.interests.updateError"));
+      setErroAcao(error.message || t("tenant.interests.updateError"));
     } finally {
       setProcessando((atual) => {
         const proximo = new Set(atual);
@@ -99,6 +102,12 @@ export default function InteressesDisponibilidade() {
         <div className="alert alert--danger" role="alert">
           <FontAwesomeIcon icon={faCircleExclamation} aria-hidden="true" />
           <p className="alert__body">{erro}</p>
+        </div>
+      )}
+      {!loading && erroAcao && (
+        <div className="alert alert--danger" role="alert">
+          <FontAwesomeIcon icon={faCircleExclamation} aria-hidden="true" />
+          <p className="alert__body">{erroAcao}</p>
         </div>
       )}
       {!loading && !erro && veiculos.length === 0 && (
