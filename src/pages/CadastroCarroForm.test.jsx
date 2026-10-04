@@ -51,7 +51,7 @@ describe("CadastroCarroForm", () => {
 
     const status = screen.getByLabelText("Status");
     expect(status).toHaveValue("INATIVO");
-    expect(screen.getByRole("option", { name: "MANUTENCAO" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Em manutenção" })).toBeInTheDocument();
     fireEvent.change(status, { target: { value: "DISPONIVEL" } });
     fireEvent.click(screen.getByRole("button", { name: "Editar" }));
 

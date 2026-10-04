@@ -48,7 +48,7 @@ describe("InteressesDisponibilidade", () => {
     expect(screen.getByText("Carregando veículos indisponíveis…")).toBeInTheDocument();
     resolve([vehicle("v-1")]);
     expect(await screen.findByText("Fiat Argo v-1")).toBeInTheDocument();
-    expect(screen.getByText("Indisponível — MANUTENCAO")).toBeInTheDocument();
+    expect(screen.getByText("Indisponível — Em manutenção")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Avisar quando disponível" })).toBeInTheDocument();
   });
 

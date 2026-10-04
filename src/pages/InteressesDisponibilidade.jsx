@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { rotulo, STATUS_GARAGEM_LABELS, STATUS_NOTIFICACAO_LABELS, STATUS_VEICULO_LABELS } from "../services/apiEnums";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck, faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
@@ -116,9 +117,9 @@ export default function InteressesDisponibilidade() {
                 <div className="post-item__body">
                   <h2 className="post-item__title">{nomeVeiculo(veiculo)}</h2>
                   <p className="post-item__meta">
-                    Indisponível — {veiculo.status}
+                    Indisponível — {rotulo(STATUS_VEICULO_LABELS, veiculo.status)}
                     {veiculo.garagem?.status && veiculo.garagem.status !== "ATIVA"
-                      ? ` (garagem ${veiculo.garagem.status})`
+                      ? ` (garagem ${rotulo(STATUS_GARAGEM_LABELS, veiculo.garagem.status).toLowerCase()})`
                       : ""}
                   </p>
                   {veiculo.ano && <p className="post-item__meta">Ano <span className="tabular">{veiculo.ano}</span></p>}
@@ -155,7 +156,7 @@ export default function InteressesDisponibilidade() {
             {notificacoes.map((notificacao) => (
               <li key={notificacao.id} className="line-list__item">
                 <span className="post-item__title">{notificacao.assunto}</span>
-                <span className="badge badge--neutral">{notificacao.status}</span>
+                <span className="badge badge--neutral">{rotulo(STATUS_NOTIFICACAO_LABELS, notificacao.status)}</span>
               </li>
             ))}
           </ul>

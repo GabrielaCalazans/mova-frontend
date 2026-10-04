@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { rotulo, STATUS_VEICULO_LABELS } from "../services/apiEnums";
 import { useNavigate } from "react-router-dom";
 import { CircleCheck, CircleSlash, KeyRound, Pencil, Plus, Trash2, Wrench } from "lucide-react";
 import BottomNav from "../components/BottomNav";
@@ -111,7 +112,7 @@ export default function CadastroDeCarros() {
                       <span className="owner-plate">{veiculo.placa}</span>
                       <span className={`badge badge--${tom}`}>
                         {IconeStatus && <IconeStatus className="icon-sm" aria-hidden="true" />}
-                        {veiculo.status}
+                        {rotulo(STATUS_VEICULO_LABELS, veiculo.status)}
                       </span>
                     </p>
                     <p className="owner-row__meta">

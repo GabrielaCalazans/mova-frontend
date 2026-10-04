@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck, faCircleExclamation, faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { getJourneyStep, updateJourneyStep } from "../utils/journeyStorage";
 import { getAuthSession } from "../services/authSession";
-import { STATUS_PAGAMENTO, STATUS_RESERVA } from "../services/apiEnums";
+import { rotulo, STATUS_PAGAMENTO, STATUS_RESERVA, STATUS_RESERVA_LABELS } from "../services/apiEnums";
 import {
   desbloquearReserva,
   desbloquearReservaPorQr,
@@ -262,7 +262,7 @@ export default function TelaDeDesbloqueio() {
             <span className="tabular">{formatarDataHora(reserva.codigoUsadoEm)}</span>.
           </p>
           <p className="journey-muted" data-testid="status-reserva">
-            Status da reserva: {reserva.status}
+            Status da reserva: {rotulo(STATUS_RESERVA_LABELS, reserva.status)}
           </p>
           <p className="journey-muted">
             Depois de devolver o veículo, você pode avaliar sua experiência a

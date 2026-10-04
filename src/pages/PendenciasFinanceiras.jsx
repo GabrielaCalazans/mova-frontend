@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { rotulo, STATUS_PAGAMENTO_LABELS, TIPO_COBRANCA_LABELS } from "../services/apiEnums";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { listarCobrancasPendentes, pagarCobranca } from "../services/cobrancaService";
@@ -70,8 +71,8 @@ export default function PendenciasFinanceiras() {
           {itens.map((c) => (
             <li key={c.id} className="post-item">
               <div className="post-item__body">
-                <p className="post-item__title tabular">{c.tipo} — R$ {formatarValor(c.valor)}</p>
-                <p className="post-item__meta">Status: {c.statusPagamento}</p>
+                <p className="post-item__title tabular">{rotulo(TIPO_COBRANCA_LABELS, c.tipo)} — R$ {formatarValor(c.valor)}</p>
+                <p className="post-item__meta">Status: {rotulo(STATUS_PAGAMENTO_LABELS, c.statusPagamento)}</p>
               </div>
               <button type="button" className="btn" onClick={() => pagar(c.id)}>Pagar via Pix (sandbox)</button>
             </li>

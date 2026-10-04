@@ -19,7 +19,7 @@ describe("OwnerReservations", () => {
   it("envia filtros de reserva suportados pelo contrato e não inventa detalhes", async () => {
     render(<OwnerReservations />);
 
-    await screen.findByRole("row", { name: /Fiat Argo.*CONFIRMADA/ });
+    await screen.findByRole("row", { name: /Fiat Argo.*Confirmada/ });
     fireEvent.change(screen.getByLabelText("Data inicial"), { target: { value: "2026-01-01" } });
     fireEvent.change(screen.getByLabelText("Data final"), { target: { value: "2026-01-31" } });
     fireEvent.change(screen.getByLabelText("Status"), { target: { value: "CONFIRMADA" } });
@@ -38,7 +38,7 @@ describe("OwnerReservations", () => {
 
   it("rejeita intervalo invertido antes de consultar o backend", async () => {
     render(<OwnerReservations />);
-    await screen.findByRole("row", { name: /Fiat Argo.*CONFIRMADA/ });
+    await screen.findByRole("row", { name: /Fiat Argo.*Confirmada/ });
 
     fireEvent.change(screen.getByLabelText("Data inicial"), { target: { value: "2026-02-01" } });
     fireEvent.change(screen.getByLabelText("Data final"), { target: { value: "2026-01-01" } });
@@ -53,7 +53,7 @@ describe("OwnerReservations", () => {
     getReservas.mockReset().mockResolvedValueOnce(primeiraPagina).mockResolvedValueOnce(primeiraPagina).mockResolvedValueOnce({ ...primeiraPagina, reservas: [], pagination: { page: 2, limit: 10, total: 11, totalPages: 2 } });
     render(<OwnerReservations />);
 
-    await screen.findByRole("row", { name: /Fiat Argo.*CONFIRMADA/ });
+    await screen.findByRole("row", { name: /Fiat Argo.*Confirmada/ });
     fireEvent.change(screen.getByLabelText("Status"), { target: { value: "CONFIRMADA" } });
     fireEvent.click(screen.getByRole("button", { name: "Aplicar filtros" }));
     await waitFor(() => expect(getReservas).toHaveBeenLastCalledWith({ status: "CONFIRMADA" }));
@@ -68,11 +68,11 @@ describe("OwnerReservations", () => {
     getReservas.mockReset().mockResolvedValueOnce(primeiraPagina).mockRejectedValueOnce(new Error("Falha no filtro"));
     render(<OwnerReservations />);
 
-    await screen.findByRole("row", { name: /Fiat Argo.*CONFIRMADA/ });
+    await screen.findByRole("row", { name: /Fiat Argo.*Confirmada/ });
     fireEvent.change(screen.getByLabelText("Data inicial"), { target: { value: "2026-02-01" } });
     fireEvent.click(screen.getByRole("button", { name: "Aplicar filtros" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Falha no filtro");
-    expect(screen.queryByRole("row", { name: /Fiat Argo.*CONFIRMADA/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("row", { name: /Fiat Argo.*Confirmada/ })).not.toBeInTheDocument();
   });
 });

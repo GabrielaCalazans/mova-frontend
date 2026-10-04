@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { rotulo, STATUS_VEICULO_LABELS } from "../services/apiEnums";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { createVeiculo, listFrota, updateVeiculo, uploadImagemVeiculo, deleteImagemVeiculo, reorderImagensVeiculo, setCapaImagemVeiculo } from "../services/veiculoService";
@@ -351,7 +352,7 @@ export default function CadastroCarroForm() {
               <label className="field__label" htmlFor="status">Status{isNovo ? "*" : ""}</label>
               <select id="status" className="field__control" required value={values.status} onChange={(e) => handleChange("status", e.target.value)}>
                 {STATUS_OPCOES.map((status) => (
-                  <option key={status} value={status}>{status}</option>
+                  <option key={status} value={status}>{rotulo(STATUS_VEICULO_LABELS, status)}</option>
                 ))}
               </select>
             </div>

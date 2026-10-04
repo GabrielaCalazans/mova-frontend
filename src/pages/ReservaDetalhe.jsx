@@ -11,6 +11,7 @@ import {
   revogarCompartilhamentoReserva,
 } from "../services/reservaService";
 import {
+  STATUS_ESTORNO_LABELS,
   STATUS_PAGAMENTO_LABELS,
   STATUS_RESERVA,
   rotulo,
@@ -193,9 +194,12 @@ export default function ReservaDetalhe() {
   return (
     <main className="journey-page">
       {voltar}
-      <header className="journey-head detail-head">
-        <h1>{resolveVeiculoNome(reserva)}</h1>
-        <StatusBadge status={reserva.status} role="status" />
+      <header className="journey-head">
+        <h1>Detalhe da reserva</h1>
+        <div className="detail-head">
+          <h2>{resolveVeiculoNome(reserva)}</h2>
+          <StatusBadge status={reserva.status} role="status" />
+        </div>
       </header>
 
       <div className="journey-layout detail-layout">
@@ -267,7 +271,7 @@ export default function ReservaDetalhe() {
               <div><dt>Pagamento</dt><dd>{rotulo(STATUS_PAGAMENTO_LABELS, statusPagamentoAtual) || "Não informado"}</dd></div>
               {pagamento?.statusEstorno && <>
                 <div><dt>Valor pago</dt><dd className="tabular">{formatMoneyBRL(pagamento.valorPago)}</dd></div>
-                <div><dt>Status do estorno</dt><dd>{pagamento.statusEstorno}</dd></div>
+                <div><dt>Status do estorno</dt><dd>{rotulo(STATUS_ESTORNO_LABELS, pagamento.statusEstorno)}</dd></div>
                 <div><dt>Elegível ao estorno</dt><dd className="tabular">{formatMoneyBRL(pagamento.valorElegivelEstorno)}</dd></div>
               </>}
             </dl>

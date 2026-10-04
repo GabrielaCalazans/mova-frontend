@@ -77,8 +77,48 @@ export const CARGO = {
   ADMIN: "ADMIN",
 };
 
-/** Rótulo de exibição com fallback para o próprio código, se vier algo novo. */
+export const STATUS_VEICULO_LABELS = {
+  [STATUS_VEICULO.DISPONIVEL]: "Disponível",
+  [STATUS_VEICULO.RESERVADO]: "Reservado",
+  [STATUS_VEICULO.MANUTENCAO]: "Em manutenção",
+  [STATUS_VEICULO.INATIVO]: "Inativo",
+};
+
+export const STATUS_GARAGEM_LABELS = {
+  [STATUS_GARAGEM.ATIVA]: "Ativa",
+  [STATUS_GARAGEM.INATIVA]: "Inativa",
+  [STATUS_GARAGEM.MANUTENCAO]: "Em manutenção",
+};
+
+/** StatusEstorno — derivado em mova-backend/src/services/pagamento-estorno.ts */
+export const STATUS_ESTORNO_LABELS = {
+  NAO_SOLICITADO: "Não solicitado",
+  SOLICITADO: "Solicitado",
+  CONCLUIDO: "Concluído",
+  FALHOU: "Falhou",
+};
+
+/** enum TipoCobranca — schema.prisma */
+export const TIPO_COBRANCA_LABELS = {
+  CANCELAMENTO: "Multa de cancelamento",
+  ATRASO_DEVOLUCAO: "Atraso na devolução",
+  PAGAMENTO_RESERVA: "Pagamento da reserva",
+};
+
+/** enum StatusNotificacao — schema.prisma */
+export const STATUS_NOTIFICACAO_LABELS = {
+  PENDENTE: "Pendente",
+  ENVIADA: "Enviada",
+  FALHA: "Falhou",
+};
+
+/**
+ * Rótulo de exibição. Código desconhecido (enum novo no backend) vira texto
+ * legível em vez de aparecer cru: "NOVO_STATUS" → "Novo status".
+ */
 export function rotulo(mapa, codigo) {
   if (!codigo) return "";
-  return mapa[codigo] ?? codigo;
+  if (mapa[codigo]) return mapa[codigo];
+  const texto = String(codigo).toLowerCase().split("_").join(" ");
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
 }

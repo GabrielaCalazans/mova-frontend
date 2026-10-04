@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { rotulo, STATUS_GARAGEM_LABELS } from "../services/apiEnums";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { createGaragem, listGaragens, updateGaragem } from "../services/garagemService";
 import { getAuthSession } from "../services/authSession";
@@ -176,7 +177,7 @@ export default function CadastroGaragemForm() {
                   onChange={(e) => handleChange("status", e.target.value)}
                 >
                   {STATUS_OPCOES.map((status) => (
-                    <option key={status} value={status}>{status}</option>
+                    <option key={status} value={status}>{rotulo(STATUS_GARAGEM_LABELS, status)}</option>
                   ))}
                 </select>
               </div>

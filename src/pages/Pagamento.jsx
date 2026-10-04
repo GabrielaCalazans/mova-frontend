@@ -8,6 +8,7 @@ import { getJourneyStep, updateJourneyStep } from "../utils/journeyStorage";
 import {
   METODO_PAGAMENTO,
   METODO_PAGAMENTO_LABELS,
+  STATUS_ESTORNO_LABELS,
   STATUS_PAGAMENTO,
   STATUS_PAGAMENTO_LABELS,
   rotulo,
@@ -390,9 +391,10 @@ export default function Pagamento() {
         <strong className="tabular" data-testid="valor-reserva">{formatMoneyBRL(reserva?.valorTotal)}</strong>
       </div>
       <p className="price-summary__note">Pagamento e estorno simulados — nenhum dinheiro real movimentado.</p>
-      {pagamento?.statusEstorno && (
-        <p className="price-summary__note" role="status">
-          Status do estorno: {pagamento.statusEstorno}. Valor pago: <span className="tabular">{formatMoneyBRL(pagamento.valorPago)}</span>.
+      {/* Só quando há estorno em curso: antes de pagar, "Não solicitado" é ruído. */}
+      {pagamento?.statusEstorno && pagamento.statusEstorno !== "NAO_SOLICITADO" && (
+        <p className="price-summary__note">
+          Estorno: {rotulo(STATUS_ESTORNO_LABELS, pagamento.statusEstorno)}. Valor pago: <span className="tabular">{formatMoneyBRL(pagamento.valorPago)}</span>.
         </p>
       )}
     </section>

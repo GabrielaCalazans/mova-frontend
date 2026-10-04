@@ -56,9 +56,9 @@ describe("CadastroDeCarros — gestão da frota", () => {
 
     render(<CadastroDeCarros />);
 
-    expect(await screen.findByText("DISPONIVEL")).toBeInTheDocument();
-    expect(screen.getByText("MANUTENCAO")).toBeInTheDocument();
-    expect(screen.getByText("INATIVO")).toBeInTheDocument();
+    expect(await screen.findByText("Disponível")).toBeInTheDocument();
+    expect(screen.getByText("Em manutenção")).toBeInTheDocument();
+    expect(screen.getByText("Inativo")).toBeInTheDocument();
     expect(listFrota).toHaveBeenCalledTimes(1);
   });
 
@@ -66,7 +66,7 @@ describe("CadastroDeCarros — gestão da frota", () => {
     listFrota.mockResolvedValue([veiculo("veiculo-002", "MANUTENCAO")]);
 
     render(<CadastroDeCarros />);
-    await screen.findByText("MANUTENCAO");
+    await screen.findByText("Em manutenção");
     fireEvent.click(screen.getByRole("button", { name: "Editar Fiat Argo" }));
 
     await waitFor(() => expect(navigateMock).toHaveBeenCalledWith(

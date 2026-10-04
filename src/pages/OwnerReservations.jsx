@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { rotulo, STATUS_RESERVA_LABELS } from "../services/apiEnums";
 import { CircleCheck, CircleX, Clock, ChevronLeft, ChevronRight, KeyRound, CalendarCheck } from "lucide-react";
 import { getReservas } from "../services/dashboardService";
 import { listFrota } from "../services/veiculoService";
@@ -29,7 +30,7 @@ function ReservationStatus({ status }) {
   return (
     <span className={`badge badge--${tone}`}>
       {Icon && <Icon className="icon-sm" aria-hidden="true" />}
-      {String(status ?? "Não informado").replaceAll("_", " ")}
+      {status ? rotulo(STATUS_RESERVA_LABELS, status) : "Não informado"}
     </span>
   );
 }

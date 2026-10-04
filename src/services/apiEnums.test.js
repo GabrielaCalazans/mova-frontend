@@ -45,9 +45,9 @@ describe("apiEnums — paridade com o backend", () => {
     }
   });
 
-  it("rotulo() cai no próprio código quando o backend manda algo novo", () => {
+  it("rotulo() humaniza um código novo do backend em vez de exibi-lo cru", () => {
     expect(rotulo(STATUS_RESERVA_LABELS, "REALIZADA")).toBe("Concluída");
-    expect(rotulo(STATUS_RESERVA_LABELS, "VALOR_NOVO")).toBe("VALOR_NOVO");
+    expect(rotulo(STATUS_RESERVA_LABELS, "VALOR_NOVO")).toBe("Valor novo");
     expect(rotulo(STATUS_RESERVA_LABELS, "")).toBe("");
   });
 });

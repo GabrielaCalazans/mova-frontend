@@ -136,7 +136,7 @@ describe("DesbloqueioDeCarro", () => {
     );
     expect(await screen.findByTestId("titulo-desbloqueado")).toBeInTheDocument();
     expect(screen.getByTestId("status-reserva")).toHaveTextContent(
-      "EM_ANDAMENTO",
+      "Em andamento",
     );
   });
 

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { rotulo, STATUS_GARAGEM_LABELS } from "../services/apiEnums";
 import { useNavigate } from "react-router-dom";
 import { CircleCheck, CircleSlash, Gauge, Pencil, Plus, Trash2, Wrench } from "lucide-react";
 import BottomNav from "../components/BottomNav";
@@ -102,7 +103,7 @@ export default function CadastroDeGaragens() {
                     <p className="owner-row__meta">
                       <span className={`badge badge--${tom}`}>
                         {IconeStatus && <IconeStatus className="icon-sm" aria-hidden="true" />}
-                        Status: {garagem.status}
+                        Status: {rotulo(STATUS_GARAGEM_LABELS, garagem.status)}
                       </span>
                       <span>{garagem.endereco}</span>
                     </p>

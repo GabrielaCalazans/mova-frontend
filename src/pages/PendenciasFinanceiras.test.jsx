@@ -41,8 +41,8 @@ describe("PendenciasFinanceiras", () => {
     listarCobrancasPendentes.mockResolvedValue([pendencia()]);
     render(<PendenciasFinanceiras />);
 
-    expect(await screen.findByText("ATRASO_DEVOLUCAO — R$ 42,50")).toBeInTheDocument();
-    expect(screen.getByText("Status: AGUARDANDO_PAGAMENTO")).toBeInTheDocument();
+    expect(await screen.findByText("Atraso na devolução — R$ 42,50")).toBeInTheDocument();
+    expect(screen.getByText("Status: Aguardando pagamento")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Pagar via Pix (sandbox)" })).toBeInTheDocument();
   });
 
@@ -53,8 +53,8 @@ describe("PendenciasFinanceiras", () => {
     ]);
     render(<PendenciasFinanceiras />);
 
-    expect(await screen.findByText("ATRASO_DEVOLUCAO — R$ 42,50")).toBeInTheDocument();
-    expect(screen.getByText("CANCELAMENTO — R$ 80,00")).toBeInTheDocument();
+    expect(await screen.findByText("Atraso na devolução — R$ 42,50")).toBeInTheDocument();
+    expect(screen.getByText("Multa de cancelamento — R$ 80,00")).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "Pagar via Pix (sandbox)" })).toHaveLength(2);
   });
 
@@ -77,7 +77,7 @@ describe("PendenciasFinanceiras", () => {
 
     await userEvent.click(await screen.findByRole("button", { name: "Pagar via Pix (sandbox)" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Pagamento recusado pelo sandbox.");
-    expect(screen.getByText("ATRASO_DEVOLUCAO — R$ 42,50")).toBeInTheDocument();
+    expect(screen.getByText("Atraso na devolução — R$ 42,50")).toBeInTheDocument();
     expect(listarCobrancasPendentes).toHaveBeenCalledTimes(1);
   });
 
