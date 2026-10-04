@@ -215,7 +215,8 @@
     "address": "Address*",
     "capacity": "Total capacity*",
     "capacityPlaceholder": "Total capacity* (number of spots)",
-    "accessible": "Accessible garage (spots for adapted vehicles)"
+    "accessible": "Accessible garage (spots for adapted vehicles)",
+    "futureBookingBlocksStatus": "This garage has confirmed bookings that still depend on it. Resolve those bookings before putting it under maintenance or deactivating it. The status was kept."
   },
   "capacity": {
     "docTitle": "MOVA - Current capacity",

@@ -215,7 +215,8 @@
     "address": "Endereço*",
     "capacity": "Capacidade Total*",
     "capacityPlaceholder": "Capacidade Total* (nº de vagas)",
-    "accessible": "Garagem acessível (vagas para veículos adaptados)"
+    "accessible": "Garagem acessível (vagas para veículos adaptados)",
+    "futureBookingBlocksStatus": "Esta garagem possui reservas confirmadas que ainda dependem dela. Resolva essas reservas antes de colocá-la em manutenção ou inativá-la. O status foi mantido."
   },
   "capacity": {
     "docTitle": "MOVA - Capacidade Atual",

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { rotulo, STATUS_GARAGEM_LABELS } from "../services/apiEnums";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { createGaragem, listGaragens, updateGaragem } from "../services/garagemService";
@@ -17,6 +17,8 @@ export default function CadastroGaragemForm() {
 
   const garagemOriginal = location.state?.garagem;
 
+  // Status confirmado pelo backend; volta para ele quando a mudança é recusada.
+  const statusSalvo = useRef(garagemOriginal?.status || "ATIVA");
   const [values, setValues] = useState({
     nome: garagemOriginal?.nome || "",
     endereco: garagemOriginal?.endereco || "",
@@ -41,6 +43,7 @@ export default function CadastroGaragemForm() {
         if (!garagem) {
           throw new Error(t("owner.garageForm.notFound"));
         }
+        statusSalvo.current = garagem.status || "ATIVA";
         setValues({
           nome: garagem.nome || "",
           endereco: garagem.endereco || "",
@@ -92,7 +95,14 @@ export default function CadastroGaragemForm() {
       }
       navigate("/cadastro-garagens");
     } catch (e) {
-      setErro(e.message || t("owner.garageForm.saveError"));
+      // Task 10.1 (Bug B): garagem ainda necessária a reservas confirmadas.
+      // O backend não mudou nada; a tela volta ao status salvo.
+      if (e.code === "GARAGEM_COM_RESERVA_FUTURA_CONFIRMADA") {
+        setValues((atual) => ({ ...atual, status: statusSalvo.current }));
+        setErro(t("owner.garageForm.futureBookingBlocksStatus"));
+      } else {
+        setErro(e.message || t("owner.garageForm.saveError"));
+      }
     } finally {
       setSalvando(false);
     }

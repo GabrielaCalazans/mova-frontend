@@ -59,6 +59,22 @@ describe("CadastroGaragemForm", () => {
     expect(navigateMock).toHaveBeenCalledWith("/cadastro-garagens");
   });
 
+  // Task 10.1 (Bug B): garagem ainda necessária a reservas confirmadas.
+  it("bloqueio por reservas confirmadas: mensagem clara e status volta ao salvo", async () => {
+    garagem = { ...garagem, status: "ATIVA" };
+    updateGaragem.mockRejectedValueOnce(Object.assign(new Error("erro técnico"), {
+      code: "GARAGEM_COM_RESERVA_FUTURA_CONFIRMADA",
+      status: 409,
+    }));
+    render(<CadastroGaragemForm />);
+    fireEvent.change(screen.getByLabelText("Status"), { target: { value: "MANUTENCAO" } });
+    fireEvent.click(screen.getByRole("button", { name: "Editar" }));
+
+    expect(await screen.findByText(/reservas confirmadas que ainda dependem/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("Status")).toHaveValue("ATIVA");
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
+
   it("carrega garagem real ao abrir URL direta sem location state", async () => {
     garagem = null;
     listGaragens.mockResolvedValueOnce([{
