@@ -1,0 +1,277 @@
+/* MOVA — identidade oficial (Task 7.4, portada para o mova-frontend na Task 8).
+   Primitivas oficiais: azul primário #003366, azul secundário #D0E7FF.
+   #0E2B49 é variação de apoio para superfícies escuras e texto de alta leitura.
+   Componentes consomem tokens semânticos; HEX não aparece fora desta camada.
+   Fonte única desta camada: mova-prototype/src/styles/tokens.css + theme-dark.css. */
+
+:root {
+  --brand-primary: #003366;
+  --brand-secondary: #d0e7ff;
+  --brand-deep: #0e2b49;
+  --brand-primary-hover: #0a4a83;
+  --brand-primary-active: #00264d;
+  --brand-secondary-hover: #e4f2ff;
+  --brand-secondary-active: #b8d7f5;
+
+  --neutral-white: #ffffff;
+  --neutral-page: #f7fbff;
+  --neutral-sunken: #eaf4ff;
+  --neutral-disabled: #d7e8f7;
+  --neutral-rule: #c4d7e8;
+  --neutral-boundary: #587a99;
+  --neutral-muted: #476987;
+  --neutral-disabled-text: #40617d;
+
+  --dark-page: #071c30;
+  --dark-surface: #0e2b49;
+  --dark-elevated: #153e63;
+  --dark-sunken: #04111f;
+  --dark-rule: #2b5375;
+  --dark-boundary: #7ea7c6;
+  --dark-muted: #94b9d7;
+  --dark-secondary-text: #b9d5ed;
+  --dark-skeleton: #163a5d;
+  --dark-skeleton-shine: #1d4a73;
+  --dark-disabled: #24496a;
+  --dark-disabled-text: #b3cce1;
+  --dark-disabled-border: #6b91b1;
+
+  --status-success-light: #1b6b4c;
+  --status-success-bg-light: #e6f4ec;
+  --status-warning-light: #8a5a00;
+  --status-warning-bg-light: #fbf1dd;
+  --status-danger-light: #a32330;
+  --status-danger-bg-light: #fbe9ea;
+  --status-info-light: #003366;
+  --status-info-bg-light: #e5f2ff;
+  --status-success-dark: #6fd3a3;
+  --status-success-bg-dark: #13372c;
+  --status-warning-dark: #f0c36a;
+  --status-warning-bg-dark: #3a2f14;
+  --status-danger-dark: #ff9ea4;
+  --status-danger-bg-dark: #3a1b20;
+  --status-info-dark: #d0e7ff;
+  --status-info-bg-dark: #102f4f;
+
+  --font-sans: "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, system-ui, sans-serif;
+  --text-display: 2rem;
+  --text-h1: 2rem;
+  --text-h2: 1.5rem;
+  --text-h3: 1.25rem;
+  --text-body: 1.25rem;
+  --text-body-lg: 1.375rem;
+  --text-caption: 1.25rem;
+  --text-label: 1rem;
+  --text-control: 1rem;
+  --text-navigation: 1rem;
+  --text-meta: 1rem;
+  --text-price: 1.5rem;
+  --text-price-lg: 2rem;
+  --text-eyebrow: 0.875rem;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-caption: 600;
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.55;
+  --leading-relaxed: 1.65;
+  --tracking-tight: -0.02em;
+  --tracking-wide: 0.02em;
+  --measure: 68ch;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --gutter: var(--space-4);
+  --container-max: 72.5rem;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-pill: 999px;
+  --control-h: 44px;
+  --control-h-sm: 40px;
+  --control-h-lg: 52px;
+  --icon-sm: 14px;
+  --icon-md: 18px;
+  --icon-lg: 22px;
+  --appbar-h: 56px;
+  --tabbar-h: 62px;
+  --bp-sm: 520px;
+  --bp-md: 720px;
+  --bp-lg: 1024px;
+  --bp-xl: 1280px;
+  --dur-instant: 90ms;
+  --dur-fast: 150ms;
+  --dur-base: 220ms;
+  --dur-slow: 300ms;
+  --ease-out: cubic-bezier(0.22, 0.85, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0, 0.9, 0.35);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --focus-width: 3px;
+  --focus-offset: 2px;
+  --z-sticky: 20;
+  --z-appbar: 40;
+  --z-tabbar: 40;
+  --z-scrim: 90;
+  --z-dialog: 100;
+  --z-skiplink: 200;
+  --appbar-h-lg: 64px;
+  --media-ratio: 16 / 10;
+
+  /* CursorCard: brilho que segue o ponteiro (desktop, hover fino).
+     primaryHue = #D0E7FF, secondaryHue = #003366, em alfa baixo. */
+  --cursor-glow-primary: rgba(208, 231, 255, 0.55);
+  --cursor-glow-secondary: rgba(0, 51, 102, 0.22);
+  --cursor-glow-size: 280px;
+}
+
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+  --surface-primary: var(--neutral-page);
+  --surface-secondary: var(--neutral-white);
+  --surface-elevated: var(--neutral-white);
+  --surface-sunken: var(--neutral-sunken);
+  --surface-inverse: var(--brand-deep);
+  --surface-scrim: rgba(14, 43, 73, 0.52);
+  --surface-skeleton: var(--neutral-disabled);
+  --surface-skeleton-shine: var(--neutral-page);
+  --text-primary: var(--brand-deep);
+  --text-secondary: #234e75;
+  --text-muted: var(--neutral-muted);
+  --text-inverse: var(--brand-secondary);
+  --text-on-dark: var(--brand-secondary);
+  --text-link: var(--brand-primary);
+  --action-primary: var(--brand-primary);
+  --action-primary-hover: var(--brand-primary-hover);
+  --action-primary-active: var(--brand-primary-active);
+  --action-primary-text: var(--brand-secondary);
+  --action-secondary-bg: transparent;
+  --action-secondary-text: var(--brand-primary);
+  --action-secondary-border: var(--neutral-boundary);
+  --action-quiet-hover: var(--neutral-sunken);
+  --action-disabled-bg: var(--neutral-disabled);
+  --action-disabled-text: var(--neutral-disabled-text);
+  --action-disabled-border: var(--neutral-boundary);
+  --selected-bg: var(--brand-primary);
+  --selected-text: var(--brand-secondary);
+  --selected-border: var(--brand-primary-active);
+  --border-default: var(--neutral-rule);
+  --border-strong: var(--neutral-boundary);
+  --focus-ring: var(--brand-primary);
+  --feedback-success-fg: var(--status-success-light);
+  --feedback-success-bg: var(--status-success-bg-light);
+  --feedback-warning-fg: var(--status-warning-light);
+  --feedback-warning-bg: var(--status-warning-bg-light);
+  --feedback-danger-fg: var(--status-danger-light);
+  --feedback-danger-bg: var(--status-danger-bg-light);
+  --feedback-info-fg: var(--status-info-light);
+  --feedback-info-bg: var(--status-info-bg-light);
+  --shadow-none: none;
+  --shadow-md: 0 8px 24px rgba(14, 43, 73, 0.16);
+  --shadow-lg: 0 24px 56px rgba(14, 43, 73, 0.22);
+}
+/* Tema escuro composto separadamente. Nunca é inversão automática do claro. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-primary: var(--dark-page);
+  --surface-secondary: var(--dark-surface);
+  --surface-elevated: var(--dark-elevated);
+  --surface-sunken: var(--dark-sunken);
+  --surface-inverse: var(--brand-secondary);
+  --surface-scrim: rgba(4, 17, 31, 0.76);
+  --surface-skeleton: var(--dark-skeleton);
+  --surface-skeleton-shine: var(--dark-skeleton-shine);
+  --text-primary: var(--brand-secondary);
+  --text-secondary: var(--dark-secondary-text);
+  --text-muted: var(--dark-muted);
+  --text-inverse: var(--brand-deep);
+  --text-on-dark: var(--brand-secondary);
+  --text-link: var(--brand-secondary);
+  --action-primary: var(--brand-secondary);
+  --action-primary-hover: var(--brand-secondary-hover);
+  --action-primary-active: var(--brand-secondary-active);
+  --action-primary-text: var(--brand-deep);
+  --action-secondary-bg: transparent;
+  --action-secondary-text: var(--brand-secondary);
+  --action-secondary-border: var(--dark-boundary);
+  --action-quiet-hover: var(--dark-elevated);
+  --action-disabled-bg: var(--dark-disabled);
+  --action-disabled-text: var(--dark-disabled-text);
+  --action-disabled-border: var(--dark-disabled-border);
+  --selected-bg: var(--brand-secondary);
+  --selected-text: var(--brand-deep);
+  --selected-border: var(--brand-secondary-active);
+  --border-default: var(--dark-rule);
+  --border-strong: var(--dark-boundary);
+  --focus-ring: var(--brand-secondary);
+  --feedback-success-fg: var(--status-success-dark);
+  --feedback-success-bg: var(--status-success-bg-dark);
+  --feedback-warning-fg: var(--status-warning-dark);
+  --feedback-warning-bg: var(--status-warning-bg-dark);
+  --feedback-danger-fg: var(--status-danger-dark);
+  --feedback-danger-bg: var(--status-danger-bg-dark);
+  --feedback-info-fg: var(--status-info-dark);
+  --feedback-info-bg: var(--status-info-bg-dark);
+  --shadow-none: none;
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 24px 56px rgba(0, 0, 0, 0.64);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface-primary: var(--dark-page);
+    --surface-secondary: var(--dark-surface);
+    --surface-elevated: var(--dark-elevated);
+    --surface-sunken: var(--dark-sunken);
+    --surface-inverse: var(--brand-secondary);
+    --surface-scrim: rgba(4, 17, 31, 0.76);
+    --surface-skeleton: var(--dark-skeleton);
+    --surface-skeleton-shine: var(--dark-skeleton-shine);
+    --text-primary: var(--brand-secondary);
+    --text-secondary: var(--dark-secondary-text);
+    --text-muted: var(--dark-muted);
+    --text-inverse: var(--brand-deep);
+    --text-on-dark: var(--brand-secondary);
+    --text-link: var(--brand-secondary);
+    --action-primary: var(--brand-secondary);
+    --action-primary-hover: var(--brand-secondary-hover);
+    --action-primary-active: var(--brand-secondary-active);
+    --action-primary-text: var(--brand-deep);
+    --action-secondary-bg: transparent;
+    --action-secondary-text: var(--brand-secondary);
+    --action-secondary-border: var(--dark-boundary);
+    --action-quiet-hover: var(--dark-elevated);
+    --action-disabled-bg: var(--dark-disabled);
+    --action-disabled-text: var(--dark-disabled-text);
+    --action-disabled-border: var(--dark-disabled-border);
+    --selected-bg: var(--brand-secondary);
+    --selected-text: var(--brand-deep);
+    --selected-border: var(--brand-secondary-active);
+    --border-default: var(--dark-rule);
+    --border-strong: var(--dark-boundary);
+    --focus-ring: var(--brand-secondary);
+    --feedback-success-fg: var(--status-success-dark);
+    --feedback-success-bg: var(--status-success-bg-dark);
+    --feedback-warning-fg: var(--status-warning-dark);
+    --feedback-warning-bg: var(--status-warning-bg-dark);
+    --feedback-danger-fg: var(--status-danger-dark);
+    --feedback-danger-bg: var(--status-danger-bg-dark);
+    --feedback-info-fg: var(--status-info-dark);
+    --feedback-info-bg: var(--status-info-bg-dark);
+    --shadow-none: none;
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 24px 56px rgba(0, 0, 0, 0.64);
+  }
+}

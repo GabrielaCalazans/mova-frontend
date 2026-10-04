@@ -19,13 +19,13 @@ export function findActiveReservation(reservas = []) {
  * Reserva ativa vem sempre da API. A sessão só fornece a identidade para o
  * endpoint escopado; não é fonte de verdade para status ou datas.
  */
-export function useActiveReservation({ enabled = true } = {}) {
+export function useActiveReservation({ enabled = true, refreshKey = "" } = {}) {
   const session = getAuthSession();
   const token = session?.token || "";
   const cargo = getUserCargo(session?.user);
   const locatarioId = session?.user?.locatario?.id || session?.user?.id || "";
   const shouldLoad = Boolean(enabled && token && cargo === "LOCATARIO" && locatarioId);
-  const requestKey = shouldLoad ? `${token}:${locatarioId}` : "";
+  const requestKey = shouldLoad ? `${token}:${locatarioId}:${refreshKey}` : "";
   const [state, setState] = useState({ key: requestKey, loading: shouldLoad, reservation: null, error: null });
 
   useEffect(() => {
@@ -46,7 +46,9 @@ export function useActiveReservation({ enabled = true } = {}) {
     return () => { active = false; };
   }, [locatarioId, requestKey, shouldLoad]);
 
-  return state.key === requestKey
-    ? state
-    : { key: requestKey, loading: shouldLoad, reservation: null, error: null };
+  if (state.key === requestKey) return state;
+  // Recarregando para a mesma identidade (troca de rota): mantém a última
+  // reserva conhecida para a aba "Alugar" não piscar. Outra identidade: zera.
+  const sameIdentity = shouldLoad && state.key.startsWith(`${token}:${locatarioId}:`);
+  return { key: requestKey, loading: shouldLoad, reservation: sameIdentity ? state.reservation : null, error: null };
 }

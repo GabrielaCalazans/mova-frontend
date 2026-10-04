@@ -1,0 +1,175 @@
+/* =============================================================================
+   MOVA — shells (Task 8): visitante/locatário (AppShell) e locador (OwnerAppShell).
+   Cabeçalho neutro com a marca oficial; o azul só marca o destino atual.
+   Mobile: tab bar fixa com safe-area. ≥1024 px: navegação no cabeçalho.
+   ========================================================================== */
+
+.app-shell,
+.mova-shell { display: flex; flex-direction: column; min-height: 100dvh; background: var(--surface-primary); color: var(--text-primary); }
+
+/* ---------------------------------------------------------------- cabeçalho */
+.appbar,
+.owner-header {
+  position: sticky; top: 0; z-index: var(--z-appbar);
+  background: var(--surface-secondary);
+  border-bottom: 1px solid var(--border-default);
+}
+.appbar__inner,
+.owner-header__inner {
+  display: flex; align-items: center; gap: var(--space-2);
+  width: 100%; max-width: var(--container-max); min-height: var(--appbar-h);
+  margin-inline: auto; padding-inline: var(--gutter);
+}
+.appbar__brand,
+.owner-header__brand {
+  display: inline-flex; align-items: center; flex: none;
+  min-height: var(--control-h); padding: var(--space-1) 0; margin-right: var(--space-2);
+  border-radius: var(--radius-sm);
+}
+.brand-logo--header { display: block; width: 116px; }
+.appbar__spacer { flex: 1; }
+.appbar__theme { display: none; }
+.appbar__account { display: none; }
+.appbar__action { padding-inline: var(--space-3); }
+
+@media (min-width: 720px) {
+  .appbar__theme { display: inline-flex; }
+  .brand-logo--header { width: 132px; }
+}
+@media (min-width: 1024px) {
+  .appbar__inner, .owner-header__inner { min-height: var(--appbar-h-lg); padding-inline: var(--space-8); gap: var(--space-3); }
+  .appbar__account { display: inline-flex; }
+}
+
+/* ---------------------------------------------------------------- navegação superior */
+.topnav { display: none; }
+@media (min-width: 1024px) {
+  .topnav { display: flex; align-items: stretch; align-self: stretch; gap: var(--space-1); margin-left: var(--space-4); }
+  .topnav__item {
+    display: inline-flex; align-items: center; gap: var(--space-2);
+    padding-inline: var(--space-3);
+    color: var(--text-secondary); text-decoration: none;
+    font-size: var(--text-label); font-weight: var(--weight-semibold);
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  }
+  .topnav__item:hover { color: var(--text-primary); }
+  .topnav__item[aria-current="page"] { color: var(--text-primary); border-bottom-color: var(--action-primary); }
+}
+
+/* ---------------------------------------------------------------- conteúdo */
+.app-shell__main,
+.mova-shell__main {
+  flex: 1; width: 100%; max-width: var(--container-max);
+  margin-inline: auto; padding: var(--space-6) var(--gutter) var(--space-12);
+}
+.app-shell--tabbar .app-shell__main { padding-bottom: calc(var(--tabbar-h) + var(--space-10) + env(safe-area-inset-bottom)); }
+@media (min-width: 720px) { .app-shell__main, .mova-shell__main { padding-inline: var(--space-6); } }
+@media (min-width: 1024px) {
+  .app-shell__main, .mova-shell__main { padding: var(--space-10) var(--space-8) var(--space-16); }
+  .app-shell--tabbar .app-shell__main { padding-bottom: var(--space-16); }
+}
+
+/* ---------------------------------------------------------------- tab bar */
+.tabbar {
+  position: fixed; inset-inline: 0; bottom: 0; z-index: var(--z-tabbar);
+  display: flex;
+  background: var(--surface-secondary);
+  border-top: 1px solid var(--border-default);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tabbar__item {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  min-height: var(--tabbar-h); padding: var(--space-2) 2px;
+  background: transparent; border: 0; border-top: 2px solid transparent; margin-top: -1px;
+  color: var(--text-muted); text-decoration: none;
+  font-size: var(--text-eyebrow); font-weight: var(--weight-semibold); line-height: 1.2;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.tabbar__item svg { width: 20px; height: 20px; }
+.tabbar__item > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tabbar__item:hover { color: var(--text-primary); }
+.tabbar__item[aria-current="page"] { color: var(--text-primary); border-top-color: var(--action-primary); }
+.tabbar__item[aria-current="page"] svg { color: var(--action-primary); }
+@media (min-width: 1024px) { .tabbar { display: none; } }
+
+/* ---------------------------------------------------------------- menu da conta */
+.account-menu { position: fixed; inset: 0; z-index: var(--z-dialog); }
+.account-menu__scrim {
+  position: absolute; inset: 0; border: 0; padding: 0; cursor: default;
+  background: var(--surface-scrim);
+  animation: mova-fade-in var(--dur-base) var(--ease-out) both;
+}
+.account-menu__panel {
+  position: absolute; inset-inline: 0; bottom: 0;
+  display: flex; flex-direction: column; gap: var(--space-1);
+  max-height: 88dvh; overflow-y: auto;
+  padding: var(--space-3) var(--space-3) calc(var(--space-4) + env(safe-area-inset-bottom));
+  background: var(--surface-elevated); color: var(--text-primary);
+  border-top: 1px solid var(--border-default);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-lg);
+  animation: mova-sheet-up var(--dur-slow) var(--ease-out) both;
+}
+.account-menu__head {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+  padding: 0 0 var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-default); margin-bottom: var(--space-1);
+}
+.account-menu__head h2 { font-size: var(--text-h3); }
+.account-menu nav { display: flex; flex-direction: column; gap: 2px; }
+.account-menu__item {
+  display: flex; align-items: center; gap: var(--space-3); width: 100%;
+  min-height: 48px; padding: var(--space-2) var(--space-3);
+  border: 0; border-radius: var(--radius-sm); background: transparent;
+  color: var(--text-primary); text-decoration: none; text-align: start;
+  font-size: var(--text-label); font-weight: var(--weight-medium);
+}
+.account-menu__item svg { color: var(--text-muted); }
+.account-menu__item:hover { background: var(--action-quiet-hover); }
+.account-menu__item--danger,
+.account-menu__item--danger svg { color: var(--feedback-danger-fg); }
+.account-menu__theme {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-3); margin-block: var(--space-1);
+  border-block: 1px solid var(--border-default);
+}
+.account-menu__label { font-size: var(--text-eyebrow); color: var(--text-muted); font-weight: var(--weight-semibold); }
+@media (min-width: 1024px) {
+  .account-menu__scrim { background: transparent; }
+  .account-menu__panel {
+    inset-inline: auto var(--space-8); top: calc(var(--appbar-h-lg) - var(--space-1)); bottom: auto;
+    width: 320px; max-height: calc(100dvh - var(--appbar-h-lg) - var(--space-6));
+    padding-bottom: var(--space-3);
+    border: 1px solid var(--border-default); border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    animation-name: mova-fade-in;
+  }
+}
+
+/* ---------------------------------------------------------------- shell do locador */
+.owner-header__label {
+  display: none; padding-left: var(--space-3); margin-left: var(--space-1);
+  border-left: 1px solid var(--border-default);
+  color: var(--text-secondary); font-size: var(--text-label); font-weight: var(--weight-semibold);
+}
+@media (min-width: 720px) { .owner-header__label { display: inline; } }
+
+.owner-nav { background: var(--surface-secondary); border-bottom: 1px solid var(--border-default); }
+.owner-nav__inner {
+  display: flex; gap: var(--space-1);
+  width: 100%; max-width: var(--container-max); margin-inline: auto; padding-inline: var(--gutter);
+  overflow-x: auto; scrollbar-width: thin;
+}
+@media (min-width: 1024px) { .owner-nav__inner { padding-inline: var(--space-8); } }
+.owner-nav__link {
+  display: inline-flex; align-items: center; gap: var(--space-2); flex: none;
+  min-height: 48px; padding-inline: var(--space-3);
+  color: var(--text-secondary); text-decoration: none; white-space: nowrap;
+  font-size: var(--text-label); font-weight: var(--weight-semibold);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.owner-nav__link:hover { color: var(--text-primary); }
+.owner-nav__link--active { color: var(--text-primary); border-bottom-color: var(--action-primary); }
+.owner-nav__link--active svg { color: var(--action-primary); }

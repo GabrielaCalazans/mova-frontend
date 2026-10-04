@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { RouteErrorBoundary, RouteView, RouteLoading } from "../components/layout/RouteBoundary";
+import AppShell from "../components/layout/AppShell";
 import { useAuthSession } from "../hooks/useAuthSession";
 import { getUserCargo, resolveAuthRoute } from "../services/authIdentity";
 
@@ -77,7 +78,12 @@ function RoleShell({ children }) {
   const session = useAuthSession();
   return getUserCargo(session?.user) === "LOCADOR"
     ? <RouteErrorBoundary><OwnerAppShell>{children}</OwnerAppShell></RouteErrorBoundary>
-    : children;
+    : <AppShell>{children}</AppShell>;
+}
+
+/** Visitante e locatário compartilham um shell que persiste entre rotas. */
+function AppShellLayout() {
+  return <AppShell><Outlet /></AppShell>;
 }
 
 function Screen({ Page, label, ...props }) {
@@ -103,45 +109,51 @@ function AppRoutes() {
       <FocusOnRouteChange />
       <Suspense fallback={<RouteLoading label="Abrindo MOVA" />}>
         <Routes>
-          <Route path="/" element={<Screen Page={Home} label="a página inicial" />} />
-          <Route path="/home" element={<Screen Page={Home} label="a página inicial" />} />
+          {/* Telas de acesso: marca própria, sem shell. */}
           <Route path="/login" element={<Screen Page={Login} label="o login" />} />
-          <Route path="/viagem/compartilhada/:token" element={<Screen Page={CompartilhamentoViagem} label="a viagem compartilhada" />} />
           <Route path="/cadastro" element={<Screen Page={Cadastro} label="o cadastro" />} />
           <Route path="/cadastro-locatario" element={<Screen Page={Cadastro} label="o cadastro" />} />
           <Route path="/cadastro-locador" element={<Screen Page={CadastroLocador} label="o cadastro do locador" />} />
           <Route path="/recuperar-senha" element={<Screen Page={ForgotPassword} label="a recuperação de senha" />} />
           <Route path="/redefinir-senha" element={<Screen Page={ResetPassword} label="a redefinição de senha" />} />
 
-          <Route path="/painel" element={<OwnerProtectedRoute><Screen Page={OwnerDashboard} label="o painel do locador" /></OwnerProtectedRoute>} />
-          <Route path="/locador" element={<Navigate to="/painel" replace />} />
-          <Route path="/reservas" element={<OwnerProtectedRoute><Screen Page={OwnerReservations} label="as reservas da frota" /></OwnerProtectedRoute>} />
-          <Route path="/reservas/:id" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={ReservaDetalhe} label="o detalhe da reserva" /></ProtectedRoute>} />
-          <Route path="/reserva/:id" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={ReservaDetalhe} label="o detalhe da reserva" /></ProtectedRoute>} />
-          <Route path="/monitoramento" element={<OwnerProtectedRoute><Screen Page={OwnerMonitoring} label="o monitoramento" /></OwnerProtectedRoute>} />
+          {/* Visitante e locatário: AppShell único e persistente. */}
+          <Route element={<AppShellLayout />}>
+            <Route path="/" element={<Screen Page={Home} label="a página inicial" />} />
+            <Route path="/home" element={<Screen Page={Home} label="a página inicial" />} />
+            <Route path="/viagem/compartilhada/:token" element={<Screen Page={CompartilhamentoViagem} label="a viagem compartilhada" />} />
+            <Route path="/reservas/:id" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={ReservaDetalhe} label="o detalhe da reserva" /></ProtectedRoute>} />
+            <Route path="/reserva/:id" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={ReservaDetalhe} label="o detalhe da reserva" /></ProtectedRoute>} />
+            <Route path="/carros" element={<Screen Page={TiposDeCarros} label="a escolha do tipo de carro" />} />
+            <Route path="/carros/:id" element={<Screen Page={VehicleDetails} label="os detalhes do veículo" />} />
+            <Route path="/carros/lista" element={<Screen Page={CarrosScreen} label="a lista de carros" />} />
+            <Route path="/escolha-garagem-retirada" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={EscolhaGaragemRetirada} label="a garagem de retirada" /></ProtectedRoute>} />
+            <Route path="/escolha-garagem-devolucao" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={EscolhaGaragemDevolucao} label="a garagem de devolução" /></ProtectedRoute>} />
+            <Route path="/servicos-opcionais" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={ServicosOpcionais} label="os serviços opcionais" /></ProtectedRoute>} />
+            <Route path="/checkout-reserva" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CheckoutReserva} label="o checkout da reserva" /></ProtectedRoute>} />
+            <Route path="/condutores-adicionais" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CondutoresAdicionais} label="os condutores adicionais" /></ProtectedRoute>} />
+            <Route path="/pagamento" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={Pagamento} label="o pagamento" /></ProtectedRoute>} />
+            <Route path="/desbloqueio" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={DesbloqueioDeCarro} label="o desbloqueio" /></ProtectedRoute>} />
+            <Route path="/reserva/:id/localizacao" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={RastreamentoReserva} label="o acompanhamento da reserva" /></ProtectedRoute>} />
+            <Route path="/devolucao" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={DevolucaoReserva} label="a devolução" /></ProtectedRoute>} />
+            <Route path="/cancelamento" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CancelamentoReserva} label="o cancelamento" /></ProtectedRoute>} />
+            <Route path="/avaliacao" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={AvaliacaoReserva} label="a avaliação" /></ProtectedRoute>} />
+            <Route path="/historico" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={Historico} label="o histórico" /></ProtectedRoute>} />
+            <Route path="/pendencias-financeiras" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={PendenciasFinanceiras} label="as pendências financeiras" /></ProtectedRoute>} />
+            <Route path="/interesses" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={InteressesDisponibilidade} label="os avisos de disponibilidade" /></ProtectedRoute>} />
+            <Route path="/carros/favoritos" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CarrosFavoritados} label="os favoritos" /></ProtectedRoute>} />
+            <Route path="*" element={<Screen Page={NotFound} label="a página" />} />
+          </Route>
+
+          {/* Conta, suporte e configurações: shell conforme o cargo. */}
           <Route path="/conta" element={<ProtectedRoute><RoleShell><Screen Page={Conta} label="a conta" /></RoleShell></ProtectedRoute>} />
-          <Route path="/carros" element={<Screen Page={TiposDeCarros} label="a escolha do tipo de carro" />} />
-          <Route path="/tipos-carros" element={<Navigate to="/carros" replace />} />
-          <Route path="/carros/:id" element={<Screen Page={VehicleDetails} label="os detalhes do veículo" />} />
-          <Route path="/carros/lista" element={<Screen Page={CarrosScreen} label="a lista de carros" />} />
+          <Route path="/suporte" element={<ProtectedRoute><RoleShell><Screen Page={Suporte} label="o suporte" /></RoleShell></ProtectedRoute>} />
+          <Route path="/configuracoes" element={<ProtectedRoute><RoleShell><Screen Page={Configuracoes} label="as configurações" /></RoleShell></ProtectedRoute>} />
 
-          <Route path="/escolha-garagem-retirada" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={EscolhaGaragemRetirada} label="a garagem de retirada" /></ProtectedRoute>} />
-          <Route path="/escolha-garagem-devolucao" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={EscolhaGaragemDevolucao} label="a garagem de devolução" /></ProtectedRoute>} />
-          <Route path="/servicos-opcionais" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={ServicosOpcionais} label="os serviços opcionais" /></ProtectedRoute>} />
-          <Route path="/checkout-reserva" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CheckoutReserva} label="o checkout da reserva" /></ProtectedRoute>} />
-          <Route path="/condutores-adicionais" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CondutoresAdicionais} label="os condutores adicionais" /></ProtectedRoute>} />
-          <Route path="/pagamento" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={Pagamento} label="o pagamento" /></ProtectedRoute>} />
-          <Route path="/desbloqueio" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={DesbloqueioDeCarro} label="o desbloqueio" /></ProtectedRoute>} />
-          <Route path="/reserva/:id/localizacao" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={RastreamentoReserva} label="o acompanhamento da reserva" /></ProtectedRoute>} />
-          <Route path="/devolucao" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={DevolucaoReserva} label="a devolução" /></ProtectedRoute>} />
-          <Route path="/cancelamento" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CancelamentoReserva} label="o cancelamento" /></ProtectedRoute>} />
-          <Route path="/avaliacao" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={AvaliacaoReserva} label="a avaliação" /></ProtectedRoute>} />
-          <Route path="/historico" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={Historico} label="o histórico" /></ProtectedRoute>} />
-          <Route path="/pendencias-financeiras" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={PendenciasFinanceiras} label="as pendências financeiras" /></ProtectedRoute>} />
-          <Route path="/suporte" element={<ProtectedRoute><Screen Page={Suporte} label="o suporte" /></ProtectedRoute>} />
-          <Route path="/configuracoes" element={<ProtectedRoute><Screen Page={Configuracoes} label="as configurações" /></ProtectedRoute>} />
-          <Route path="/interesses" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={InteressesDisponibilidade} label="os avisos de disponibilidade" /></ProtectedRoute>} />
-
+          {/* Locador: OwnerAppShell aplicado pelo ProtectedRoute. */}
+          <Route path="/painel" element={<OwnerProtectedRoute><Screen Page={OwnerDashboard} label="o painel do locador" /></OwnerProtectedRoute>} />
+          <Route path="/reservas" element={<OwnerProtectedRoute><Screen Page={OwnerReservations} label="as reservas da frota" /></OwnerProtectedRoute>} />
+          <Route path="/monitoramento" element={<OwnerProtectedRoute><Screen Page={OwnerMonitoring} label="o monitoramento" /></OwnerProtectedRoute>} />
           <Route path="/relatorios" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={RelatoriosFiltro} label="os relatórios" /></ProtectedRoute>} />
           <Route path="/relatorios/veiculos" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={RelatoriosVeiculos} label="o relatório de veículos" /></ProtectedRoute>} />
           <Route path="/relatorios/avaliacoes-filtro" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={RelatoriosAvaliacoesFiltro} label="o filtro de avaliações" /></ProtectedRoute>} />
@@ -152,8 +164,10 @@ function AppRoutes() {
           <Route path="/cadastro-garagens/:id/capacidade" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CapacidadeGaragem} label="a capacidade da garagem" /></ProtectedRoute>} />
           <Route path="/cadastro-garagens/:id" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CadastroGaragemForm} label="a garagem" /></ProtectedRoute>} />
           <Route path="/carros/disponiveis" element={<ProtectedRoute requiredCargo="LOCADOR"><Screen Page={CarrosDisponiveis} label="os carros disponíveis" /></ProtectedRoute>} />
-          <Route path="/carros/favoritos" element={<ProtectedRoute requiredCargo="LOCATARIO"><Screen Page={CarrosFavoritados} label="os favoritos" /></ProtectedRoute>} />
 
+          {/* Redirecionamentos legados. */}
+          <Route path="/locador" element={<Navigate to="/painel" replace />} />
+          <Route path="/tipos-carros" element={<Navigate to="/carros" replace />} />
           <Route path="/carros-screens" element={<Navigate to="/carros" replace />} />
           <Route path="/escolha-garagem" element={<Navigate to="/escolha-garagem-retirada" replace />} />
           <Route path="/agendamento" element={<Navigate to="/escolha-garagem-retirada" replace />} />
@@ -161,7 +175,6 @@ function AppRoutes() {
           <Route path="/checkout" element={<Navigate to="/checkout-reserva" replace />} />
           <Route path="/modo-de-pagamento" element={<Navigate to="/pagamento" replace />} />
           <Route path="/desbloqueio-de-carro" element={<Navigate to="/desbloqueio" replace />} />
-          <Route path="*" element={<Screen Page={NotFound} label="a página" />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

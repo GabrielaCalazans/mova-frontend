@@ -1,7 +1,16 @@
-﻿import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import BottomNav from "../components/BottomNav";
+import BrandLogo from "../components/brand/BrandLogo";
+import { useShell } from "../components/layout/shell-context";
 import "../styles/auth.css";
 
+/**
+ * Moldura das telas de formulário. Fora do AppShell (login, cadastro,
+ * recuperação) mostra a marca oficial no topo; dentro do shell vira só o
+ * conteúdo da página, sem duplicar cabeçalho nem menu inferior.
+ * `logoSrc`/`wordmark`/`tagline` legados apenas sinalizam "mostrar a marca":
+ * o asset oficial (com o slogan) substitui a imagem antiga.
+ */
 function AuthLayout({
   title,
   children,
@@ -9,35 +18,29 @@ function AuthLayout({
   footerLinkTo,
   footerLinkLabel,
   logoSrc,
-  logoAlt = "Logo",
   topBarSlot,
-  wordmark,
-  tagline,
-  compactLogo = false,
   align = "center",
   hideTitle = false,
   hasBottomNav = false,
 }) {
+  const shell = useShell();
+  const showBrand = Boolean(logoSrc) && !shell;
+  const slot = shell ? null : topBarSlot;
+
   return (
-    <main className={`auth-page${hasBottomNav ? " auth-page--with-bottom-nav" : ""}`}>
-      {(topBarSlot || logoSrc) && (
-        <div className={`auth-header${align === "left" ? " auth-header--left" : ""}`}>
-          {topBarSlot}
-          {logoSrc && (
-            <div className="auth-brand">
-              <img
-                src={logoSrc}
-                className={`auth-logo${compactLogo ? " auth-logo--compact" : ""}`}
-                alt={logoAlt}
-              />
-              {wordmark && <p className="auth-wordmark">{wordmark}</p>}
-              {tagline && <p className="auth-tagline">{tagline}</p>}
-            </div>
+    <main className={`auth-page${shell ? " auth-page--in-shell" : ""}${align === "left" ? " auth-page--left" : ""}`}>
+      {(slot || showBrand) && (
+        <div className="auth-header">
+          {slot}
+          {showBrand && (
+            <Link to="/" className="auth-brand" aria-label="MOVA, página inicial">
+              <BrandLogo variant="loading" decorative />
+            </Link>
           )}
         </div>
       )}
 
-      <section className={`auth-card${align === "left" ? " auth-card--left" : ""}`}>
+      <section className="auth-card">
         <h1 className={hideTitle ? "auth-title--sr-only" : undefined}>{title}</h1>
 
         {children}
