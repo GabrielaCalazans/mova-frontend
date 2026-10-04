@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { rotulo, STATUS_VEICULO_LABELS } from "../services/apiEnums";
 import { formatCategoria } from "../utils/vehicleDisplay";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -24,6 +24,8 @@ export default function CadastroCarroForm() {
 
   const veiculoOriginal = location.state?.veiculo;
 
+  // Status confirmado pelo backend; volta para ele quando a mudança é recusada.
+  const statusSalvo = useRef(veiculoOriginal?.status || "DISPONIVEL");
   const [values, setValues] = useState({
     marca: veiculoOriginal?.marca || "",
     modelo: veiculoOriginal?.modelo || "",
@@ -70,6 +72,7 @@ export default function CadastroCarroForm() {
         if (!veiculo) {
           throw new Error(t("owner.carForm.notFound"));
         }
+        statusSalvo.current = veiculo.status || "DISPONIVEL";
         setValues({
           marca: veiculo.marca || "",
           modelo: veiculo.modelo || "",
@@ -252,10 +255,17 @@ export default function CadastroCarroForm() {
       }
       navigate("/cadastro-carros");
     } catch (e) {
+      // Task 10 (BUG-14): reserva paga futura impede manutenção/inativação.
+      // O backend não mudou nada; a tela volta ao status salvo.
+      if (e.code === "VEICULO_COM_RESERVA_FUTURA_CONFIRMADA") {
+        handleChange("status", statusSalvo.current);
+      }
       setErro(
         e.code === "VEHICLE_HAS_ACTIVE_RESERVATION"
           ? t("owner.carForm.activeReservation")
-          : e.message || t("owner.carForm.saveError"),
+          : e.code === "VEICULO_COM_RESERVA_FUTURA_CONFIRMADA"
+            ? t("owner.carForm.futureBookingBlocksStatus")
+            : e.message || t("owner.carForm.saveError"),
       );
     } finally {
       setEnviandoImagens(false);

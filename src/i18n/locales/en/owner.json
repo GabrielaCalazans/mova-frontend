@@ -181,7 +181,8 @@
     "previewsLabel": "Local previews",
     "previewAlt": "Local preview of {name}",
     "uploading": "Uploading images{progress}",
-    "uploadingDots": "..."
+    "uploadingDots": "...",
+    "futureBookingBlocksStatus": "This vehicle has confirmed upcoming or ongoing bookings. Resolve those bookings before putting it under maintenance or deactivating it. The status was kept."
   },
   "garages": {
     "docTitle": "MOVA - Garage registry",

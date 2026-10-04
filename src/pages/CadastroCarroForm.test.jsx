@@ -128,6 +128,21 @@ describe("CadastroCarroForm", () => {
     expect(navigateMock).not.toHaveBeenCalled();
   });
 
+  // Task 10 (BUG-14): reserva paga futura impede manutenção/inativação.
+  it("bloqueio por reserva futura confirmada: mensagem clara e status volta ao salvo", async () => {
+    updateVeiculo.mockRejectedValueOnce(Object.assign(new Error("erro técnico"), {
+      code: "VEICULO_COM_RESERVA_FUTURA_CONFIRMADA",
+      status: 409,
+    }));
+    render(<CadastroCarroForm />);
+    fireEvent.change(screen.getByLabelText("Status"), { target: { value: "MANUTENCAO" } });
+    fireEvent.click(screen.getByRole("button", { name: "Editar" }));
+
+    expect(await screen.findByText(/reservas confirmadas.*resolva/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("Status")).toHaveValue("INATIVO");
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
+
   it("envia campos físicos e de catálogo no contrato coordenado", async () => {
     updateVeiculo.mockResolvedValue(veiculo);
 

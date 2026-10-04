@@ -181,7 +181,8 @@
     "previewsLabel": "Vistas previas locales",
     "previewAlt": "Vista previa local de {name}",
     "uploading": "Subiendo imágenes{progress}",
-    "uploadingDots": "..."
+    "uploadingDots": "...",
+    "futureBookingBlocksStatus": "Este vehículo tiene reservas confirmadas futuras o en curso. Resuelva esas reservas antes de ponerlo en mantenimiento o desactivarlo. El estado se mantuvo."
   },
   "garages": {
     "docTitle": "MOVA - Registro de garajes",
