@@ -6,7 +6,11 @@ export default defineConfig({
   forbidOnly: Boolean(globalThis.process?.env?.CI),
   retries: globalThis.process?.env?.CI ? 2 : 0,
   reporter: globalThis.process?.env?.CI
-    ? [["list"], ["html", { open: "never", outputFolder: "playwright-report" }]]
+    ? [
+        ["list"],
+        ["html", { open: "never", outputFolder: "playwright-report" }],
+        ["allure-playwright", { resultsDir: "allure-results" }],
+      ]
     : "list",
   use: {
     baseURL: "http://127.0.0.1:4173",
