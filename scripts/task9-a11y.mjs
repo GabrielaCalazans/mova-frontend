@@ -18,17 +18,21 @@ const SENHA = process.env.MOVA_DEMO_PASSWORD ?? "Mova@123";
 const SAIDA = process.argv[2] ?? "task9-a11y.json";
 const LARGURAS = (process.env.MOVA_WIDTHS ?? "320,375,402,768,1024,1440").split(",").map(Number);
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
+// Task 9.1 (RNF08): MOVA_LOCALE=pt-BR|en|es roda a mesma verificação no idioma.
+const LOCALE = process.env.MOVA_LOCALE ?? "pt-BR";
+const HTML_LANG = { "pt-BR": "pt-BR", en: "en", es: "es" }[LOCALE];
 
 async function login(page, email) {
   await page.goto(`${BASE}/login`);
-  await page.getByLabel("E-mail").fill(email);
-  await page.getByLabel("Senha", { exact: true }).fill(SENHA);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.locator("input[type=email]").fill(email);
+  await page.locator("input[type=password]").first().fill(SENHA);
+  await page.locator("form button[type=submit]").click();
   await page.waitForURL((url) => !url.pathname.startsWith("/login"));
 }
 
-async function idPorApi(page, email, caminho, filtro) {
-  const token = (await (await page.request.post(`${API}/conta/auth/login`, { data: { email, senha: SENHA } })).json()).result.token;
+// Reaproveita o token da sessão já aberta (o login tem rate limit por IP).
+async function idPorApi(page, caminho, filtro) {
+  const token = await page.evaluate(() => JSON.parse(window.localStorage.getItem("mova_auth_session") || "{}").token);
   const lista = (await (await page.request.get(`${API}${caminho}`, { headers: { Authorization: `Bearer ${token}` } })).json()).result;
   return (Array.isArray(lista) ? lista : lista.data).find(filtro)?.id;
 }
@@ -40,7 +44,7 @@ const PERFIS = [
     email: "ana.demo@mova.local",
     telas: async (page) => {
       const veiculo = (await (await page.request.get(`${API}/veiculo?pcd=true`)).json()).result[0].id;
-      const reserva = await idPorApi(page, "ana.demo@mova.local", "/reserva?limit=50", (r) => r.status === "CONFIRMADA");
+      const reserva = await idPorApi(page, "/reserva?limit=50", (r) => r.status === "CONFIRMADA");
       return [`/carros/${veiculo}`, "/historico", `/reservas/${reserva}`, "/carros/favoritos", "/interesses", "/conta", "/configuracoes"];
     },
   },
@@ -48,7 +52,7 @@ const PERFIS = [
     nome: "locador",
     email: "locadora.demo@mova.local",
     telas: async (page) => {
-      const veiculo = await idPorApi(page, "locadora.demo@mova.local", "/veiculo/meus", () => true);
+      const veiculo = await idPorApi(page, "/veiculo/meus", () => true);
       return ["/painel", "/cadastro-carros", `/cadastro-carros/${veiculo}`, "/cadastro-garagens", "/reservas", "/monitoramento", "/relatorios/veiculos", "/relatorios/avaliacoes"];
     },
   },
@@ -77,16 +81,19 @@ async function sequenciaTab(page, passos = 30) {
 }
 
 const browser = await chromium.launch();
-const resultado = { base: BASE, geradoEm: new Date().toISOString(), telas: [], resumo: {} };
+const resultado = { base: BASE, locale: LOCALE, geradoEm: new Date().toISOString(), telas: [], resumo: {} };
 
 for (const perfil of PERFIS) {
+  // Um contexto (um login) por perfil; o tema muda por emulação de mídia.
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  await context.addInitScript((locale) => window.localStorage.setItem("mova_locale", locale), LOCALE);
+  const page = await context.newPage();
+  if (perfil.email) await login(page, perfil.email);
+  const telas = await perfil.telas(page);
   for (const tema of ["light", "dark"]) {
-    const context = await browser.newContext({ colorScheme: tema, viewport: { width: 1280, height: 900 } });
-    const page = await context.newPage();
-    if (perfil.email) await login(page, perfil.email);
-    const telas = await perfil.telas(page);
+    await page.emulateMedia({ colorScheme: tema });
     for (const tela of telas) {
-      const registro = { perfil: perfil.nome, tema, tela, axe: [], overflow: [], teclado: null };
+      const registro = { perfil: perfil.nome, tema, tela, axe: [], overflow: [], teclado: null, langErrado: [] };
       for (const largura of LARGURAS) {
         await page.setViewportSize({ width: largura, height: 900 });
         await page.goto(`${BASE}${tela}`);
@@ -94,6 +101,8 @@ for (const perfil of PERFIS) {
         const axe = await new AxeBuilder({ page }).withTags(TAGS).analyze();
         for (const v of axe.violations) registro.axe.push({ largura, id: v.id, impacto: v.impact, alvos: v.nodes.map((n) => n.target.join(" ")).slice(0, 3) });
         const excesso = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+        const lang = await page.evaluate(() => document.documentElement.lang);
+        if (lang !== HTML_LANG) registro.langErrado.push({ largura, lang });
         if (excesso > 0) registro.overflow.push({ largura, px: excesso });
       }
       if (tema === "light") {
@@ -111,8 +120,8 @@ for (const perfil of PERFIS) {
       resultado.telas.push(registro);
       console.log(`${perfil.nome} ${tema} ${tela}: axe ${registro.axe.length}, overflow ${registro.overflow.length}${registro.teclado ? `, tab ${registro.teclado.paradas} (sem foco visível ${registro.teclado.semFocoVisivel.length})` : ""}`);
     }
-    await context.close();
   }
+  await context.close();
 }
 
 // prefers-reduced-motion: nenhuma animação/transição longa deve continuar ativa.
@@ -142,6 +151,7 @@ resultado.resumo = {
   focoInvisivel: t.reduce((n, r) => n + (r.teclado?.semFocoVisivel.length ?? 0), 0),
   zoom200Overflow: t.filter((r) => r.zoom200Overflow > 0).length,
   reducedMotion: resultado.reducedMotion.elementosComMovimento.length,
+  htmlLangErrado: t.reduce((n, r) => n + r.langErrado.length, 0),
 };
 await writeFile(SAIDA, JSON.stringify(resultado, null, 2));
 console.log("RESUMO", JSON.stringify(resultado.resumo));

@@ -1259,6 +1259,26 @@ test("Home respeita tema escuro persistido", async ({ page }) => {
   await expect.poll(() => page.locator("html").getAttribute("data-theme")).toBe("dark");
 });
 
+test("RNF08: seletor de idioma troca pt-BR → en → es, ajusta html lang e persiste", async ({ page }) => {
+  await mockCatalog(page);
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");
+  await expect(page.getByRole("heading", { level: 1, name: "Veículos disponíveis agora" })).toBeVisible();
+
+  const idioma = page.getByRole("combobox", { name: "Idioma" });
+  await idioma.selectOption("en");
+  await expect(page.getByRole("heading", { level: 1, name: "Vehicles available now" })).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.getByText(/R\$\s?180\.00/).first()).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByRole("heading", { level: 1, name: "Vehicles available now" })).toBeVisible();
+
+  await page.getByRole("combobox", { name: "Language" }).selectOption("es");
+  await expect(page.getByRole("heading", { level: 1, name: "Vehículos disponibles ahora" })).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute("lang", "es");
+});
+
 test("carrossel de categorias entra depois do terceiro veículo", async ({ page }) => {
   const vehicles = [1, 2, 3, 4].map((index) => ({ ...vehicle, id: `vehicle-public-${index}`, modelo: `Argo ${index}` }));
   await mockCatalog(page, [], vehicles);
