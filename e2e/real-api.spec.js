@@ -170,11 +170,12 @@ test.describe("integração browser com API local real", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { name: /veículos disponíveis agora/i })).toBeVisible();
     await expect(page.locator(".vehicle-card").first()).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Veículos disponíveis", exact: true })).toBeVisible();
+    // Task 8: a contagem do catálogo fica na barra de resultado (role=status).
+    await expect(page.getByRole("status").filter({ hasText: /veículos? disponíve/i })).toBeVisible();
     expect(apiResponses.some((response) => response.status() === 200)).toBe(true);
 
     await page.goto(`/carros/${firstVehicle.id}`);
-    await expect(page.getByText("Ficha técnica", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Informações essenciais" })).toBeVisible();
     await expect(page.getByRole("button", { name: /reservar este carro/i })).toBeVisible();
   });
 
@@ -188,7 +189,8 @@ test.describe("integração browser com API local real", () => {
 
     await expect(page).toHaveURL(/\/painel$/);
     await expect(page.getByRole("heading", { name: /painel do locador/i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /veículos/i })).toBeVisible();
+    // Task 8: métricas numa faixa única (dl); "Veículos" é o termo da métrica.
+    await expect(page.getByText("Veículos", { exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: /alertas da frota/i })).toBeVisible();
   });
 
@@ -678,10 +680,10 @@ test.describe("integração browser com API local real", () => {
 
       await page.goto("/pagamento");
       await expect(page.getByRole("heading", { name: "Pagamento" })).toBeVisible();
-      await page.getByLabel("Número do Cartão*").fill("4111111111110000");
-      await page.getByLabel("Nome do Titular*").fill("TESTE SANDBOX");
+      await page.getByLabel(/número do cartão/i).fill("4111111111110000");
+      await page.getByLabel(/nome do titular/i).fill("TESTE SANDBOX");
       await page.getByLabel("Validade (MM/AA)").fill("12/30");
-      await page.getByLabel("CVV*").fill("123");
+      await page.getByLabel("CVV").fill("123");
 
       const paymentResponsePromise = page.waitForResponse(
         (response) =>
@@ -865,7 +867,7 @@ test.describe("integração browser com API local real", () => {
       const unlockResponse = await unlockResponsePromise;
       expect(unlockResponse.status()).toBe(200);
       await expect(page.getByTestId("titulo-desbloqueado")).toBeVisible();
-      await expect(page.getByTestId("status-reserva")).toHaveText(/EM_ANDAMENTO/);
+      await expect(page.getByTestId("status-reserva")).toHaveText(/Em andamento/);
     } finally {
       const currentResponse = await page.request.get(`${apiBaseUrl}/reserva/${reservationId}`, { headers });
       if (currentResponse.ok()) {

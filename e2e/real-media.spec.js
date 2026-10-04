@@ -106,7 +106,7 @@ test.describe("mídia real no browser com API e MinIO AIStor", () => {
       await page.getByRole("button", { name: "Editar", exact: true }).click();
       await page.waitForURL("**/cadastro-carros");
 
-      const cardImage = page.locator(".frota-card__image").first();
+      const cardImage = page.locator(".owner-row__media img").first() // Task 8: foto da frota via VehicleMedia;
       await expect(cardImage).toHaveAttribute("src", /localhost:9000\/mova-media-public\/vehicles\//);
       expect(apiResponses.some((response) => response.status() === 200)).toBe(true);
 
