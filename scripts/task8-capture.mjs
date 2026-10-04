@@ -181,6 +181,15 @@ for (const [id, rota, sessao, secoes = []] of TELAS) {
         n += 1;
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
         if (overflow > 1) console.warn(`OVERFLOW ${id} ${vp.id} ${tema}: +${overflow}px`);
+        // MOVA_AXE=1: auditoria axe WCAG 2.x A/AA; lista violações critical/serious.
+        if (process.env.MOVA_AXE) {
+          const { default: AxeBuilder } = await import("@axe-core/playwright");
+          const scan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
+          for (const v of scan.violations) {
+            const grave = ["critical", "serious"].includes(v.impact);
+            console.log(`AXE ${grave ? "GRAVE" : "menor"} ${id} ${vp.id} ${tema}: ${v.id} (${v.impact}) x${v.nodes.length} — ${v.nodes[0]?.target?.join(" ")}`);
+          }
+        }
         for (const [i, sel] of secoes.entries()) {
           const el = page.locator(sel).first();
           if (!(await el.count())) continue;
