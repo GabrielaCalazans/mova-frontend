@@ -9,3 +9,4 @@ dist/
 coverage/
 .worktrees/
 test-results/
+playwright-report/
