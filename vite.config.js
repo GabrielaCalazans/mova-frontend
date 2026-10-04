@@ -22,6 +22,8 @@ export default defineConfig(({ mode }) => {
       fileParallelism: false,
       maxWorkers: 1,
       setupFiles: './src/test/setupTests.js',
+      // Nunca o backend local: host reservado que não resolve (ver setupTests).
+      env: { VITE_API_BASE_URL: 'http://mova-api.test.invalid/api' },
       exclude: ['**/node_modules/**', '**/dist/**', '**/.worktrees/**', '**/coverage/**', '**/test-results/**', '**/e2e/**'],
     },
   }

@@ -1,6 +1,30 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
+// Suíte de contrato: NUNCA fala com a API real (Task 8.1). Esta rota é
+// registrada antes das rotas de cada teste — o Playwright dá prioridade à
+// rota registrada por último —, então só captura o que o teste não mockou.
+// Responde 501 com código explícito e anota a URL no relatório.
+test.beforeEach(async ({ page }, testInfo) => {
+  await page.route("**/api/**", async (route) => {
+    const request = route.request();
+    // Chamada ambiente do AppShell (reserva ativa do locatário): sem reservas,
+    // no formato paginado real de GET /reserva/locatario/:id.
+    // Idem para listas paginadas consultadas em segundo plano pelo detalhe
+    // do veículo (serviços, favoritos, avisos) e pelo catálogo.
+    if (request.method() === "GET" && /\/api\/(reserva\/locatario\/[^/?]+|servico|favorito|interesse|veiculo)(\?|$)/.test(request.url())) {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ result: [], pagination: { total: 0, page: 1, limit: 100, totalPages: 0 } }) });
+      return;
+    }
+    testInfo.annotations.push({ type: "unmocked-api", description: `${request.method()} ${new URL(request.url()).pathname}` });
+    await route.fulfill({
+      status: 501,
+      contentType: "application/json",
+      body: JSON.stringify({ success: false, code: "E2E_UNMOCKED", message: "Endpoint não mockado na suíte de contrato." }),
+    });
+  });
+});
+
 test("legacy owner routes keep owner shell", async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem("mova_auth_session", JSON.stringify({
@@ -54,14 +78,14 @@ test("reservas do locador envia filtros UTC/status/veículo ao contrato", async 
 
   await page.setViewportSize({ width: 320, height: 900 });
   await page.goto("/reservas");
-  await expect(page.getByRole("row", { name: /Fiat Argo.*CONFIRMADA/ })).toBeVisible();
+  await expect(page.getByRole("row", { name: /Fiat Argo.*Confirmada/ })).toBeVisible();
   const accessibilityScan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(accessibilityScan.violations.filter((violation) => ["critical", "serious"].includes(violation.impact))).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   await page.screenshot({ path: "../auditoria/fase-7-7/capturas/owner-reservations-light-320.png", fullPage: true });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.reload();
-  await expect(page.getByRole("row", { name: /Fiat Argo.*CONFIRMADA/ })).toBeVisible();
+  await expect(page.getByRole("row", { name: /Fiat Argo.*Confirmada/ })).toBeVisible();
   await page.screenshot({ path: "../auditoria/fase-7-7/capturas/owner-reservations-light-1440.png", fullPage: true });
   const requestCountBeforeFilter = requests.length;
   await page.getByLabel("Data inicial").fill("2026-01-01");
@@ -169,6 +193,10 @@ test("payment refusal never opens success state", async ({ page }) => {
     });
   });
   await page.route(`**/api/reserva/${reservationId}/pagamento`, async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ result: pagamentoConsulta({ id: reservationId, status: "AGUARDANDO_PAGAMENTO", statusPagamento: "AGUARDANDO_PAGAMENTO", valorTotal: 100 }) }) });
+      return;
+    }
     await route.fulfill({
       status: 202,
       contentType: "application/json",
@@ -209,6 +237,9 @@ test("detalhe da reserva carrega GET real e deriva ação do status", async ({ p
       } }),
     });
   });
+  await page.route(`**/api/reserva/${reservationId}/pagamento`, async (route) => {
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ result: pagamentoConsulta({ id: reservationId, status: "CONFIRMADA", statusPagamento: "SUCESSO", valorTotal: 549.9 }) }) });
+  });
 
   await page.goto(`/reservas/${reservationId}`);
   await expect(page.getByRole("heading", { name: "Detalhe da reserva" })).toBeVisible();
@@ -228,6 +259,11 @@ test("payment already processing stays pending after reload", async ({ page }) =
       contentType: "application/json",
       body: JSON.stringify({ result: { id: reservationId, status: "AGUARDANDO_PAGAMENTO", statusPagamento: "PROCESSANDO", valorTotal: 100 } }),
     });
+  });
+  await page.route(`**/api/reserva/${reservationId}/pagamento`, async (route) => {
+    // Só a consulta é permitida aqui: um POST significaria pagar de novo.
+    expect(route.request().method()).toBe("GET");
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ result: pagamentoConsulta({ id: reservationId, status: "AGUARDANDO_PAGAMENTO", statusPagamento: "PROCESSANDO", valorTotal: 100 }) }) });
   });
 
   await page.goto("/pagamento");
@@ -758,6 +794,31 @@ test("sessão revogada limpa credencial e expõe erro contextual", async ({ page
   await expect(page.getByRole("alert").first()).toContainText("Sessão revogada");
 });
 
+// GET /reserva/:id/pagamento — mesmo formato de PagamentoEstornoService.consultar
+// (mova-backend/src/services/pagamento-estorno.ts). O mesmo path com POST
+// inicia o pagamento; por isso os handlers abaixo distinguem o método.
+function pagamentoConsulta(reserva, extra = {}) {
+  const pago = reserva.statusPagamento === "SUCESSO";
+  return {
+    idReserva: reserva.id,
+    statusReserva: reserva.status,
+    statusPagamento: reserva.statusPagamento,
+    metodoPagamento: "CARTAO_CREDITO",
+    valorReserva: reserva.valorTotal,
+    valorPago: pago ? reserva.valorTotal : 0,
+    multaCancelamento: 0,
+    valorElegivelEstorno: pago ? reserva.valorTotal : 0,
+    statusEstorno: "NAO_SOLICITADO",
+    estornoSolicitadoEm: null,
+    estornoConcluidoEm: null,
+    historico: [],
+    simulado: true,
+    aviso: "Pagamento e estorno simulados — nenhum dinheiro real movimentado",
+    atualizadoEm: "2030-09-30T12:00:00.000Z",
+    ...extra,
+  };
+}
+
 function seedRenterJourney(page, reservationId, dates = {}) {
   return page.addInitScript(({ id, pickup, dropoff }) => {
     window.localStorage.setItem("mova_auth_session", JSON.stringify({
@@ -790,8 +851,15 @@ test("pagamento sandbox só confirma quando API retorna SUCESSO", async ({ page 
   await page.route(`**/api/reserva/${reservationId}`, async (route) => {
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ result: reservation }) });
   });
+  let pago = false;
   await page.route(`**/api/reserva/${reservationId}/pagamento`, async (route) => {
+    if (route.request().method() === "GET") {
+      const atual = pago ? { ...reservation, status: "CONFIRMADA", statusPagamento: "SUCESSO" } : reservation;
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ result: pagamentoConsulta(atual) }) });
+      return;
+    }
     paymentRequests.push(JSON.parse(route.request().postData() || "{}"));
+    pago = true;
     await route.fulfill({
       status: 202,
       contentType: "application/json",
@@ -836,6 +904,11 @@ test("cancelamento usa POST e mostra multa retornada pelo servidor", async ({ pa
     }
     const result = reservation;
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ result }) });
+  });
+  await page.route(`**/api/reserva/${reservationId}/pagamento`, async (route) => {
+    const atual = cancelCompleted ? { ...reservation, status: "CANCELADA" } : reservation;
+    const extra = cancelCompleted ? { multaCancelamento: 80, valorElegivelEstorno: 469.9, statusEstorno: "SOLICITADO" } : {};
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ result: pagamentoConsulta(atual, extra) }) });
   });
   await page.route(`**/api/reserva/${reservationId}/cancelar`, async (route) => {
     cancelMethods.push(route.request().method());
