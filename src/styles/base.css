@@ -235,6 +235,21 @@ input, textarea { caret-color: var(--action-primary); }
 .alert--warning { background: var(--feedback-warning-bg); color: var(--feedback-warning-fg); }
 .alert--danger { background: var(--feedback-danger-bg); color: var(--feedback-danger-fg); }
 .alert--info { background: var(--feedback-info-bg); color: var(--feedback-info-fg); }
+/* RNF13: além da cor, cada variante tem um símbolo fixo (✓ sucesso, ✕ erro,
+   ! alerta, i informação). Só quando a mensagem não traz ícone próprio; o
+   texto alternativo vazio ("/ \"\"") evita que leitores de tela o anunciem. */
+.alert:not(:has(> svg))::before,
+.auth-feedback::before {
+  flex: none; display: inline-grid; place-items: center;
+  inline-size: 1.25em; block-size: 1.25em; margin-inline-end: var(--space-2);
+  border: 1.5px solid currentColor; border-radius: 50%;
+  font-size: 0.85em; font-weight: var(--weight-semibold); line-height: 1;
+}
+.alert--success:not(:has(> svg))::before, .auth-feedback--success::before { content: "✓" / ""; }
+.alert--danger:not(:has(> svg))::before, .auth-feedback--error::before { content: "✕" / ""; }
+.alert--warning:not(:has(> svg))::before, .auth-feedback--warning::before { content: "!" / ""; }
+.alert--info:not(:has(> svg))::before, .auth-feedback--info::before { content: "i" / ""; }
+.alert:not(:has(> svg))::before { margin-inline-end: 0; margin-top: 2px; }
 
 /* ---------------------------------------------------------------- estados */
 .state-block {
@@ -246,6 +261,7 @@ input, textarea { caret-color: var(--action-primary); }
 .state-block__text { color: var(--text-secondary); max-width: 52ch; font-size: var(--text-meta); }
 .state-block--error { border-color: var(--feedback-danger-fg); }
 .state-block--error .state-block__title { color: var(--feedback-danger-fg); }
+.state-block--error .state-block__title::before { content: "✕" / ""; margin-inline-end: var(--space-2); }
 
 .loading-state { display: flex; align-items: center; gap: var(--space-3); color: var(--text-secondary); padding: var(--space-4) 0; font-size: var(--text-meta); }
 .spinner {
