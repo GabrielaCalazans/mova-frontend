@@ -18,12 +18,13 @@ jobs:
   test:
     name: Lint, unit, build and mocked E2E
     runs-on: ubuntu-latest
+    environment: test
 
     env:
       CI: "true"
-      # Host .invalid: a suíte E2E mockada intercepta toda chamada /api/** e o
-      # build nunca alcança uma API real (nem local, nem publicada).
-      VITE_API_BASE_URL: http://mova-api.ci.invalid/api
+      # Vem do environment "test". Sem o secret, cai no host .invalid: a suíte
+      # E2E mockada intercepta toda chamada /api/** de qualquer forma.
+      VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || 'http://mova-api.ci.invalid/api' }}
 
     steps:
       - name: Checkout
