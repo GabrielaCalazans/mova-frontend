@@ -107,11 +107,11 @@ function router(url, method) {
 
 const JOURNEY = {
   veiculo: { id: "v-argo", idModeloVeiculo: "model-v-argo", idLocador: "owner-1", marca: "Fiat", modelo: "Argo", categoria: "PCD", capacidade: 5, cambio: "Automatico", ano: 2025, adaptado: true, eletrico: false, garagemId: "garage-1", garagemName: "Garagem Centro", status: "DISPONIVEL", valorDiaria: 189.9 },
-  retirada: { garageId: "garage-1", garageName: "Garagem Centro", garageAddress: garagemCentro.endereco, garageInfo: "8 de 20 vagas livres", date: "2030-10-01", time: "10:00" },
-  devolucao: { garageId: "garage-2", garageName: "Garagem Vila Mariana", garageAddress: garagemSul.endereco, garageInfo: "1 de 12 vagas livres", date: "2030-10-04", time: "10:00" },
+  retirada: { garageId: "garage-1", garageName: "Garagem Centro", garageAddress: garagemCentro.endereco, garageInfo: "8 de 20 vagas livres", date: "01/10/2030", time: "10:00" },
+  devolucao: { garageId: "garage-2", garageName: "Garagem Vila Mariana", garageAddress: garagemSul.endereco, garageInfo: "1 de 12 vagas livres", date: "04/10/2030", time: "10:00" },
   pagamento: { metodoPagamento: "PIX" },
   reserva: { id: "res-2", codigoDesbloqueio: "" },
-  servicos: { ids: ["s1"] },
+  servicos: { ids: ["s1"], selecionados: [{ id: "s1", nome: "Seguro completo", descricao: "Cobertura para colisão, roubo e terceiros.", valor: 89.9 }] },
 };
 
 // [id, rota, sessão, seções a centralizar (seletores) opcionais]

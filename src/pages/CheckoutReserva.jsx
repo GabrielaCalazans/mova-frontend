@@ -1,10 +1,11 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
-import AuthenticatedLayout from "../layout/AuthenticatedLayout";
-import movaLogo from "../assets/mova_logo.png";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowRightToBracket, faArrowRightFromBracket, faCalendarDay } from "@fortawesome/free-solid-svg-icons";
+import JourneySteps from "../components/reservation/JourneySteps";
+import VehicleMedia from "../components/vehicle/VehicleMedia";
 import { getJourneyStep, updateJourneyStep } from "../utils/journeyStorage";
-import { formatCambio, formatCategoria, getVehicleCharacteristics } from "../utils/vehicleDisplay";
+import { formatCambio, formatCategoria } from "../utils/vehicleDisplay";
 import {
   formatMoneyBRL,
   parseJourneyDateTime,
@@ -14,192 +15,8 @@ import { getVeiculoById } from "../services/veiculoService";
 import { getReservationPricing } from "../services/reservationPricing";
 import { createReserva } from "../services/reservaService";
 import { getAuthSession } from "../services/authSession";
-import {
-  LogoContainer,
-  PrimaryButton,
-  SecondaryButton,
-  StatusMessage,
-  Subtitle,
-  Title,
-  JourneySummaryCard,
-  JourneySummaryLabel,
-  JourneySummaryValue,
-} from "../styles/authStyle";
-
-const PageStack = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const SectionCard = styled.section`
-  width: 100%;
-  border-radius: 16px;
-  background: #fff;
-  border: 1px solid #d8e4f4;
-  box-shadow: 0 6px 18px rgba(0, 51, 102, 0.08);
-  padding: 1rem;
-  box-sizing: border-box;
-`;
-
-const SectionTitle = styled.h2`
-  margin: 0 0 1rem;
-  color: #003366;
-  font-size: 1.05rem;
-`;
-
-const VehicleTop = styled.div`
-  display: grid;
-  grid-template-columns: minmax(84px, 120px) 1fr;
-  gap: 1rem;
-  align-items: start;
-
-  @media (max-width: 520px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const VehicleImageWrap = styled.div`
-  min-height: 110px;
-  border-radius: 14px;
-  overflow: hidden;
-  background: linear-gradient(135deg, #eff5fb, #dce8f6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-`;
-
-const VehiclePlaceholder = styled.div`
-  color: #003366;
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-align: center;
-  padding: 1rem;
-`;
-
-const VehicleTitle = styled.h3`
-  margin: 0 0 0.35rem;
-  color: #003366;
-  font-size: 1.15rem;
-`;
-
-const VehicleMeta = styled.p`
-  margin: 0 0 0.5rem;
-  color: #555;
-  font-size: 0.92rem;
-  line-height: 1.45;
-`;
-
-const KeyValueGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-
-  @media (max-width: 620px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const KeyValueItem = styled.div`
-  border: 1px solid #e5edf7;
-  border-radius: 12px;
-  padding: 0.85rem;
-  background: #f9fbfe;
-`;
-
-const KeyValueLabel = styled.span`
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #7a8aa3;
-  margin-bottom: 0.35rem;
-`;
-
-const KeyValueValue = styled.p`
-  margin: 0;
-  color: #1f2d40;
-  font-size: 0.95rem;
-  line-height: 1.45;
-  font-weight: 600;
-`;
-
-const SummaryGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.9rem;
-
-  @media (max-width: 620px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const SummaryActionRow = styled.div`
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-
-  button {
-    flex: 1 1 220px;
-  }
-`;
-
-const PriceList = styled.div`
-  display: grid;
-  gap: 0.6rem;
-`;
-
-const PriceRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  font-size: 0.95rem;
-  color: #1f2d40;
-`;
-
-const PriceLabel = styled.span`
-  color: #58687d;
-`;
-
-const PriceValue = styled.strong`
-  color: #003366;
-`;
-
-const Divider = styled.div`
-  width: 100%;
-  height: 1px;
-  background: #e3ebf7;
-  margin: 0.25rem 0;
-`;
-
-function formatDisplayDate(value) {
-  return value || "Não informado";
-}
-
-function formatDisplayTime(value) {
-  return value || "Não informado";
-}
-
-function resolveVehicleImage(vehicle) {
-  return (
-    vehicle?.imagem ||
-    vehicle?.image ||
-    vehicle?.foto ||
-    vehicle?.urlImagem ||
-    vehicle?.photo ||
-    vehicle?.imagemUrl ||
-    ""
-  );
-}
+import "../styles/vehicle.css";
+import "../styles/journey.css";
 
 function resolveModeloVeiculo(vehicle) {
   return vehicle?.modeloVeiculo ?? {};
@@ -228,99 +45,27 @@ function resolveVehicleName(vehicle) {
   );
 }
 
-function normalizeDisplayValue(value) {
-  if (Array.isArray(value)) {
-    return value.length > 0 ? value.join(", ") : "Não informado";
-  }
-
-  if (value && typeof value === "object") {
-    try {
-      return JSON.stringify(value);
-    } catch {
-      return "Não informado";
-    }
-  }
-
-  if (typeof value === "boolean") {
-    return value ? "Sim" : "Não";
-  }
-
-  if (value === null || value === undefined || value === "") {
-    return "Não informado";
-  }
-
-  return String(value);
+function yesNo(value) {
+  if (value === undefined || value === null || value === "") return "Não informado";
+  return value ? "Sim" : "Não";
 }
 
-function buildAdditionalDetails(vehicle) {
-  const ignoredKeys = new Set([
-    "id",
-    "idLocador",
-    "idModeloVeiculo",
-    "nome",
-    "marca",
-    "modelo",
-    "categoria",
-    "imagem",
-    "image",
-    "foto",
-    "urlImagem",
-    "imagemUrl",
-    "photo",
-    "capacidade",
-    "caracteristicas",
-    "acessibilidade",
-    "adaptado",
-    "eletrico",
-    "cambio",
-    "transmissao",
-    "autonomia",
-    "combustivel",
-    "energia",
-    "valorDiaria",
-    "precoDiaria",
-    "dailyRate",
-    "locadorId",
-    "placa",
-    "cor",
-    "color",
-    "range",
-    "km",
-    "idModeloVeiculo",
-    "modeloVeiculo",  // objeto aninhado — campos já promovidos pela normalização
-    "garagemId",
-    "createdAt",
-    "criadoEm",
-    "status",
-    "garagemId",
-    "modeloVeiculo",
-  ]);
-
-  return Object.entries(vehicle || {})
-    .filter(
-      ([key, value]) =>
-        !ignoredKeys.has(key) &&
-        value !== undefined &&
-        value !== null &&
-        value !== "",
-    )
-    .map(([key, value]) => ({
-      label: key
-        .replace(/([a-z])([A-Z])/g, "$1 $2")
-        .replace(/[_-]/g, " ")
-        .replace(/^./, (letter) => letter.toUpperCase()),
-      value: normalizeDisplayValue(value),
-    }));
-}
-
-function JourneySummary({ label, value }) {
+function Leg({ icon, label, garage, address, date, time }) {
   return (
-    <JourneySummaryCard>
-      <JourneySummaryLabel>{label}</JourneySummaryLabel>
-      <JourneySummaryValue style={{ whiteSpace: "pre-line" }}>
-        {value}
-      </JourneySummaryValue>
-    </JourneySummaryCard>
+    <li className="itinerary__leg">
+      <span className="itinerary__icon"><FontAwesomeIcon icon={icon} aria-hidden="true" /></span>
+      <div className="itinerary__body">
+        <p className="itinerary__label">{label}</p>
+        <p className="itinerary__garage">{garage || "Garagem não informada"}</p>
+        {address && address !== garage ? <p className="itinerary__address">{address}</p> : null}
+        <p className="itinerary__when">
+          <FontAwesomeIcon icon={faCalendarDay} aria-hidden="true" />
+          <span className="tabular">{date || "Data não informada"}</span>
+          <span aria-hidden="true">·</span>
+          <span className="tabular">{time || "Horário não informado"}</span>
+        </p>
+      </div>
+    </li>
   );
 }
 
@@ -479,258 +224,143 @@ export default function CheckoutReserva() {
     veiculoSalvo,
   ]);
 
-  const additionalDetails = useMemo(() => buildAdditionalDetails(vehicle), [vehicle]);
+  const head = (
+    <>
+      <JourneySteps current="resumo" />
+      <header className="journey-head">
+        <h1>Checkout da Reserva</h1>
+        <p className="page-head__lede">Confira o que você está alugando, quando, onde e quanto custa antes de pagar.</p>
+      </header>
+    </>
+  );
 
+  let content;
   if (loading) {
-    return (
-      <AuthenticatedLayout>
-        <LogoContainer>
-          <img src={movaLogo} alt="Mova Logo" />
-        </LogoContainer>
-        <Title>Checkout da Reserva</Title>
-        <StatusMessage>Carregando informações da reserva…</StatusMessage>
-      </AuthenticatedLayout>
-    );
-  }
-
-  if (error) {
-    return (
-      <AuthenticatedLayout>
-        <LogoContainer>
-          <img src={movaLogo} alt="Mova Logo" />
-        </LogoContainer>
-        <Title>Checkout da Reserva</Title>
-        <StatusMessage style={{ color: "#c0392b" }}>{error}</StatusMessage>
-        <SummaryActionRow>
-          <SecondaryButton
-            type="button"
-            onClick={() => navigate("/escolha-garagem-devolucao")}
-          >
+    content = <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando informações da reserva…</p>;
+  } else if (error) {
+    content = (
+      <div className="state-block state-block--error" role="alert">
+        <h2 className="state-block__title">Não foi possível montar o resumo</h2>
+        <p className="state-block__text">{error}</p>
+        <div className="journey-actions">
+          <button type="button" className="btn btn--secondary" onClick={() => navigate("/escolha-garagem-devolucao")}>
             Voltar para devolução
-          </SecondaryButton>
-          <PrimaryButton type="button" onClick={() => navigate("/carros")}>
+          </button>
+          <button type="button" className="btn" onClick={() => navigate("/carros")}>
             Escolher outro veículo
-          </PrimaryButton>
-        </SummaryActionRow>
-      </AuthenticatedLayout>
+          </button>
+        </div>
+      </div>
+    );
+  } else {
+    const vehicleName = resolveVehicleName(vehicle);
+    const totalDiarias = pricing?.totalDiarias ?? 1;
+    const diariaValue = pricing?.dailyRate ?? 0;
+    const servicesValue = pricing?.servicesTotal ?? 0;
+    const totalValue = pricing?.total ?? 0;
+    const servicosContratados = (servicos?.selecionados ?? []).map((servico) => ({
+      ...servico,
+      ...(pricing?.servicos?.find((item) => item.idServico === servico.id) ?? {}),
+      valor: pricing?.servicos?.find((item) => item.idServico === servico.id)?.valor ?? servico.valor,
+    }));
+    // Campos descritivos vêm de modeloVeiculo, já normalizados por
+    // normalizeVeiculo(); fallback para o veículo salvo na jornada.
+    const vehicleCategory = formatCategoria(resolveVehicleField(vehicle, veiculoSalvo, "categoria"));
+    const vehicleTransmission = formatCambio(resolveVehicleField(vehicle, veiculoSalvo, "cambio"));
+    const vehicleCapacity = resolveVehicleField(vehicle, veiculoSalvo, "capacidade");
+    const vehicleEletrico = vehicle?.eletrico ?? veiculoSalvo?.eletrico;
+    const vehicleAdaptado = vehicle?.adaptado ?? veiculoSalvo?.adaptado;
+    const placa = vehicle?.placa ?? veiculoSalvo?.placa;
+
+    content = (
+      <div className="journey-layout">
+        <div className="journey-layout__main">
+          <section className="journey-section" aria-labelledby="checkout-veiculo">
+            <h2 id="checkout-veiculo">O que você está alugando</h2>
+            <div className="summary-vehicle">
+              <VehicleMedia vehicle={vehicle ?? veiculoSalvo} className="summary-vehicle__media" />
+              <div className="summary-vehicle__body">
+                <p className="summary-vehicle__name">{vehicleName}</p>
+                <p className="summary-vehicle__meta">{vehicleCategory}</p>
+                <ul className="summary-vehicle__facts">
+                  <li>Transmissão: {vehicleTransmission}</li>
+                  <li>Capacidade: {vehicleCapacity} pessoas</li>
+                  <li>Elétrico: {yesNo(vehicleEletrico)}</li>
+                  <li>Acessibilidade: {yesNo(vehicleAdaptado)}</li>
+                  {placa ? <li>Placa: <span className="tabular">{placa}</span></li> : null}
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section className="journey-section" aria-labelledby="checkout-quando">
+            <h2 id="checkout-quando">Quando e onde</h2>
+            <ol className="itinerary">
+              <Leg icon={faArrowRightFromBracket} label="Retirada" garage={retirada.garageName} address={retirada.garageAddress} date={retirada.date} time={retirada.time} />
+              <Leg icon={faArrowRightToBracket} label="Devolução" garage={devolucao.garageName} address={devolucao.garageAddress} date={devolucao.date} time={devolucao.time} />
+            </ol>
+            <button type="button" className="btn btn--quiet journey-edit" onClick={() => navigate("/escolha-garagem-devolucao")}>
+              Editar devolução
+            </button>
+          </section>
+
+          <section className="journey-section" aria-labelledby="checkout-servicos">
+            <h2 id="checkout-servicos">Serviços selecionados</h2>
+            {servicosContratados.length > 0 ? (
+              <ul className="line-list">
+                {servicosContratados.map((servico) => (
+                  <li key={servico.id} className="line-list__item">
+                    <div>
+                      <strong>{servico.nome}</strong>
+                      {servico.descricao && <p className="line-list__desc">{servico.descricao}</p>}
+                      {servico.detalhesCobertura && (
+                        <details className="line-list__details">
+                          <summary>Ver detalhes da cobertura</summary>
+                          <p>{servico.detalhesCobertura}</p>
+                        </details>
+                      )}
+                    </div>
+                    <span className="tabular">{formatMoneyBRL(servico.valor)}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="journey-muted">Nenhum serviço opcional selecionado.</p>
+            )}
+          </section>
+        </div>
+
+        <aside className="journey-layout__aside" aria-labelledby="checkout-total-title">
+          <section className="price-summary" data-capture="total">
+            <h2 id="checkout-total-title">Resumo financeiro</h2>
+            <dl className="price-summary__rows">
+              <div><dt>Diárias</dt><dd className="tabular">{totalDiarias}</dd></div>
+              <div><dt>Valor da diária</dt><dd className="tabular">{formatMoneyBRL(diariaValue)}</dd></div>
+              {servicesValue > 0 && (
+                <div><dt>Serviços adicionais</dt><dd className="tabular">{formatMoneyBRL(servicesValue)}</dd></div>
+              )}
+            </dl>
+            <div className="price-summary__total">
+              <span>Total</span>
+              <strong className="tabular">{formatMoneyBRL(totalValue)}</strong>
+            </div>
+            <p className="price-summary__note">Valor calculado pelo servidor para este período. O pagamento é a próxima etapa.</p>
+            <button type="button" className="btn btn--lg btn--block" onClick={handleConfirmar} disabled={confirmando} aria-busy={confirmando || undefined}>
+              {confirmando ? "Confirmando..." : "Confirmar e seguir para pagamento"}
+            </button>
+            {confirmError && (
+              <p className="alert alert--danger" role="alert">{confirmError}</p>
+            )}
+          </section>
+        </aside>
+      </div>
     );
   }
-
-  const vehicleName = resolveVehicleName(vehicle);
-  const vehicleImage = resolveVehicleImage(vehicle);
-  const totalDiarias = pricing?.totalDiarias ?? 1;
-  const diariaValue = pricing?.dailyRate ?? 0;
-  const servicesValue = pricing?.servicesTotal ?? 0;
-  const totalValue = pricing?.total ?? 0;
-  const servicosContratados = (servicos?.selecionados ?? []).map((servico) => ({
-    ...servico,
-    ...(pricing?.servicos?.find((item) => item.idServico === servico.id) ?? {}),
-    valor: pricing?.servicos?.find((item) => item.idServico === servico.id)?.valor ?? servico.valor,
-  }));
-  // Novo modelo: campos descritivos vêm de modeloVeiculo mas já normalizados
-  // por normalizeVeiculo() no serviço. Fallback para veiculoSalvo (journey storage).
-  const vehicleCategory = formatCategoria(
-    resolveVehicleField(vehicle, veiculoSalvo, "categoria"),
-  );
-  const vehicleTransmission = formatCambio(
-    resolveVehicleField(vehicle, veiculoSalvo, "cambio"),
-  );
-  const vehicleCapacity = resolveVehicleField(
-    vehicle,
-    veiculoSalvo,
-    "capacidade",
-  );
-  const vehicleEletrico = vehicle?.eletrico ?? veiculoSalvo?.eletrico;
-  const vehicleAdaptado = vehicle?.adaptado ?? veiculoSalvo?.adaptado;
-  const vehicleAccessibility =
-    vehicleAdaptado !== undefined
-      ? vehicleAdaptado
-        ? "Sim"
-        : "Não"
-      : resolveVehicleField(vehicle, veiculoSalvo, "acessibilidade");
-  const vehicleCharacteristics = getVehicleCharacteristics(vehicle ?? veiculoSalvo);
-  const pickupAddress =
-    retirada.garageAddress || retirada.garageName || "Não informado";
-  const dropoffAddress =
-    devolucao.garageAddress || devolucao.garageName || "Não informado";
 
   return (
-    <AuthenticatedLayout>
-      <LogoContainer>
-        <img src={movaLogo} alt="Mova Logo" />
-      </LogoContainer>
-
-      <Title>Checkout da Reserva</Title>
-      <Subtitle>
-        Confira todos os detalhes antes de seguir para o pagamento.
-      </Subtitle>
-
-      <PageStack>
-        <SectionCard>
-          <SectionTitle>Veículo selecionado</SectionTitle>
-          <VehicleTop>
-            <VehicleImageWrap>
-              {vehicleImage ? (
-                <img src={vehicleImage} alt={vehicleName} />
-              ) : (
-                <VehiclePlaceholder>Imagem não disponível</VehiclePlaceholder>
-              )}
-            </VehicleImageWrap>
-
-            <div>
-              <VehicleTitle>{vehicleName}</VehicleTitle>
-              <VehicleMeta>{vehicleCategory}</VehicleMeta>
-              <VehicleMeta>
-                Transmissão: {normalizeDisplayValue(vehicleTransmission)}
-              </VehicleMeta>
-              <VehicleMeta>
-                Capacidade: {normalizeDisplayValue(vehicleCapacity)} pessoas
-              </VehicleMeta>
-              <VehicleMeta>
-                Elétrico:{" "}
-                {vehicleEletrico !== undefined
-                  ? vehicleEletrico
-                    ? "Sim"
-                    : "Não"
-                  : "Não informado"}
-              </VehicleMeta>
-              <VehicleMeta>
-                Acessibilidade: {normalizeDisplayValue(vehicleAccessibility)}
-              </VehicleMeta>
-            </div>
-          </VehicleTop>
-
-          <Divider />
-
-          <KeyValueGrid>
-            <KeyValueItem>
-              <KeyValueLabel>Características</KeyValueLabel>
-              <KeyValueValue>
-                {vehicleCharacteristics.length > 0
-                  ? vehicleCharacteristics.join(", ")
-                  : "Não informado"}
-              </KeyValueValue>
-            </KeyValueItem>
-
-            <KeyValueItem>
-              <KeyValueLabel>Placa</KeyValueLabel>
-              <KeyValueValue>
-                {normalizeDisplayValue(vehicle?.placa ?? veiculoSalvo?.placa)}
-              </KeyValueValue>
-            </KeyValueItem>
-
-            <KeyValueItem>
-              <KeyValueLabel>Modelo do veículo</KeyValueLabel>
-              <KeyValueValue>
-                {normalizeDisplayValue(
-                  vehicle?.modeloVeiculo
-                    ? `${vehicle.modeloVeiculo.marca ?? ""} ${vehicle.modeloVeiculo.modelo ?? ""}`.trim()
-                    : veiculoSalvo?.nome ||
-                        `${veiculoSalvo?.marca ?? ""} ${veiculoSalvo?.modelo ?? ""}`.trim(),
-                )}
-              </KeyValueValue>
-            </KeyValueItem>
-
-            <KeyValueItem>
-              <KeyValueLabel>Status</KeyValueLabel>
-              <KeyValueValue>
-                {normalizeDisplayValue(vehicle?.status ?? veiculoSalvo?.status)}
-              </KeyValueValue>
-            </KeyValueItem>
-          </KeyValueGrid>
-
-          {additionalDetails.length > 0 && (
-            <>
-              <Divider />
-              <SectionTitle
-                style={{ fontSize: "0.95rem", marginBottom: "0.75rem" }}
-              >
-                Detalhes adicionais
-              </SectionTitle>
-              <KeyValueGrid>
-                {additionalDetails.map((detail) => (
-                  <KeyValueItem key={detail.label}>
-                    <KeyValueLabel>{detail.label}</KeyValueLabel>
-                    <KeyValueValue>{detail.value}</KeyValueValue>
-                  </KeyValueItem>
-                ))}
-              </KeyValueGrid>
-            </>
-          )}
-        </SectionCard>
-
-        <SummaryGrid>
-          <JourneySummary
-            label="Retirada"
-            value={`${retirada.garageName || "Garagem não informada"}\n${pickupAddress}\n${formatDisplayDate(retirada.date)} • ${formatDisplayTime(retirada.time)}`}
-          />
-          <JourneySummary
-            label="Devolução"
-            value={`${devolucao.garageName || "Garagem não informada"}\n${dropoffAddress}\n${formatDisplayDate(devolucao.date)} • ${formatDisplayTime(devolucao.time)}`}
-          />
-        </SummaryGrid>
-
-        {servicosContratados.length > 0 && (
-          <SectionCard>
-            <SectionTitle>Serviços contratados</SectionTitle>
-            <KeyValueGrid>
-              {servicosContratados.map((servico) => (
-                <KeyValueItem key={servico.id}>
-                  <KeyValueLabel>{servico.nome}</KeyValueLabel>
-                  <KeyValueValue>{formatMoneyBRL(servico.valor)}</KeyValueValue>
-                  {servico.descricao && <p>{servico.descricao}</p>}
-                  {servico.detalhesCobertura && (
-                    <details>
-                      <summary>Ver detalhes da cobertura</summary>
-                      <p>{servico.detalhesCobertura}</p>
-                    </details>
-                  )}
-                </KeyValueItem>
-              ))}
-            </KeyValueGrid>
-          </SectionCard>
-        )}
-
-        <JourneySummaryCard>
-          <JourneySummaryLabel>Resumo financeiro</JourneySummaryLabel>
-          <PriceList>
-            <PriceRow>
-              <PriceLabel>Diárias</PriceLabel>
-              <PriceValue>{totalDiarias}</PriceValue>
-            </PriceRow>
-            <PriceRow>
-              <PriceLabel>Valor da diária</PriceLabel>
-              <PriceValue>{formatMoneyBRL(diariaValue)}</PriceValue>
-            </PriceRow>
-            {servicesValue > 0 && (
-              <PriceRow>
-                <PriceLabel>Serviços adicionais</PriceLabel>
-                <PriceValue>{formatMoneyBRL(servicesValue)}</PriceValue>
-              </PriceRow>
-            )}
-            <Divider />
-            <PriceRow>
-              <PriceLabel>Total</PriceLabel>
-              <PriceValue>{formatMoneyBRL(totalValue)}</PriceValue>
-            </PriceRow>
-          </PriceList>
-        </JourneySummaryCard>
-
-        <SummaryActionRow>
-          <SecondaryButton
-            type="button"
-            onClick={() => navigate("/escolha-garagem-devolucao")}
-          >
-            Editar devolução
-          </SecondaryButton>
-          <PrimaryButton type="button" onClick={handleConfirmar} disabled={confirmando}>
-            {confirmando ? "Confirmando..." : "Confirmar e seguir para pagamento"}
-          </PrimaryButton>
-        </SummaryActionRow>
-        {confirmError && (
-          <StatusMessage style={{ color: "#c0392b" }}>{confirmError}</StatusMessage>
-        )}
-      </PageStack>
-    </AuthenticatedLayout>
+    <main className="journey-page">
+      {head}
+      {content}
+    </main>
   );
 }

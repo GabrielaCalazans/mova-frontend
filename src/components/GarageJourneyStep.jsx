@@ -1,9 +1,12 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import garagemImg from "../assets/garagem.png";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import BottomNav from "../components/BottomNav";
-import "../styles/carselect.css";
-import "../styles/home.css";
+import JourneySteps from "./reservation/JourneySteps";
+import VehicleMedia from "./vehicle/VehicleMedia";
+import "../styles/vehicle.css";
+import "../styles/journey.css";
 import {
   StyledForm,
   JourneySectionHint,
@@ -357,93 +360,100 @@ export default function GarageJourneyStep({
   const numbers = buildNumbers();
 
   return (
-    <main className="carro-page">
-      <div className="carro-header">
+    <main className="journey-page">
+      <JourneySteps current={stepKey} />
+      <header className="journey-head">
         <h1>{title}</h1>
+        <p className="page-head__lede">
+          {retiradaFixa
+            ? "A retirada acontece na garagem onde o veículo está alocado. Escolha a data e o horário."
+            : selectedGarage
+              ? "A garagem selecionada fica em destaque até você trocar a opção."
+              : subtitle}
+        </p>
+      </header>
+
+      <div className="vehicle-strip">
+        <VehicleMedia vehicle={veiculoSelecionado} />
+        <div>
+          <p className="vehicle-strip__label">Você está reservando</p>
+          <p className="vehicle-strip__name">{[veiculoSelecionado.marca, veiculoSelecionado.modelo].filter(Boolean).join(" ") || veiculoSelecionado.nome || "Veículo selecionado"}</p>
+        </div>
       </div>
 
-      <div className="carro-content">
-        <StyledForm
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (canContinue) {
-              navigate(nextPath);
-            }
-          }}
-        >
-          <JourneySectionHint style={{ textAlign: "center", display: "block", marginBottom: "0.75rem" }}>
-            {retiradaFixa
-              ? "A retirada acontece na garagem onde o veículo está alocado."
-              : selectedGarage
-                ? "A garagem selecionada permanece em destaque até você trocar a opção."
-                : subtitle}
-          </JourneySectionHint>
+      <StyledForm
+        className="journey-form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (canContinue) {
+            navigate(nextPath);
+          }
+        }}
+      >
+        <section className="journey-section" aria-labelledby={`${stepKey}-garagem-title`}>
+          <h2 id={`${stepKey}-garagem-title`}>Garagem de {stepLabel.toLowerCase()}</h2>
 
           {!selectedGarage && carregandoGaragens && (
-            <JourneySectionHint>Carregando garagens…</JourneySectionHint>
+            <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando garagens…</p>
           )}
 
           {!selectedGarage && !carregandoGaragens && erroGaragens && (
-            <JourneySectionHint role="status">{erroGaragens}</JourneySectionHint>
+            <p className="alert alert--danger" role="status">{erroGaragens}</p>
           )}
 
           {!selectedGarage && !carregandoGaragens && !erroGaragens && garagens.length === 0 && (
-            <JourneySectionHint role="status">
+            <p className="alert alert--warning" role="status">
               {retiradaFixa
                 ? "Este veículo não está alocado em nenhuma garagem, então não há local de retirada definido."
                 : "Nenhuma garagem de devolução disponível para este locador."}
-            </JourneySectionHint>
+            </p>
           )}
 
-          {!selectedGarage && !carregandoGaragens && !erroGaragens && (
-            <div className="garage-list">
+          {!selectedGarage && !carregandoGaragens && !erroGaragens && garagens.length > 0 && (
+            <ul className="garage-options">
               {visibleGarages.map((garage) => (
-                <button
-                  type="button"
-                  key={garage.id}
-                  className="garage-card"
-                  onClick={() => setSelectedGarageId(String(garage.id))}
-                  aria-pressed={String(garage.id) === selectedGarageId}
-                >
-                  <img src={garagemImg} alt="Garagem" className="garage-card__image" />
-                  <div className="garage-card__info">
-                    <h3>{garage.nome}</h3>
-                    <p>Endereço: {garage.endereco}</p>
-                    {descreverCapacidade(garage) && (
-                      <p>{descreverCapacidade(garage)}</p>
-                    )}
-                  </div>
-                </button>
+                <li key={garage.id}>
+                  <button
+                    type="button"
+                    className="garage-option"
+                    onClick={() => setSelectedGarageId(String(garage.id))}
+                    aria-pressed={String(garage.id) === selectedGarageId}
+                  >
+                    <span className="garage-option__icon"><FontAwesomeIcon icon={faLocationDot} aria-hidden="true" /></span>
+                    <span>
+                      <span className="garage-option__name">{garage.nome}</span>
+                      <span className="garage-option__address">Endereço: {garage.endereco}</span>
+                      {descreverCapacidade(garage) && <span className="garage-option__info">{descreverCapacidade(garage)}</span>}
+                    </span>
+                  </button>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
 
           {selectedGarage && (
             <>
-              <div className="garage-list">
-                <div className="garage-card garage-card--selected" style={{ cursor: "default" }}>
-                  <img src={garagemImg} alt="Garagem selecionada" className="garage-card__image" />
-                  <div className="garage-card__info">
-                    <h3>{selectedGarage.nome}</h3>
-                    <p>Endereço: {selectedGarage.endereco}</p>
-                    {descreverCapacidade(selectedGarage) && (
-                      <p>{descreverCapacidade(selectedGarage)}</p>
-                    )}
-                  </div>
-                </div>
+              <div className="garage-option garage-option--selected">
+                <span className="garage-option__icon"><FontAwesomeIcon icon={faLocationDot} aria-hidden="true" /></span>
+                <span>
+                  <span className="garage-option__name">{selectedGarage.nome}</span>
+                  <span className="garage-option__address">Endereço: {selectedGarage.endereco}</span>
+                  {descreverCapacidade(selectedGarage) && <span className="garage-option__info">{descreverCapacidade(selectedGarage)}</span>}
+                </span>
               </div>
 
               {!retiradaFixa && (
-                <div style={{ textAlign: "center", marginTop: "0.6rem" }}>
-                  <button type="button" className="garage-change-link" onClick={() => setSelectedGarageId("")}>
-                    Trocar garagem
-                  </button>
-                </div>
+                <button type="button" className="btn btn--quiet journey-edit" onClick={() => setSelectedGarageId("")}>
+                  Trocar garagem
+                </button>
               )}
             </>
           )}
+        </section>
 
-        <JourneyFieldsGrid>
+        <section className="journey-section" aria-labelledby={`${stepKey}-quando-title`}>
+        <h2 id={`${stepKey}-quando-title`}>Data e horário</h2>
+        <JourneyFieldsGrid className="datetime-grid">
           <JourneyFieldGroup>
             <JourneyFieldLabel htmlFor={`${stepKey}-date`}>Data da {stepLabel.toLowerCase()}</JourneyFieldLabel>
             <FieldWrapper>
@@ -570,11 +580,11 @@ export default function GarageJourneyStep({
                       <ClockPart as="button" type="button" active={clockMode === "hour"} onClick={() => setClockMode("hour")}>
                         {String(clockH).padStart(2, "0")}
                       </ClockPart>
-                      <span style={{ color: "#aec5e7" }}>:</span>
+                      <span className="clock-face__sep">:</span>
                       <ClockPart as="button" type="button" active={clockMode === "minute"} onClick={() => setClockMode("minute")}>
                         {String(clockM).padStart(2, "0")}
                       </ClockPart>
-                      <span style={{ fontSize: "1.2rem", marginLeft: "8px", color: "#aec5e7" }}>
+                      <span className="clock-face__sep" style={{ fontSize: "1.2rem", marginLeft: "8px" }}>
                         {amPm}
                       </span>
                     </ClockDisplay>
@@ -591,10 +601,10 @@ export default function GarageJourneyStep({
 
                     <ClockFaceWrap>
                       <FaceSvg width="200" height="200" viewBox="0 0 200 200" role="application" aria-label={`Relógio para selecionar ${clockMode === "hour" ? "a hora" : "os minutos"}`} onClick={handleFaceClick}>
-                        <circle cx={CX} cy={CY} r="95" fill="#f0f8ff" stroke="#aec5e7" strokeWidth="2" />
-                        <line x1={CX} y1={CY} x2={hEnd.x} y2={hEnd.y} stroke="#003366" strokeWidth="4" strokeLinecap="round" />
-                        <line x1={CX} y1={CY} x2={mEnd.x} y2={mEnd.y} stroke="#2b5ba8" strokeWidth="3" strokeLinecap="round" />
-                        <circle cx={CX} cy={CY} r="5" fill="#003366" />
+                        <circle className="clock-face__dial" cx={CX} cy={CY} r="95" strokeWidth="2" />
+                        <line className="clock-face__hour" x1={CX} y1={CY} x2={hEnd.x} y2={hEnd.y} strokeWidth="4" strokeLinecap="round" />
+                        <line className="clock-face__minute" x1={CX} y1={CY} x2={mEnd.x} y2={mEnd.y} strokeWidth="3" strokeLinecap="round" />
+                        <circle className="clock-face__pin" cx={CX} cy={CY} r="5" />
 
                         {numbers.map((number, index) => (
                           <g
@@ -622,8 +632,9 @@ export default function GarageJourneyStep({
                               }
                             }}
                           >
-                            <circle cx={number.x} cy={number.y} r="13" fill={number.sel ? "#003366" : "transparent"} />
+                            <circle className={`clock-face__mark${number.sel ? " clock-face__mark--selected" : ""}`} cx={number.x} cy={number.y} r="13" />
                             <text
+                              className={`clock-face__num${number.sel ? " clock-face__num--selected" : ""}`}
                               x={number.x}
                               y={number.y}
                               textAnchor="middle"
@@ -631,7 +642,6 @@ export default function GarageJourneyStep({
                               fontSize="11"
                               fontWeight="700"
                               fontFamily="inherit"
-                              fill={number.sel ? "#fff" : "#003366"}
                               style={{ cursor: "pointer", userSelect: "none" }}
                             >
                               {number.label}
@@ -650,16 +660,18 @@ export default function GarageJourneyStep({
         </JourneyFieldsGrid>
 
           {erroPeriodo && (
-            <JourneySectionHint role="status" style={{ color: "#c0392b", display: "block", marginTop: "0.75rem" }}>
+            <p className="alert alert--danger" role="status">
               {erroPeriodo}
-            </JourneySectionHint>
+            </p>
           )}
+        </section>
 
-        <button type="submit" className="carro-button" disabled={!canContinue} style={{ marginTop: "1rem" }}>
-          {nextButtonLabel}
-        </button>
+        <div className="journey-footer">
+          <button type="submit" className="btn btn--lg" disabled={!canContinue}>
+            {nextButtonLabel}
+          </button>
+        </div>
       </StyledForm>
-      </div>
 
       <BottomNav />
     </main>

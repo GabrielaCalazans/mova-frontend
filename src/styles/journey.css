@@ -1,0 +1,160 @@
+/* =============================================================================
+   MOVA — jornada de reserva e pós-compra (Task 8).
+   Cada etapa responde: o que estou alugando, quando, onde retiro/devolvo,
+   quanto custa, quais serviços e qual o próximo passo.
+   ========================================================================== */
+
+.journey-page { display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; }
+.journey-head { display: flex; flex-direction: column; gap: var(--space-2); }
+.journey-head h1 { font-size: var(--text-h1); }
+.journey-muted { color: var(--text-muted); font-size: var(--text-meta); }
+.journey-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.journey-actions > .btn { flex: 1 1 12rem; }
+.journey-edit { align-self: flex-start; margin-left: calc(var(--space-3) * -1); }
+
+/* ---------------------------------------------------------------- etapas */
+.journey-steps { display: flex; flex-direction: column; gap: var(--space-2); }
+.journey-steps__count { color: var(--text-secondary); font-size: var(--text-meta); }
+.journey-steps__count strong { color: var(--text-primary); font-weight: var(--weight-semibold); }
+.journey-steps__list { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.journey-steps__item { height: 4px; border-radius: 2px; background: var(--border-default); }
+.journey-steps__item--done { background: var(--action-primary); opacity: 0.55; }
+.journey-steps__item--current { background: var(--action-primary); }
+.journey-steps__name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (min-width: 1024px) {
+  .journey-steps__count { display: none; }
+  .journey-steps__item { height: auto; background: none; border-radius: 0; border-top: 3px solid var(--border-default); padding-top: var(--space-2); opacity: 1; }
+  .journey-steps__item--done { border-top-color: var(--action-primary); background: none; opacity: 1; }
+  .journey-steps__item--current { border-top-color: var(--action-primary); background: none; }
+  .journey-steps__name { position: static; width: auto; height: auto; clip-path: none; font-size: var(--text-meta); color: var(--text-muted); }
+  .journey-steps__item--done .journey-steps__name { color: var(--text-secondary); }
+  .journey-steps__item--current .journey-steps__name { color: var(--text-primary); font-weight: var(--weight-semibold); }
+}
+
+/* ---------------------------------------------------------------- layout com resumo */
+.journey-layout { display: flex; flex-direction: column; gap: var(--space-8); }
+.journey-layout__main { display: flex; flex-direction: column; gap: var(--space-8); min-width: 0; }
+@media (min-width: 1024px) {
+  .journey-layout { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: var(--space-10); align-items: start; }
+  .journey-layout__aside { position: sticky; top: calc(var(--appbar-h-lg) + var(--space-6)); }
+}
+.journey-section { display: flex; flex-direction: column; gap: var(--space-4); }
+.journey-section > h2 { font-size: var(--text-h2); padding-bottom: var(--space-2); border-bottom: 1px solid var(--border-default); }
+
+/* ---------------------------------------------------------------- veículo no resumo */
+.summary-vehicle { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+.summary-vehicle__media { border: 1px solid var(--border-default); border-radius: var(--radius-md); }
+.summary-vehicle__name { font-size: var(--text-h3); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+.summary-vehicle__meta { color: var(--text-muted); font-size: var(--text-meta); }
+.summary-vehicle__facts { display: grid; gap: var(--space-1); margin: var(--space-3) 0 0; padding: 0; list-style: none; color: var(--text-secondary); font-size: var(--text-meta); }
+@media (min-width: 560px) { .summary-vehicle { grid-template-columns: 220px minmax(0, 1fr); align-items: start; } }
+
+/* ---------------------------------------------------------------- itinerário */
+.itinerary { position: relative; display: flex; flex-direction: column; gap: var(--space-5); margin: 0; padding: 0; list-style: none; }
+.itinerary::before { content: ""; position: absolute; left: 17px; top: 36px; bottom: 36px; border-left: 1px dashed var(--border-strong); }
+.itinerary__leg { position: relative; display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: var(--space-3); }
+.itinerary__icon {
+  display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px;
+  border-radius: var(--radius-sm); background: var(--surface-sunken); color: var(--action-primary);
+  border: 1px solid var(--border-default);
+}
+.itinerary__label { color: var(--text-muted); font-size: var(--text-meta); }
+.itinerary__garage { font-size: var(--text-label); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+.itinerary__address { color: var(--text-secondary); font-size: var(--text-meta); overflow-wrap: anywhere; }
+.itinerary__when { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-1); font-size: var(--text-meta); color: var(--text-primary); }
+.itinerary__when svg { color: var(--text-muted); width: 13px; }
+
+/* ---------------------------------------------------------------- listas de linhas */
+.line-list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.line-list__item { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); padding-block: var(--space-3); border-bottom: 1px solid var(--border-default); font-size: var(--text-meta); }
+.line-list__item:first-child { padding-top: 0; }
+.line-list__item:last-child { border-bottom: 0; }
+.line-list__item strong { font-weight: var(--weight-semibold); color: var(--text-primary); font-size: var(--text-label); }
+.line-list__item > span { white-space: nowrap; font-weight: var(--weight-semibold); }
+.line-list__desc { color: var(--text-secondary); margin-top: 2px; }
+.line-list__details { margin-top: var(--space-2); color: var(--text-secondary); }
+.line-list__details summary { min-height: var(--control-h); display: inline-flex; align-items: center; color: var(--text-link); font-weight: var(--weight-semibold); cursor: pointer; }
+
+/* ---------------------------------------------------------------- resumo financeiro */
+.price-summary {
+  display: flex; flex-direction: column; gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--surface-secondary); border: 1px solid var(--border-default); border-radius: var(--radius-md);
+}
+.price-summary h2 { font-size: var(--text-h3); }
+.price-summary__rows { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; }
+.price-summary__rows > div { display: flex; justify-content: space-between; gap: var(--space-4); font-size: var(--text-meta); }
+.price-summary__rows dt { color: var(--text-secondary); }
+.price-summary__rows dd { margin: 0; color: var(--text-primary); font-weight: var(--weight-medium); }
+.price-summary__total {
+  display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4);
+  padding-top: var(--space-4); border-top: 2px solid var(--text-primary);
+}
+.price-summary__total span { font-size: var(--text-label); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
+.price-summary__total strong { font-size: var(--text-price-lg); font-weight: var(--weight-bold); letter-spacing: -0.02em; line-height: var(--leading-tight); overflow-wrap: anywhere; text-align: right; }
+.price-summary__note { color: var(--text-muted); font-size: var(--text-meta); }
+
+/* ---------------------------------------------------------------- garagens */
+.vehicle-strip {
+  display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--space-3); align-items: center;
+  padding: var(--space-3); background: var(--surface-secondary);
+  border: 1px solid var(--border-default); border-radius: var(--radius-md);
+}
+.vehicle-strip .vmedia { border-radius: var(--radius-sm); }
+/* Miniatura pequena demais para o selo; o alt continua dizendo "ilustrativa". */
+.vehicle-strip .vmedia__flag { display: none; }
+.vehicle-strip__label { color: var(--text-muted); font-size: var(--text-eyebrow); }
+.vehicle-strip__name { font-size: var(--text-label); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+
+.garage-options { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
+@media (min-width: 720px) { .garage-options { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.garage-option {
+  display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: var(--space-3); align-items: start;
+  width: 100%; min-height: var(--control-h); padding: var(--space-4);
+  text-align: start; color: var(--text-primary);
+  background: var(--surface-secondary); border: 1px solid var(--border-default); border-radius: var(--radius-md);
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+button.garage-option:hover { border-color: var(--action-primary); }
+.garage-option[aria-pressed="true"], .garage-option--selected { border-color: var(--action-primary); box-shadow: inset 0 0 0 1px var(--action-primary); }
+.garage-option__icon { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--surface-sunken); color: var(--action-primary); }
+.garage-option__name { display: block; font-size: var(--text-label); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+.garage-option__address,
+.garage-option__info { display: block; color: var(--text-secondary); font-size: var(--text-meta); overflow-wrap: anywhere; }
+.garage-option__info { color: var(--text-muted); }
+
+.datetime-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+@media (min-width: 560px) { .datetime-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* SVG do relógio: cores por token (funciona nos dois temas). */
+.clock-face__dial { fill: var(--surface-sunken); stroke: var(--border-strong); }
+.clock-face__hour { stroke: var(--action-primary); }
+.clock-face__minute { stroke: var(--text-secondary); }
+.clock-face__pin { fill: var(--action-primary); }
+.clock-face__mark { fill: transparent; }
+.clock-face__mark--selected { fill: var(--action-primary); }
+.clock-face__num { fill: var(--text-primary); }
+.clock-face__num--selected { fill: var(--action-primary-text); }
+.clock-face__sep { color: var(--text-muted); }
+
+.journey-footer { display: flex; flex-wrap: wrap; gap: var(--space-3); padding-top: var(--space-2); }
+.journey-footer .btn { flex: 1 1 12rem; }
+@media (min-width: 720px) { .journey-footer { justify-content: flex-end; } .journey-footer .btn { flex: 0 0 auto; min-width: 14rem; } }
+
+.form-panel { padding: var(--space-5); background: var(--surface-secondary); border: 1px solid var(--border-default); border-radius: var(--radius-md); }
+.form-panel > h2 { border-bottom: 0; padding-bottom: 0; font-size: var(--text-h3); }
+
+/* ---------------------------------------------------------------- serviços (seleção) */
+.choice-list { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
+.choice {
+  display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: var(--space-3); align-items: start;
+  padding: var(--space-4); cursor: pointer;
+  background: var(--surface-secondary); border: 1px solid var(--border-default); border-radius: var(--radius-md);
+}
+.choice:hover { border-color: var(--action-primary); }
+.choice:has(input:checked) { border-color: var(--action-primary); box-shadow: inset 0 0 0 1px var(--action-primary); }
+.choice input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--action-primary); }
+.choice__name { font-size: var(--text-label); font-weight: var(--weight-semibold); }
+.choice__desc { color: var(--text-secondary); font-size: var(--text-meta); }
+.choice__price { font-size: var(--text-label); font-weight: var(--weight-semibold); white-space: nowrap; }
+.choice__unit { display: block; color: var(--text-muted); font-size: var(--text-eyebrow); font-weight: var(--weight-regular); text-align: right; }
