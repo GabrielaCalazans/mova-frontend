@@ -19,10 +19,15 @@ const CATEGORY_LABELS = {
   ESPACOSO: "Espaçoso",
   EXECUTIVO: "Executivo",
   PCD: "PCD",
+  ELETRICO: "Elétrico",
 };
 
 function resolveVehicleField(vehicle, field) {
   return vehicle?.[field] ?? vehicle?.modeloVeiculo?.[field];
+}
+
+export function vehicleTitle(vehicle) {
+  return [resolveVehicleField(vehicle, "marca"), resolveVehicleField(vehicle, "modelo")].filter(Boolean).join(" ") || "Veículo";
 }
 
 export function formatCategoria(categoria) {
@@ -58,6 +63,24 @@ export function resolveTipoIcon(tipoFiltro) {
   if (tipoFiltro === "adaptado") return adaptadoImg;
   if (tipoFiltro === "eletrico") return eletricoImg;
   return economicoImg;
+}
+
+/**
+ * Imagem do veículo sem inventar: 1) foto real da API (com alt do locador);
+ * 2) foto ilustrativa empacotada do mesmo modelo, rotulada como tal;
+ * 3) nenhuma — a UI mostra um marcador "sem foto" em vez de um ícone de
+ * categoria fingindo ser o carro.
+ */
+export function resolveVehicleImages(vehicle) {
+  const marca = resolveVehicleField(vehicle, "marca") || "";
+  const modelo = resolveVehicleField(vehicle, "modelo") || "";
+  const nome = `${marca} ${modelo}`.trim() || "Veículo";
+  const reais = (Array.isArray(vehicle?.imagens) ? vehicle.imagens : [])
+    .filter((imagem) => imagem?.url)
+    .map((imagem) => ({ src: imagem.url, alt: imagem.altText || `Foto de ${nome}`, kind: "real" }));
+  if (reais.length) return reais;
+  const ilustrativa = MODEL_DETAILS[nome.toLowerCase()]?.image;
+  return ilustrativa ? [{ src: ilustrativa, alt: `Foto ilustrativa de ${nome}`, kind: "illustrative" }] : [];
 }
 
 export function resolveModelDetails(marca, modelo, tipoFiltro) {

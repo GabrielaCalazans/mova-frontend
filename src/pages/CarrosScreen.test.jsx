@@ -144,7 +144,7 @@ describe("CarrosScreen", () => {
 
       render(<CarrosScreen />);
 
-      expect(await screen.findByText(/Local: Garagem indisponivel/)).toBeInTheDocument();
+      expect(await screen.findByText("Garagem indisponivel")).toBeInTheDocument();
       expect(screen.getByText(/Local indispon/)).toBeInTheDocument();
       const button = screen.getByRole("button", { name: /Indispon/ });
       expect(button).toBeDisabled();
@@ -178,7 +178,7 @@ describe("CarrosScreen", () => {
 
     render(<CarrosScreen />);
 
-    expect(await screen.findByText(/Local: Local n/)).toBeInTheDocument();
+    expect(await screen.findByText("Local não informado")).toBeInTheDocument();
     const button = screen.getByRole("button", { name: "Selecionar" });
     expect(button).toBeEnabled();
     fireEvent.click(button);
@@ -209,10 +209,10 @@ describe("CarrosScreen", () => {
     render(<CarrosScreen />);
 
     const specWithText = (text) => (_, element) => (
-      element?.matches("p.carro-list-card__specs") && element.textContent?.includes(text)
+      element?.matches(".vcard__garage") && element.textContent?.includes(text)
     );
-    expect(await screen.findByText(specWithText("Local: Garagem Norte"))).toBeInTheDocument();
-    expect(screen.getByText(specWithText("Local: Garagem Sul"))).toBeInTheDocument();
+    expect(await screen.findByText(specWithText("Garagem Norte"))).toBeInTheDocument();
+    expect(screen.getByText(specWithText("Garagem Sul"))).toBeInTheDocument();
     expect(listVeiculos).toHaveBeenCalledTimes(1);
   });
 
@@ -222,7 +222,7 @@ describe("CarrosScreen", () => {
     render(<CarrosScreen />);
 
     expect(await screen.findByText((_, element) => (
-      element?.matches("p.carro-list-card__specs") && element.textContent?.includes("Local: Local não informado")
+      element?.matches(".vcard__garage") && element.textContent?.includes("Local não informado")
     ))).toBeInTheDocument();
   });
 

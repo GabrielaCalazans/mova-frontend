@@ -34,7 +34,7 @@ describe("entrada pública", () => {
     render(<App />);
 
     expect(await screen.findByRole("heading", { name: /veículos disponíveis agora/i })).toBeInTheDocument();
-    expect(await screen.findByText(/fiat argo/i)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /fiat argo/i })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /^login$/i })).not.toBeInTheDocument();
   });
 });

@@ -144,8 +144,8 @@ describe("Fluxo de autenticacao", () => {
 
     expect(await screen.findByRole("heading", { name: /veículos disponíveis agora/i })).toBeInTheDocument();
 
-    await user.click(screen.getAllByRole("button", { name: /perfil/i })[0]);
-    await user.click(await screen.findByText(/^sair$/i));
+    await user.click(screen.getAllByRole("button", { name: /^conta$/i })[0]);
+    await user.click(await screen.findByRole("button", { name: /^sair$/i }));
 
     expect(await screen.findByRole("heading", { name: /login/i })).toBeInTheDocument();
     expect(window.localStorage.getItem("mova_auth_session")).toBeNull();

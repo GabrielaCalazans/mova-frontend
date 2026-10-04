@@ -8,12 +8,18 @@ vi.mock("react-router-dom", () => ({ useNavigate: () => navigateMock }));
 vi.mock("../components/BottomNav", () => ({ default: () => null }));
 
 describe("TiposDeCarros", () => {
-  it("oferece Espaçosos e Adaptados PCD no seletor do catálogo", () => {
+  it("mostra todas as categorias, incluindo Espaçosos, Adaptados PCD e Elétricos", () => {
     render(<TiposDeCarros />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Próximo tipo" }));
-    expect(screen.getByRole("heading", { name: "Carro Espaçoso" })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Selecionar" }));
+    for (const nome of ["Carro Econômico", "Carro Espaçoso", "Carro Executivo", "Carro Adaptado PCD", "Carro Elétrico"]) {
+      expect(screen.getByRole("button", { name: new RegExp(nome) })).toBeInTheDocument();
+    }
+  });
+
+  it("envia a categoria escolhida para a lista de carros", () => {
+    render(<TiposDeCarros />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Carro Espaçoso/ }));
     expect(navigateMock).toHaveBeenCalledWith("/carros/lista", { state: { tipo: "espacoso" } });
   });
 });

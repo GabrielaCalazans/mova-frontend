@@ -1,9 +1,13 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBolt, faWheelchair } from "@fortawesome/free-solid-svg-icons";
 import PublicAppShell from "../components/layout/PublicAppShell";
-import { useAuthSession } from "../hooks/useAuthSession";
+import CursorGlowArea from "../components/ui/CursorGlowArea";
+import VehicleCard from "../components/vehicle/VehicleCard";
+import { vehicleTitle } from "../utils/vehicleDisplay";
 import { listVeiculos } from "../services/veiculoService";
-import { resolveModelDetails } from "../utils/vehicleDisplay";
+import "../styles/vehicle.css";
 import "../styles/home.css";
 
 const CATEGORIAS = [
@@ -16,12 +20,12 @@ const CATEGORIAS = [
 
 function CategoryCarousel({ categoria, onChange }) {
   return (
-    <section className="public-home__category-carousel" role="group" aria-label="Filtrar por categoria">
-      <h2 className="home-sr-only">Filtrar por categoria</h2>
-      <div className="public-home__category-carousel-list">
-        <button type="button" className="mova-button mova-button--quiet" aria-pressed={!categoria} onClick={() => onChange("")}>Todos</button>
+    <section className="category-strip public-home__category-carousel" role="group" aria-labelledby="categorias-title" data-capture="carousel">
+      <h2 id="categorias-title">Filtrar por categoria</h2>
+      <div className="category-strip__list">
+        <button type="button" className="chip" aria-pressed={!categoria} onClick={() => onChange("")}>Todos</button>
         {CATEGORIAS.map(([value, label]) => (
-          <button key={value} type="button" className="mova-button mova-button--quiet" aria-pressed={categoria === value} onClick={() => onChange(categoria === value ? "" : value)}>
+          <button key={value} type="button" className="chip" aria-pressed={categoria === value} onClick={() => onChange(categoria === value ? "" : value)}>
             {label}
           </button>
         ))}
@@ -30,9 +34,24 @@ function CategoryCarousel({ categoria, onChange }) {
   );
 }
 
+function SkeletonGrid() {
+  return (
+    <div className="vehicle-grid" aria-hidden="true">
+      {[0, 1, 2].map((item) => (
+        <div key={item} className="vcard vcard--skeleton">
+          <div className="skeleton" style={{ aspectRatio: "16 / 10" }} />
+          <div className="vcard__body">
+            <div className="skeleton" style={{ height: 24, width: "60%" }} />
+            <div className="skeleton" style={{ height: 16, width: "40%" }} />
+            <div className="skeleton" style={{ height: 44, marginTop: 24 }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function Home() {
-  const navigate = useNavigate();
-  const session = useAuthSession();
   const [veiculos, setVeiculos] = useState([]);
   const [categoria, setCategoria] = useState("");
   const [filtroMarca, setFiltroMarca] = useState("");
@@ -41,6 +60,7 @@ function Home() {
   const [filtroEletrico, setFiltroEletrico] = useState(false);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
+  const [tentativa, setTentativa] = useState(0);
 
   const filtros = useMemo(() => {
     return {
@@ -64,79 +84,114 @@ function Home() {
       .catch((error) => { if (ativo) setErro(error?.message || "Não foi possível carregar os veículos."); })
       .finally(() => { if (ativo) setLoading(false); });
     return () => { ativo = false; };
-  }, [filtros]);
+  }, [filtros, tentativa]);
+
+  const filtrando = Object.keys(filtros).length > 0;
+  const nomeCategoria = CATEGORIAS.find(([value]) => value === categoria)?.[1];
+
+  function limparFiltros() {
+    setCategoria("");
+    setFiltroMarca("");
+    setFiltroModelo("");
+    setFiltroPcd(false);
+    setFiltroEletrico(false);
+  }
 
   return (
     <PublicAppShell>
       <section className="public-home" aria-labelledby="home-title">
-        <header className="public-home__intro">
-          <p className="mova-eyebrow">Catálogo público</p>
+        <header className="page-head">
           <h1 id="home-title">Veículos disponíveis agora</h1>
-          <p>Veja os veículos, filtre por categoria e abra os detalhes sem criar conta.</p>
-          {session?.token && (
-            <button type="button" className="public-home__profile" onClick={() => navigate("/conta")} aria-label="Perfil">
-              Perfil
-            </button>
-          )}
+          <p className="page-head__lede">Veja os veículos, filtre por categoria e abra os detalhes sem criar conta.</p>
         </header>
 
         <section className="public-home__catalog" aria-labelledby="catalog-title">
-          <div className="public-home__section-heading">
-            <div>
-              <p className="mova-eyebrow">Catálogo público</p>
-              <h2 id="catalog-title">Veículos disponíveis</h2>
+          <h2 id="catalog-title" className="sr-only">Buscar veículos</h2>
+          <form className="catalog-search" role="search" aria-label="Buscar veículos" onSubmit={(event) => event.preventDefault()}>
+            <div className="field">
+              <label className="field__label" htmlFor="catalog-marca">Marca</label>
+              <input id="catalog-marca" className="field__control" value={filtroMarca} onChange={(event) => setFiltroMarca(event.target.value)} placeholder="Ex.: Fiat" autoComplete="off" />
             </div>
-            <p aria-live="polite">{loading ? "Carregando…" : `${veiculos.length} veículo(s)`}</p>
-          </div>
-
-          <form className="public-home__search" onSubmit={(event) => event.preventDefault()}>
-            <label htmlFor="catalog-marca">Marca</label>
-            <input id="catalog-marca" value={filtroMarca} onChange={(event) => setFiltroMarca(event.target.value)} placeholder="Ex.: Fiat" />
-            <label htmlFor="catalog-modelo">Modelo</label>
-            <input id="catalog-modelo" value={filtroModelo} onChange={(event) => setFiltroModelo(event.target.value)} placeholder="Ex.: Argo" />
-            <label className="public-home__check"><input type="checkbox" checked={filtroPcd} onChange={(event) => setFiltroPcd(event.target.checked)} /> PCD</label>
-            <label className="public-home__check"><input type="checkbox" checked={filtroEletrico} onChange={(event) => setFiltroEletrico(event.target.checked)} /> Elétrico</label>
+            <div className="field">
+              <label className="field__label" htmlFor="catalog-modelo">Modelo</label>
+              <input id="catalog-modelo" className="field__control" value={filtroModelo} onChange={(event) => setFiltroModelo(event.target.value)} placeholder="Ex.: Argo" autoComplete="off" />
+            </div>
+            <div className="catalog-search__toggles">
+              <label className="toggle-chip">
+                <input type="checkbox" checked={filtroPcd} onChange={(event) => setFiltroPcd(event.target.checked)} />
+                <span><FontAwesomeIcon icon={faWheelchair} aria-hidden="true" />PCD</span>
+              </label>
+              <label className="toggle-chip">
+                <input type="checkbox" checked={filtroEletrico} onChange={(event) => setFiltroEletrico(event.target.checked)} />
+                <span><FontAwesomeIcon icon={faBolt} aria-hidden="true" />Elétrico</span>
+              </label>
+            </div>
           </form>
 
-          {erro && <p className="public-home__message" role="alert">{erro}</p>}
-          {!loading && !erro && veiculos.length === 0 && <p className="public-home__message">Nenhum veículo publicado para este filtro.</p>}
-          {!loading && !erro && veiculos.length > 0 && (
-            <div className="public-home__grid">
-              {veiculos.map((veiculo, index) => {
-                const marca = veiculo.marca || veiculo.modeloVeiculo?.marca || "Marca não informada";
-                const modelo = veiculo.modelo || veiculo.modeloVeiculo?.modelo || "Modelo não informado";
-                const details = resolveModelDetails(marca, modelo, categoria.toLowerCase());
-                return (
-                  <Fragment key={veiculo.id || `${marca}-${modelo}-${index}`}>
-                    <article className="vehicle-card">
-                      <img src={veiculo.imagens?.[0]?.url || details.image} alt={veiculo.imagens?.[0]?.altText || `${marca} ${modelo}`} className="vehicle-card__image" loading="lazy" decoding="async" />
-                      <div className="vehicle-card__body">
-                        <p className="mova-eyebrow">{veiculo.categoria || "Veículo"}</p>
-                        <h3>{marca} {modelo}</h3>
-                        <dl className="vehicle-card__specs">
-                          <div><dt>Câmbio</dt><dd>{veiculo.cambio || "Não informado"}</dd></div>
-                          <div><dt>Lugares</dt><dd>{veiculo.capacidade || "Não informado"}</dd></div>
-                          <div><dt>Adaptado para PCD</dt><dd>{veiculo.adaptado ? "Sim" : "Não"}</dd></div>
-                        </dl>
-                        <p className="vehicle-card__location">{veiculo.garagem?.nome || veiculo.garagemNome || "Garagem não informada"}</p>
-                        <p className="vehicle-card__price">
-                          {Number.isFinite(Number(veiculo.valorDiaria))
-                            ? <><strong>{new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(veiculo.valorDiaria))}</strong> por dia</>
-                            : "Diária indisponível"}
-                        </p>
-                        <button type="button" className="mova-button mova-button--secondary" onClick={() => navigate(`/carros/${veiculo.id}`)}>
-                          Ver detalhes
-                        </button>
-                      </div>
-                    </article>
-                    {(index === 2 || (veiculos.length < 3 && index === veiculos.length - 1)) && (
-                      <CategoryCarousel categoria={categoria} onChange={setCategoria} />
-                    )}
-                  </Fragment>
-                );
-              })}
-            </div>
-          )}
+          <p className="resultbar" role="status" aria-live="polite">
+            {loading ? (
+              <span>Carregando veículos…</span>
+            ) : erro ? (
+              <span>Catálogo indisponível</span>
+            ) : (
+              <>
+                <span><strong className="tabular">{veiculos.length}</strong> {veiculos.length === 1 ? "veículo disponível" : "veículos disponíveis"}</span>
+                <span>{nomeCategoria ? `Categoria ${nomeCategoria}` : "Todas as categorias"}</span>
+              </>
+            )}
+          </p>
+
+          <div className="public-home__results">
+            {loading && <SkeletonGrid />}
+
+            {!loading && erro && (
+              <div className="state-block state-block--error" role="alert">
+                <h3 className="state-block__title">Não conseguimos carregar os veículos</h3>
+                <p className="state-block__text">{erro} Verifique sua conexão e tente de novo.</p>
+                <button type="button" className="btn btn--secondary" onClick={() => setTentativa((valor) => valor + 1)}>Tentar novamente</button>
+              </div>
+            )}
+
+            {!loading && !erro && veiculos.length === 0 && (
+              <>
+                <div className="state-block public-home__message">
+                  <h3 className="state-block__title">{filtrando ? "Nenhum veículo para este filtro" : "Nenhum veículo publicado agora"}</h3>
+                  <p className="state-block__text">
+                    {filtrando
+                      ? "Nenhum veículo publicado para este filtro. Limpe os filtros para ver a lista completa."
+                      : "Novos veículos aparecem aqui assim que um locador os publica."}
+                  </p>
+                  {filtrando && <button type="button" className="btn btn--secondary" onClick={limparFiltros}>Limpar filtros</button>}
+                </div>
+                <CategoryCarousel categoria={categoria} onChange={setCategoria} />
+              </>
+            )}
+
+            {!loading && !erro && veiculos.length > 0 && (
+              <CursorGlowArea className="vehicle-grid public-home__grid">
+                {veiculos.map((veiculo, index) => {
+                  const nome = vehicleTitle(veiculo);
+                  return (
+                    <Fragment key={veiculo.id || `${nome}-${index}`}>
+                      <VehicleCard
+                        vehicle={veiculo}
+                        className="vehicle-card"
+                        titleTo={`/carros/${veiculo.id}`}
+                        actions={(
+                          <Link className="btn btn--secondary" to={`/carros/${veiculo.id}`}>
+                            Ver detalhes<span className="sr-only"> de {nome}</span>
+                          </Link>
+                        )}
+                      />
+                      {(index === 2 || (veiculos.length < 3 && index === veiculos.length - 1)) && (
+                        <CategoryCarousel categoria={categoria} onChange={setCategoria} />
+                      )}
+                    </Fragment>
+                  );
+                })}
+              </CursorGlowArea>
+            )}
+          </div>
         </section>
       </section>
     </PublicAppShell>

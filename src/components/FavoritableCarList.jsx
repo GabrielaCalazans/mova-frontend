@@ -1,24 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBell, faBellSlash } from "@fortawesome/free-solid-svg-icons";
 import BottomNav from "../components/BottomNav";
-import { listVeiculos } from "../services/veiculoService";
-import { normalizeVeiculo } from "../services/veiculoService";
-import { getVehicleCharacteristics, resolveModelDetails } from "../utils/vehicleDisplay";
+import CursorGlowArea from "./ui/CursorGlowArea";
+import VehicleCard from "./vehicle/VehicleCard";
+import { listVeiculos, normalizeVeiculo } from "../services/veiculoService";
 import { desfavoritar, favoritar, listarFavoritos } from "../services/favoritoService";
 import { cancelarInteresse, listarInteresses, registrarInteresse } from "../services/interesseService";
-import { formatMoneyBRL } from "../utils/reservationMath";
-import "../styles/carselect.css";
-import "../styles/home.css";
-import "../styles/relatorios.css";
-
-function resolveModeloVeiculo(veiculo) {
-  return veiculo?.modeloVeiculo ?? {};
-}
-
-function resolveVeiculoField(veiculo, modeloVeiculo, field) {
-  return veiculo?.[field] ?? modeloVeiculo?.[field] ?? "";
-}
+import "../styles/vehicle.css";
 
 export default function FavoritableCarList({ title, onlyFavorites, emptyMessage, documentTitle }) {
   const navigate = useNavigate();
@@ -58,33 +48,30 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
     });
   }, [carregar, documentTitle]);
 
-  async function handleToggleFavorito(event, id) {
-    event.stopPropagation();
+  function toggleIn(setter, id) {
+    setter((atual) => {
+      const proximo = new Set(atual);
+      if (proximo.has(String(id))) proximo.delete(String(id));
+      else proximo.add(String(id));
+      return proximo;
+    });
+  }
+
+  async function handleToggleFavorito(id) {
     try {
       if (favoritos.has(String(id))) await desfavoritar(id);
       else await favoritar(id);
-      setFavoritos((atual) => {
-        const proximo = new Set(atual);
-        if (proximo.has(String(id))) proximo.delete(String(id));
-        else proximo.add(String(id));
-        return proximo;
-      });
+      toggleIn(setFavoritos, id);
     } catch (e) {
       setErro(e.message || "Não foi possível atualizar o favorito.");
     }
   }
 
-  async function handleToggleInteresse(event, id) {
-    event.stopPropagation();
+  async function handleToggleInteresse(id) {
     try {
       if (interesses.has(String(id))) await cancelarInteresse(id);
       else await registrarInteresse(id);
-      setInteresses((atual) => {
-        const proximo = new Set(atual);
-        if (proximo.has(String(id))) proximo.delete(String(id));
-        else proximo.add(String(id));
-        return proximo;
-      });
+      toggleIn(setInteresses, id);
     } catch (e) {
       setErro(e.message || "Não foi possível atualizar o aviso de disponibilidade.");
     }
@@ -95,69 +82,50 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
   );
 
   return (
-    <main className="carro-page">
-      <div className="carro-header">
+    <main className="carro-page catalog-page">
+      <header className="page-head">
         <h1>{title}</h1>
-      </div>
+      </header>
 
-      <div className="carro-content">
-        {loading && <p className="carro-status">Carregando veículos…</p>}
-        {!loading && erro && <p className="carro-status">{erro}</p>}
+      <div className="catalog-page__body">
+        {loading && <p className="loading-state carro-status" role="status"><span className="spinner" aria-hidden="true" />Carregando veículos…</p>}
+        {!loading && erro && <p className="alert alert--danger carro-status" role="alert">{erro}</p>}
 
         {!loading && !erro && listaExibida.length === 0 && (
-          <p className="carro-empty-state">{emptyMessage}</p>
-        )}
-
-        {!loading && !erro && listaExibida.length > 0 && (
-          <div className="fav-list">
-            {listaExibida.map((veiculo) => {
-              const modeloVeiculo = resolveModeloVeiculo(veiculo);
-              const marca = resolveVeiculoField(veiculo, modeloVeiculo, "marca");
-              const modelo = resolveVeiculoField(veiculo, modeloVeiculo, "modelo");
-              const details = resolveModelDetails(marca, modelo);
-              const caracteristicas = getVehicleCharacteristics(veiculo);
-              const isFav = favoritos.has(String(veiculo.id));
-
-              return (
-                <div
-                  className="fav-card"
-                  key={veiculo.id}
-                  onClick={() => navigate("/carros/lista", { state: {} })}
-                >
-                  <img src={veiculo.imagens?.[0]?.url || details.image} alt={veiculo.imagens?.[0]?.altText || `${marca} ${modelo}`} className="fav-card__image" loading="lazy" decoding="async" />
-                  <div className="fav-card__info">
-                    <h3>{modelo}</h3>
-                    <p>{marca}</p>
-                    {caracteristicas.map((caracteristica) => (
-                      <p key={caracteristica}>{caracteristica}</p>
-                    ))}
-                    <p>{veiculo.valorDiaria != null ? `${formatMoneyBRL(veiculo.valorDiaria)} /dia` : "Consulte o preço"}</p>
-                  </div>
-                  <button
-                    type="button"
-                    className="fav-card__heart"
-                    aria-label={isFav ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-                    aria-pressed={isFav}
-                    onClick={(event) => handleToggleFavorito(event, veiculo.id)}
-                  >
-                    <Heart size={24} fill={isFav ? "currentColor" : "none"} />
-                  </button>
-                  <button
-                    type="button"
-                    className="carro-button"
-                    aria-pressed={interesses.has(String(veiculo.id))}
-                    onClick={(event) => handleToggleInteresse(event, veiculo.id)}
-                  >
-                    {interesses.has(String(veiculo.id)) ? "Cancelar aviso" : "Avisar quando disponível"}
-                  </button>
-                </div>
-              );
-            })}
+          <div className="state-block carro-empty-state">
+            <p className="state-block__text">{emptyMessage}</p>
           </div>
         )}
 
-        <p className="relatorio-filter-summary" style={{ marginTop: "1rem" }}>
-          <button type="button" onClick={() => navigate(crossLinkRoute)}>
+        {!loading && !erro && listaExibida.length > 0 && (
+          <CursorGlowArea className="vehicle-grid fav-list">
+            {listaExibida.map((veiculo) => {
+              const avisando = interesses.has(String(veiculo.id));
+              return (
+                <VehicleCard
+                  key={veiculo.id}
+                  vehicle={veiculo}
+                  className="fav-card"
+                  favorite={{ active: favoritos.has(String(veiculo.id)), onToggle: () => handleToggleFavorito(veiculo.id) }}
+                  actions={(
+                    <>
+                      <button type="button" className="btn btn--secondary" onClick={() => navigate(`/carros/${veiculo.id}`)}>
+                        Ver detalhes
+                      </button>
+                      <button type="button" className="btn btn--quiet" aria-pressed={avisando} onClick={() => handleToggleInteresse(veiculo.id)}>
+                        <FontAwesomeIcon icon={avisando ? faBellSlash : faBell} aria-hidden="true" />
+                        {avisando ? "Cancelar aviso" : "Avisar quando disponível"}
+                      </button>
+                    </>
+                  )}
+                />
+              );
+            })}
+          </CursorGlowArea>
+        )}
+
+        <p className="catalog-page__crosslink">
+          <button type="button" className="btn btn--quiet" onClick={() => navigate(crossLinkRoute)}>
             {crossLinkLabel}
           </button>
         </p>

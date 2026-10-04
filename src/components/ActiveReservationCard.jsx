@@ -28,19 +28,20 @@ export default function ActiveReservationCard({ reservation }) {
   return (
     <aside className="active-reservation-card" aria-labelledby="active-reservation-title">
       <div>
-        <p className="mova-eyebrow">Estado atual</p>
         <h2 id="active-reservation-title">Sua reserva ativa</h2>
-        <p className="active-reservation-card__status">{inProgress ? "Em andamento" : "Confirmada"}</p>
+        <p className={`badge ${inProgress ? "badge--info" : "badge--success"} active-reservation-card__status`}>
+          {inProgress ? "Em andamento" : "Confirmada"}
+        </p>
       </div>
       <dl>
         <div><dt>Veículo</dt><dd>{vehicleName(reservation)}</dd></div>
-        <div><dt>Retirada</dt><dd>{formatDate(reservation.dataHoraInicio)}</dd></div>
-        <div><dt>Devolução</dt><dd>{formatDate(reservation.dataHoraFim)}</dd></div>
         <div><dt>Garagem</dt><dd>{reservation.garagemRetirada?.nome || "Não informada"}</dd></div>
+        <div><dt>Retirada</dt><dd className="tabular">{formatDate(reservation.dataHoraInicio)}</dd></div>
+        <div><dt>Devolução</dt><dd className="tabular">{formatDate(reservation.dataHoraFim)}</dd></div>
       </dl>
       <div className="active-reservation-card__actions">
-        <Link className="mova-button" to={action.to} state={action.state}>{action.label}</Link>
-        <Link className="mova-button mova-button--secondary" to="/historico">Ver reservas</Link>
+        <Link className="btn" to={action.to} state={action.state}>{action.label}</Link>
+        <Link className="btn btn--secondary" to="/historico">Ver reservas</Link>
       </div>
     </aside>
   );

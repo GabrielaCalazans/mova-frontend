@@ -19,12 +19,12 @@ const IMG = {
 };
 
 const garagemCentro = {
-  id: "garage-1", nome: "Garagem Centro", status: "ATIVA", acessivel: true,
+  id: "garage-1", nome: "Garagem Centro", status: "ATIVA", acessibilidade: true,
   endereco: "Rua Augusta, 1500 — Consolação, São Paulo — SP", capacidade: 20, veiculosAlocados: 12,
   latitude: -23.556, longitude: -46.662,
 };
 const garagemSul = {
-  id: "garage-2", nome: "Garagem Vila Mariana", status: "ATIVA", acessivel: false,
+  id: "garage-2", nome: "Garagem Vila Mariana", status: "ATIVA", acessibilidade: false,
   endereco: "Avenida Domingos de Morais, 2781 — Vila Mariana, São Paulo — SP, 04035-001", capacidade: 12, veiculosAlocados: 11,
 };
 

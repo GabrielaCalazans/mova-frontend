@@ -73,7 +73,7 @@ describe("FavoritableCarList", () => {
     expect(screen.getByText("Executivo")).toBeInTheDocument();
     expect(screen.getByText("Elétrico")).toBeInTheDocument();
     expect(screen.getByText("Adaptado PCD")).toBeInTheDocument();
-    expect(screen.getByText("R$ 180,00 /dia")).toBeInTheDocument();
+    expect(document.querySelector(".vcard__price")).toHaveTextContent("R$ 180,00 /dia");
     expect(screen.queryByText("Branco")).not.toBeInTheDocument();
     expect(screen.queryByText(/Autonomia/i)).not.toBeInTheDocument();
   });
