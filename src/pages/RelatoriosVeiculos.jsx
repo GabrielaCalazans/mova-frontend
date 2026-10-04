@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Download } from "lucide-react";
 import BottomNav from "../components/BottomNav";
 import { getAvaliacaoDashboard, getFinanceiro, getReservas, getUtilizacao } from "../services/dashboardService";
-import "../styles/carselect.css";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import "../styles/owner.css";
 import "../styles/relatorios.css";
 
 const csvValue = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
@@ -29,6 +30,26 @@ const moeda = (valor) => new Intl.NumberFormat("pt-BR", { style: "currency", cur
 const percentual = (valor) => `${(Number(valor || 0) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%`;
 const DISPLAY_TIME_ZONE = import.meta.env.VITE_TIMEZONE_EXIBICAO || "America/Sao_Paulo";
 const data = (valor) => valor ? new Intl.DateTimeFormat("pt-BR", { timeZone: DISPLAY_TIME_ZONE }).format(new Date(valor)) : "—";
+
+const compacto = (valor) => new Intl.NumberFormat("pt-BR", { notation: "compact" }).format(Number(valor || 0));
+
+// Gráfico de barras com uma única cor de ação: a cor vem do CSS (relatorios.css),
+// então segue o tema. A lista abaixo do gráfico é a alternativa textual.
+function GraficoBarras({ dados, campo, formatar }) {
+  return (
+    <div className="report-chart" aria-hidden="true">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={dados} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} accessibilityLayer={false}>
+          <CartesianGrid vertical={false} />
+          <XAxis dataKey="placa" tickLine={false} interval={0} />
+          <YAxis tickFormatter={compacto} width={48} tickLine={false} axisLine={false} />
+          <Tooltip formatter={(valor) => formatar(valor)} contentStyle={{ background: "var(--surface-elevated)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }} labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-secondary)" }} />
+          <Bar dataKey={campo} radius={[2, 2, 0, 0]} maxBarSize={48} isAnimationActive={false} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
 
 export default function RelatoriosVeiculos() {
   const [relatorios, setRelatorios] = useState(null);
@@ -85,83 +106,99 @@ export default function RelatoriosVeiculos() {
   }
 
   return (
-    <main className="carro-page">
-      <div className="carro-header"><h1>Relatórios | Veículos</h1></div>
-      <div className="carro-content">
-        <p className="relatorio-filter-summary">Dados reais da frota, reservas, receita e avaliações do Locador autenticado.</p>
-        <form className="filtro-card" onSubmit={aplicarFiltros} aria-describedby="relatorio-filtros-ajuda">
-          <div className="auth-field">
-            <label htmlFor="relatorio-data-inicio">Data inicial</label>
-            <input id="relatorio-data-inicio" type="date" value={filtros.dataInicio} onChange={(event) => setFiltros((atual) => ({ ...atual, dataInicio: event.target.value }))} />
+    <main className="owner-page" aria-labelledby="relatorio-veiculos-title">
+      <header className="page-head">
+        <h1 id="relatorio-veiculos-title">Relatórios | Veículos</h1>
+        <p className="page-head__lede">Dados reais da frota, reservas, receita e avaliações do Locador autenticado.</p>
+      </header>
+      <div className="owner-section">
+        <form className="owner-filter" onSubmit={aplicarFiltros} aria-describedby="relatorio-filtros-ajuda">
+          <fieldset className="fieldset">
+            <legend>Filtrar reservas</legend>
+            <div className="owner-filter__grid">
+              <div className="field">
+                <label className="field__label" htmlFor="relatorio-data-inicio">Data inicial</label>
+                <input className="field__control" id="relatorio-data-inicio" type="date" value={filtros.dataInicio} onChange={(event) => setFiltros((atual) => ({ ...atual, dataInicio: event.target.value }))} />
+              </div>
+              <div className="field">
+                <label className="field__label" htmlFor="relatorio-data-fim">Data final</label>
+                <input className="field__control" id="relatorio-data-fim" type="date" value={filtros.dataFim} onChange={(event) => setFiltros((atual) => ({ ...atual, dataFim: event.target.value }))} />
+              </div>
+              <div className="field">
+                <label className="field__label" htmlFor="relatorio-veiculo">Veículo</label>
+                <select className="field__control" id="relatorio-veiculo" value={filtros.idVeiculo} onChange={(event) => setFiltros((atual) => ({ ...atual, idVeiculo: event.target.value }))}>
+                  <option value="">Todos os veículos</option>
+                  {veiculosFiltro.map((veiculo) => <option key={veiculo.id} value={veiculo.id}>{veiculo.placa}</option>)}
+                </select>
+              </div>
+            </div>
+          </fieldset>
+          <div className="owner-filter__actions">
+            <button type="submit" className="btn" disabled={carregando}>Aplicar filtros</button>
+            <p id="relatorio-filtros-ajuda" className="owner-filter__help">Período e veículo filtram as reservas conforme o contrato atual. Financeiro, utilização e avaliações seguem seus endpoints agregados sem esses filtros.</p>
           </div>
-          <div className="auth-field">
-            <label htmlFor="relatorio-data-fim">Data final</label>
-            <input id="relatorio-data-fim" type="date" value={filtros.dataFim} onChange={(event) => setFiltros((atual) => ({ ...atual, dataFim: event.target.value }))} />
-          </div>
-          <div className="auth-field">
-            <label htmlFor="relatorio-veiculo">Veículo</label>
-            <select id="relatorio-veiculo" value={filtros.idVeiculo} onChange={(event) => setFiltros((atual) => ({ ...atual, idVeiculo: event.target.value }))}>
-              <option value="">Todos os veículos</option>
-              {veiculosFiltro.map((veiculo) => <option key={veiculo.id} value={veiculo.id}>{veiculo.placa}</option>)}
-            </select>
-          </div>
-          <button type="submit" className="carro-button" disabled={carregando}>Aplicar filtros</button>
         </form>
-        <p id="relatorio-filtros-ajuda" className="relatorio-filter-summary">Período e veículo filtram as reservas conforme o contrato atual. Financeiro, utilização e avaliações seguem seus endpoints agregados sem esses filtros.</p>
-        {carregando && <p className="carro-status" role="status" aria-busy="true">{relatorios ? "Atualizando relatórios…" : "Carregando relatórios…"}</p>}
-        {erro && <p className="carro-status" role="alert">{erro}</p>}
-        {relatorios && (
-          <div className="relatorio-grid">
-            <section className="relatorio-card">
-              <div className="relatorio-card__chart">
-                <h2>Reservas</h2>
-                <p>{relatorios.reservas?.total ?? reservas.length} reservas no período consultado.</p>
-                {reservas.length ? (
-                  <ul>{reservas.map((reserva) => <li key={reserva.id}>{reserva.veiculo?.placa || reserva.idVeiculo}: {reserva.status} · {data(reserva.dataHoraInicio)} a {data(reserva.dataHoraFim)} · {moeda(reserva.valorTotal)}</li>)}</ul>
-                ) : <p>Nenhuma reserva encontrada.</p>}
-              </div>
-              <div className="relatorio-card__footer"><div><h3>Reservas da frota</h3><p>Dados reais filtrados pelo backend.</p></div></div>
-            </section>
-            <section className="relatorio-card">
-              <div className="relatorio-card__chart">
-                <h2>Financeiro</h2>
-                <p><strong>{moeda(relatorios.financeiro?.faturamentoBruto)}</strong> de faturamento bruto</p>
-                {porVeiculo.length ? (
-                  <ul>{porVeiculo.map(({ idVeiculo, placa, total }) => <li key={idVeiculo}>{placa}: {moeda(total)}</li>)}</ul>
-                ) : <p>Nenhum faturamento encontrado.</p>}
-              </div>
-              <div className="relatorio-card__footer">
-                <div><h3>Relatório financeiro por veículo</h3><p>Dados reais de pagamentos concluídos.</p></div>
-                <div className="relatorio-card__actions">
-                  <button type="button" aria-label="Baixar relatório financeiro" disabled={!porVeiculo.length} onClick={() => downloadCsv(porVeiculo)}><Download size={20} /></button>
-                </div>
-              </div>
-            </section>
-            <section className="relatorio-card">
-              <div className="relatorio-card__chart">
-                <h2>Utilização</h2>
-                <p>{percentual(relatorios.utilizacao?.taxaOcupacao)} de ocupação · {relatorios.utilizacao?.tempoMedioReservadoHoras ?? 0}h em média</p>
-                {maisUtilizados.length ? (
-                  <ul>{maisUtilizados.map(({ idVeiculo, placa, reservas, horasReservadas }) => <li key={idVeiculo}>{placa}: {reservas} reservas, {horasReservadas}h</li>)}</ul>
-                ) : <p>Nenhuma utilização encontrada.</p>}
-              </div>
-              <div className="relatorio-card__footer"><div><h3>Uso dos veículos</h3><p>Dados reais de reservas.</p></div></div>
-            </section>
-            <section className="relatorio-card">
-              <div className="relatorio-card__chart">
-                <h2>Avaliações</h2>
-                <p>{avaliacoes.total ?? 0} avaliações · média {avaliacoes.media ?? 0}</p>
-                {!avaliacoes.total && <p>Nenhuma avaliação encontrada.</p>}
-              </div>
-              <div className="relatorio-card__footer"><div><h3>Avaliações dos usuários</h3><p>Dados reais vinculados aos veículos do Locador.</p></div></div>
-            </section>
-            <section className="relatorio-card">
-              <div className="relatorio-card__chart"><h2>Quilometragem</h2><p>Dados de quilometragem indisponíveis.</p></div>
-              <div className="relatorio-card__footer"><div><h3>Quilometragem</h3><p>O sistema não possui uma fonte persistida confiável para este indicador.</p></div></div>
-            </section>
-          </div>
-        )}
+        {carregando && <p className="loading-state" role="status" aria-busy="true"><span className="spinner" aria-hidden="true" />{relatorios ? "Atualizando relatórios…" : "Carregando relatórios…"}</p>}
+        {erro && <p className="alert alert--danger" role="alert">{erro}</p>}
       </div>
+      {relatorios && (
+        <div className="report-grid">
+          <section className="report-block report-block--wide" aria-labelledby="rel-reservas">
+            <div className="report-block__head">
+              <h2 id="rel-reservas">Reservas</h2>
+              <p className="report-block__source">Reservas da frota · dados reais filtrados pelo backend.</p>
+            </div>
+            <p className="report-block__figure"><strong>{relatorios.reservas?.total ?? reservas.length}</strong> reservas no período consultado.</p>
+            {reservas.length ? (
+              <ul className="report-list">{reservas.map((reserva) => <li key={reserva.id}>{reserva.veiculo?.placa || reserva.idVeiculo}: {reserva.status} · {data(reserva.dataHoraInicio)} a {data(reserva.dataHoraFim)} · {moeda(reserva.valorTotal)}</li>)}</ul>
+            ) : <p className="report-empty">Nenhuma reserva encontrada.</p>}
+          </section>
+          <section className="report-block" aria-labelledby="rel-financeiro">
+            <div className="report-block__head">
+              <h2 id="rel-financeiro">Financeiro</h2>
+              <p className="report-block__source">Relatório financeiro por veículo · pagamentos concluídos.</p>
+            </div>
+            <p className="report-block__figure"><strong>{moeda(relatorios.financeiro?.faturamentoBruto)}</strong> de faturamento bruto</p>
+            {porVeiculo.length ? (
+              <>
+                <GraficoBarras dados={porVeiculo} campo="total" formatar={moeda} />
+                <ul className="report-list">{porVeiculo.map(({ idVeiculo, placa, total }) => <li key={idVeiculo}>{placa}: {moeda(total)}</li>)}</ul>
+              </>
+            ) : <p className="report-empty">Nenhum faturamento encontrado.</p>}
+            <div className="report-block__foot">
+              <button type="button" className="btn btn--secondary" disabled={!porVeiculo.length} onClick={() => downloadCsv(porVeiculo)}><Download aria-hidden="true" />Baixar relatório financeiro</button>
+            </div>
+          </section>
+          <section className="report-block" aria-labelledby="rel-utilizacao">
+            <div className="report-block__head">
+              <h2 id="rel-utilizacao">Utilização</h2>
+              <p className="report-block__source">Uso dos veículos · dados reais de reservas.</p>
+            </div>
+            <p className="report-block__figure"><strong>{percentual(relatorios.utilizacao?.taxaOcupacao)} de ocupação</strong>{relatorios.utilizacao?.tempoMedioReservadoHoras ?? 0}h em média por reserva</p>
+            {maisUtilizados.length ? (
+              <>
+                <GraficoBarras dados={maisUtilizados} campo="horasReservadas" formatar={(valor) => `${valor}h`} />
+                <ul className="report-list">{maisUtilizados.map(({ idVeiculo, placa, reservas, horasReservadas }) => <li key={idVeiculo}>{placa}: {reservas} reservas, {horasReservadas}h</li>)}</ul>
+              </>
+            ) : <p className="report-empty">Nenhuma utilização encontrada.</p>}
+          </section>
+          <section className="report-block" aria-labelledby="rel-avaliacoes">
+            <div className="report-block__head">
+              <h2 id="rel-avaliacoes">Avaliações</h2>
+              <p className="report-block__source">Avaliações dos usuários vinculadas aos veículos do Locador.</p>
+            </div>
+            <p className="report-block__figure"><strong>{avaliacoes.total ?? 0} avaliações · média {avaliacoes.media ?? 0}</strong></p>
+            {!avaliacoes.total && <p className="report-empty">Nenhuma avaliação encontrada.</p>}
+          </section>
+          <section className="report-block" aria-labelledby="rel-km">
+            <div className="report-block__head">
+              <h2 id="rel-km">Quilometragem</h2>
+              <p className="report-block__source">O sistema não possui uma fonte persistida confiável para este indicador.</p>
+            </div>
+            <p className="report-empty">Dados de quilometragem indisponíveis.</p>
+          </section>
+        </div>
+      )}
       <BottomNav />
     </main>
   );

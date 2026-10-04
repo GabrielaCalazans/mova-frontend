@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import AuthenticatedLayout from "../layout/AuthenticatedLayout";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { createVeiculo, listFrota, updateVeiculo, uploadImagemVeiculo, deleteImagemVeiculo, reorderImagensVeiculo, setCapaImagemVeiculo } from "../services/veiculoService";
 import { listGaragens } from "../services/garagemService";
 import { getAuthSession } from "../services/authSession";
-import "../styles/relatorios.css";
+import "../styles/owner.css";
 
 const ANOS = Array.from({ length: 12 }, (_, i) => String(2026 - i));
 const CAMBIOS = ["Manual", "Automatico"];
@@ -249,244 +249,189 @@ export default function CadastroCarroForm() {
     return atual || (garagem.status === "ATIVA" && temVaga);
   });
 
+  const titulo = isNovo ? "Adicionar veículo" : "Editar veículo";
+
   if (carregandoVeiculo) {
     return (
-      <AuthenticatedLayout title="Informações" align="center">
-        <p role="status" aria-live="polite">Carregando veículo…</p>
-      </AuthenticatedLayout>
+      <main className="owner-page" aria-labelledby="veiculo-form-title">
+        <header className="page-head"><h1 id="veiculo-form-title">{titulo}</h1></header>
+        <p className="loading-state" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" />Carregando veículo…</p>
+      </main>
     );
   }
 
+  const campo = (id, rotulo, props, onChange) => (
+    <div className="field">
+      <label className="field__label" htmlFor={id}>{rotulo}</label>
+      <input id={id} className="field__control" value={values[id]} onChange={onChange} {...props} />
+    </div>
+  );
+
   return (
-    <AuthenticatedLayout title="Informações" align={isNovo ? "left" : "center"}>
-      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+    <main className="owner-page" aria-labelledby="veiculo-form-title">
+      <header className="page-head">
+        <h1 id="veiculo-form-title">{titulo}</h1>
+        <p className="page-head__lede">Dados do modelo, placa, status e garagem operacional do veículo.</p>
+      </header>
+      <form className="owner-form" onSubmit={handleSubmit} noValidate>
         {erro && (
-          <p className="auth-feedback auth-feedback--error" role="status" aria-live="polite">
+          <p className="alert alert--danger" role="status" aria-live="polite">
             {erro}
           </p>
         )}
 
-        {imagensAtuais.length > 0 && (
-          <section aria-label="Galeria de imagens do veículo" className="vehicle-image-gallery">
-            {imagensAtuais.map((imagem, index) => (
-              <figure key={imagem.id} className="vehicle-image-gallery__item">
-                <img src={imagem.url} alt={imagem.altText || `Imagem ${index + 1} do veículo`} width={imagem.largura} height={imagem.altura} loading="lazy" />
-                <figcaption>
-                  <button type="button" onClick={() => definirCapa(imagem)} disabled={index === 0}>Definir capa</button>
-                  <button type="button" onClick={() => void moverImagem(index, -1)} disabled={index === 0} aria-label={`Mover imagem ${index + 1} para cima`}>↑</button>
-                  <button type="button" onClick={() => void moverImagem(index, 1)} disabled={index === imagensAtuais.length - 1} aria-label={`Mover imagem ${index + 1} para baixo`}>↓</button>
-                  <button type="button" onClick={() => void removerImagem(imagem)}>Excluir</button>
-                </figcaption>
-              </figure>
-            ))}
-          </section>
-        )}
+        <fieldset className="fieldset">
+          <legend>Identificação</legend>
+          <div className="owner-form__grid">
+            {campo("marca", "Marca*", { type: "text", placeholder: "Marca*", required: true }, (e) => handleChange("marca", e.target.value))}
+            {campo("modelo", "Modelo*", { type: "text", placeholder: "Modelo*", required: true }, (e) => handleChange("modelo", e.target.value))}
+            {campo("placa", "Placa*", { type: "text", placeholder: "Placa* (ex: ABC1D23)", required: true, minLength: 7, maxLength: 8, autoCapitalize: "characters" }, (e) => handleChange("placa", e.target.value.toUpperCase()))}
+            <div className="field">
+              <label className="field__label" htmlFor="ano">Ano*</label>
+              <select id="ano" className="field__control" required value={values.ano} onChange={(e) => handleChange("ano", e.target.value)}>
+                <option value="" disabled>Ano*</option>
+                {ANOS.map((ano) => (
+                  <option key={ano} value={ano}>{ano}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </fieldset>
 
-        <div className="auth-field">
-          {isNovo && <label htmlFor="marca">Marca*</label>}
-          <input
-            id="marca"
-            type="text"
-            placeholder="Marca*"
-            required
-            value={values.marca}
-            onChange={(e) => handleChange("marca", e.target.value)}
-          />
-        </div>
+        <fieldset className="fieldset">
+          <legend>Características</legend>
+          <div className="owner-form__grid">
+            <div className="field">
+              <label className="field__label" htmlFor="cambio">Câmbio*</label>
+              <select id="cambio" className="field__control" required value={values.cambio} onChange={(e) => handleChange("cambio", e.target.value)}>
+                <option value="" disabled>Câmbio*</option>
+                {CAMBIOS.map((cambio) => (
+                  <option key={cambio} value={cambio}>{cambio}</option>
+                ))}
+              </select>
+            </div>
+            {campo("capacidade", "Capacidade*", { type: "text", inputMode: "numeric", placeholder: "Capacidade* (nº de lugares)", required: true }, (e) => handleChange("capacidade", e.target.value.replace(/\D/g, "")))}
+            <div className="field">
+              <label className="field__label" htmlFor="categoria">Categoria</label>
+              <select id="categoria" className="field__control" value={values.categoria} onChange={(e) => handleChange("categoria", e.target.value)}>
+                <option value="">Sem categoria</option>
+                {CATEGORIAS.map((categoria) => (
+                  <option key={categoria} value={categoria}>{categoria}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="checkline">
+              <input
+                type="checkbox"
+                checked={values.eletrico}
+                onChange={(e) => handleChange("eletrico", e.target.checked)}
+              />
+              Veículo elétrico
+            </label>
+            <label className="checkline">
+              <input
+                type="checkbox"
+                checked={values.adaptado}
+                onChange={(e) => handleChange("adaptado", e.target.checked)}
+              />
+              Veículo adaptado (acessibilidade)
+            </label>
+          </div>
+        </fieldset>
 
-        <div className="auth-field">
-          {isNovo && <label htmlFor="modelo">Modelo*</label>}
-          <input
-            id="modelo"
-            type="text"
-            placeholder="Modelo*"
-            required
-            value={values.modelo}
-            onChange={(e) => handleChange("modelo", e.target.value)}
-          />
-        </div>
+        <fieldset className="fieldset">
+          <legend>Operação</legend>
+          <div className="owner-form__grid">
+            {campo("valorDiaria", "Valor da diária*", { type: "text", inputMode: "decimal", placeholder: "Valor da diária* (R$)", required: true }, (e) =>
+              handleChange("valorDiaria", e.target.value.replace(",", ".").replace(/[^0-9.]/g, "")),
+            )}
+            <div className="field">
+              <label className="field__label" htmlFor="status">Status{isNovo ? "*" : ""}</label>
+              <select id="status" className="field__control" required value={values.status} onChange={(e) => handleChange("status", e.target.value)}>
+                {STATUS_OPCOES.map((status) => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="field">
+            <label className="field__label" htmlFor="garagemId">Garagem operacional</label>
+            <select id="garagemId" className="field__control" value={values.garagemId} onChange={(e) => handleChange("garagemId", e.target.value)}>
+              <option value="">Sem garagem (em preparação)</option>
+              {garagensElegiveis.map((garagem) => (
+                <option key={garagem.id} value={garagem.id}>
+                  {garagem.nome}
+                  {garagem.status !== "ATIVA" ? " (indisponível)" : ""}
+                </option>
+              ))}
+            </select>
+            {erroGaragens && (
+              <small className="field__error" role="status">{erroGaragens}</small>
+            )}
+            {!erroGaragens && garagensElegiveis.length === 0 && (
+              <small className="field__hint" role="status">
+                Nenhuma garagem própria ativa com vaga disponível.
+              </small>
+            )}
+          </div>
+        </fieldset>
 
-        <div className="auth-field">
-          {isNovo && <label htmlFor="placa">Placa*</label>}
-          <input
-            id="placa"
-            type="text"
-            placeholder="Placa* (ex: ABC1D23)"
-            required
-            minLength={7}
-            maxLength={8}
-            value={values.placa}
-            onChange={(e) => handleChange("placa", e.target.value.toUpperCase())}
-          />
-        </div>
-
-        <div className="auth-field">
-          {isNovo && <label htmlFor="ano">Ano*</label>}
-          <select
-            id="ano"
-            className="filtro-select"
-            required
-            value={values.ano}
-            onChange={(e) => handleChange("ano", e.target.value)}
-          >
-            <option value="" disabled>Ano*</option>
-            {ANOS.map((ano) => (
-              <option key={ano} value={ano}>{ano}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="auth-field">
-          {isNovo && <label htmlFor="cambio">Câmbio*</label>}
-          <select
-            id="cambio"
-            className="filtro-select"
-            required
-            value={values.cambio}
-            onChange={(e) => handleChange("cambio", e.target.value)}
-          >
-            <option value="" disabled>Câmbio*</option>
-            {CAMBIOS.map((cambio) => (
-              <option key={cambio} value={cambio}>{cambio}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="auth-field">
-          {isNovo && <label htmlFor="capacidade">Capacidade*</label>}
-          <input
-            id="capacidade"
-            type="text"
-            inputMode="numeric"
-            placeholder="Capacidade* (nº de lugares)"
-            required
-            value={values.capacidade}
-            onChange={(e) => handleChange("capacidade", e.target.value.replace(/\D/g, ""))}
-          />
-        </div>
-
-        <div className="auth-field">
-          {isNovo && <label htmlFor="valorDiaria">Valor da diária*</label>}
-          <input
-            id="valorDiaria"
-            type="text"
-            inputMode="decimal"
-            placeholder="Valor da diária* (R$)"
-            required
-            value={values.valorDiaria}
-            onChange={(e) =>
-              handleChange(
-                "valorDiaria",
-                e.target.value.replace(",", ".").replace(/[^0-9.]/g, ""),
-              )
-            }
-          />
-        </div>
-
-        <div className="auth-field">
-          <label htmlFor="categoria">Categoria</label>
-          <select
-            id="categoria"
-            className="filtro-select"
-            value={values.categoria}
-            onChange={(e) => handleChange("categoria", e.target.value)}
-          >
-            <option value="">Sem categoria</option>
-            {CATEGORIAS.map((categoria) => (
-              <option key={categoria} value={categoria}>{categoria}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="auth-field">
-          <label htmlFor="status">Status{isNovo ? "*" : ""}</label>
-          <select
-            id="status"
-            className="filtro-select"
-            required
-            value={values.status}
-            onChange={(e) => handleChange("status", e.target.value)}
-          >
-            {STATUS_OPCOES.map((status) => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="auth-field">
-          <label htmlFor="garagemId">Garagem operacional</label>
-          <select
-            id="garagemId"
-            className="filtro-select"
-            value={values.garagemId}
-            onChange={(e) => handleChange("garagemId", e.target.value)}
-          >
-            <option value="">Sem garagem (em preparação)</option>
-            {garagensElegiveis.map((garagem) => (
-              <option key={garagem.id} value={garagem.id}>
-                {garagem.nome}
-                {garagem.status !== "ATIVA" ? " (indisponível)" : ""}
-              </option>
-            ))}
-          </select>
-          {erroGaragens && (
-            <small role="status">{erroGaragens}</small>
+        <fieldset className="fieldset">
+          <legend>Imagens</legend>
+          {imagensAtuais.length > 0 && (
+            <section aria-label="Galeria de imagens do veículo" className="owner-gallery">
+              {imagensAtuais.map((imagem, index) => (
+                <figure key={imagem.id}>
+                  <img src={imagem.url} alt={imagem.altText || `Imagem ${index + 1} do veículo`} width={imagem.largura} height={imagem.altura} loading="lazy" />
+                  <figcaption>
+                    <button type="button" className="btn btn--quiet" onClick={() => definirCapa(imagem)} disabled={index === 0}>Definir capa</button>
+                    <button type="button" className="icon-btn icon-btn--outlined" onClick={() => void moverImagem(index, -1)} disabled={index === 0} aria-label={`Mover imagem ${index + 1} para cima`}><ArrowUp className="icon" aria-hidden="true" /></button>
+                    <button type="button" className="icon-btn icon-btn--outlined" onClick={() => void moverImagem(index, 1)} disabled={index === imagensAtuais.length - 1} aria-label={`Mover imagem ${index + 1} para baixo`}><ArrowDown className="icon" aria-hidden="true" /></button>
+                    <button type="button" className="btn btn--danger" onClick={() => void removerImagem(imagem)}>Excluir</button>
+                  </figcaption>
+                </figure>
+              ))}
+            </section>
           )}
-          {!erroGaragens && garagensElegiveis.length === 0 && (
-            <small role="status">
-              Nenhuma garagem própria ativa com vaga disponível.
-            </small>
-          )}
-        </div>
-
-        <div className="auth-checkbox-group">
-          <label className="auth-checkbox">
+          <div className="field">
+            <label className="field__label" htmlFor="imagens-veiculo">Imagens reais do veículo</label>
             <input
-              type="checkbox"
-              checked={values.eletrico}
-              onChange={(e) => handleChange("eletrico", e.target.checked)}
+              id="imagens-veiculo"
+              className="field__control"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              aria-describedby="imagens-veiculo-hint"
+              onChange={(event) => setImagensSelecionadas(Array.from(event.target.files ?? []))}
             />
-            Veículo elétrico
-          </label>
-          <label className="auth-checkbox">
-            <input
-              type="checkbox"
-              checked={values.adaptado}
-              onChange={(e) => handleChange("adaptado", e.target.checked)}
-            />
-            Veículo adaptado (acessibilidade)
-          </label>
-        </div>
-
-        <div className="auth-field">
-          <label htmlFor="imagens-veiculo">Imagens reais do veículo</label>
-          <input
-            id="imagens-veiculo"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            multiple
-            onChange={(event) => setImagensSelecionadas(Array.from(event.target.files ?? []))}
-          />
-          <small>JPEG, PNG ou WebP; o servidor valida bytes e dimensões.</small>
-          {imagensSelecionadas.length > 0 && <span role="status">{imagensSelecionadas.length} imagem(ns) pronta(s) para envio.</span>}
+            <small id="imagens-veiculo-hint" className="field__hint">JPEG, PNG ou WebP; o servidor valida bytes e dimensões.</small>
+            {imagensSelecionadas.length > 0 && <span className="field__hint" role="status">{imagensSelecionadas.length} imagem(ns) pronta(s) para envio.</span>}
+          </div>
           {previewsSelecionadas.length > 0 && (
-            <div aria-label="Pré-visualizações locais" className="vehicle-image-gallery">
+            <div aria-label="Pré-visualizações locais" className="owner-gallery">
               {previewsSelecionadas.map((preview) => (
-                <figure key={preview.url} className="vehicle-image-gallery__item">
+                <figure key={preview.url}>
                   <img src={preview.url} alt={`Prévia local de ${preview.nome}`} width="160" height="100" />
                   <figcaption>{preview.nome}</figcaption>
                 </figure>
               ))}
             </div>
           )}
+        </fieldset>
+
+        {isNovo && <p className="owner-form__note">Todos os campos com * são obrigatórios</p>}
+
+        <div className="owner-form__actions">
+          <button type="button" className="btn btn--secondary btn--lg" onClick={() => navigate("/cadastro-carros")} disabled={salvando}>
+            Cancelar
+          </button>
+          <button type="submit" className="btn btn--lg" disabled={salvando}>
+            {salvando ? (enviandoImagens ? `Enviando imagens${progressoImagens ? ` (${progressoImagens}%)` : "..."}` : "Salvando...") : isNovo ? "Finalizar Cadastro" : "Editar"}
+          </button>
         </div>
-
-        {isNovo && <p className="auth-required-note">Todos os campos com * são obrigatórios</p>}
-
-        <button type="submit" className="auth-button" disabled={salvando}>
-          {salvando ? (enviandoImagens ? `Enviando imagens${progressoImagens ? ` (${progressoImagens}%)` : "..."}` : "Salvando...") : isNovo ? "Finalizar Cadastro" : "Editar"}
-        </button>
       </form>
-    </AuthenticatedLayout>
+    </main>
   );
 }

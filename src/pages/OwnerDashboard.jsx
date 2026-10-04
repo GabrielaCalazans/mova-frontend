@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { ChevronRight } from "lucide-react";
+import "../styles/owner.css";
 import { getFinanceiro, getFrota, getReservas, getUtilizacao } from "../services/dashboardService";
 
 const sections = [
@@ -50,55 +52,59 @@ export default function OwnerDashboard() {
 
   return (
     <main className="owner-page" aria-labelledby="owner-dashboard-title">
-        <header className="owner-page__intro">
-          <p className="mova-eyebrow">Operação da frota</p>
-          <h1 id="owner-dashboard-title">Painel do locador</h1>
-          <p>Inventário, reservas e ocupação da sua frota em um só lugar.</p>
-        </header>
+      <header className="page-head">
+        <h1 id="owner-dashboard-title">Painel do locador</h1>
+        <p className="page-head__lede">Inventário, reservas e ocupação da sua frota em um só lugar.</p>
+      </header>
 
-        <section className="owner-metrics" aria-label="Resumo da operação">
-          <article className="owner-metric">
-            <h2>Veículos</h2>
-            {errors.frota ? <p role="alert">{errors.frota}</p> : <p>{valueOrUnavailable(frota?.veiculos?.total, (value) => `${value} no total`)}</p>}
-            <Link to="/cadastro-carros">Abrir frota</Link>
-          </article>
-          <article className="owner-metric">
-            <h2>Reservas</h2>
-            {errors.reservas ? <p role="alert">{errors.reservas}</p> : <p>{valueOrUnavailable(reservas?.total, (value) => `${value} no período`)}</p>}
-            <Link to="/reservas">Ver reservas</Link>
-          </article>
-          <article className="owner-metric">
-            <h2>Ocupação</h2>
-            {errors.utilizacao ? <p role="alert">{errors.utilizacao}</p> : <p>{valueOrUnavailable(utilizacao?.taxaOcupacao, (value) => `${(Number(value) * 100).toLocaleString("pt-BR")} % · ${valueOrUnavailable(utilizacao?.veiculosAlocados, String)} alocados`)}</p>}
-            <Link to="/relatorios/veiculos">Ver relatórios</Link>
-          </article>
-          <article className="owner-metric">
-            <h2>Receita</h2>
-            {errors.financeiro ? <p role="alert">{errors.financeiro}</p> : <p>{valueOrUnavailable(financeiro?.faturamentoBruto, (value) => `R$ ${Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`)}</p>}
-            <Link to="/relatorios/veiculos">Abrir financeiro</Link>
-          </article>
-        </section>
-
-        <section className="owner-panel" aria-labelledby="owner-alerts-title">
-          <div>
-            <p className="mova-eyebrow">Monitoramento</p>
-            <h2 id="owner-alerts-title">Alertas da frota</h2>
+      <section aria-label="Resumo da operação">
+        <dl className="owner-summary">
+          <div className="owner-summary__item">
+            <dt>Veículos</dt>
+            {errors.frota ? <dd role="alert">{errors.frota}</dd> : <dd>{valueOrUnavailable(frota?.veiculos?.total, (value) => `${value} no total`)}</dd>}
+            <dd className="owner-summary__link"><Link className="owner-link" to="/cadastro-carros">Abrir frota <ChevronRight aria-hidden="true" /></Link></dd>
           </div>
-          {errors.frota ? <p role="alert">{errors.frota}</p> : (
-            <dl className="owner-alert-list">
-              <div><dt>Inatividade</dt><dd>{valueOrUnavailable(alertas.INATIVIDADE, String)}</dd></div>
-              <div><dt>Baixa avaliação</dt><dd>{valueOrUnavailable(alertas.BAIXA_AVALIACAO, String)}</dd></div>
-            </dl>
-          )}
-          <Link className="mova-button mova-button--secondary" to="/monitoramento">Abrir monitoramento</Link>
-        </section>
+          <div className="owner-summary__item">
+            <dt>Reservas</dt>
+            {errors.reservas ? <dd role="alert">{errors.reservas}</dd> : <dd>{valueOrUnavailable(reservas?.total, (value) => `${value} no período`)}</dd>}
+            <dd className="owner-summary__link"><Link className="owner-link" to="/reservas">Ver reservas <ChevronRight aria-hidden="true" /></Link></dd>
+          </div>
+          <div className="owner-summary__item">
+            <dt>Ocupação</dt>
+            {errors.utilizacao ? <dd role="alert">{errors.utilizacao}</dd> : <dd>{valueOrUnavailable(utilizacao?.taxaOcupacao, (value) => `${(Number(value) * 100).toLocaleString("pt-BR")} % · ${valueOrUnavailable(utilizacao?.veiculosAlocados, String)} alocados`)}</dd>}
+            <dd className="owner-summary__link"><Link className="owner-link" to="/relatorios/veiculos">Ver relatórios <ChevronRight aria-hidden="true" /></Link></dd>
+          </div>
+          <div className="owner-summary__item">
+            <dt>Receita</dt>
+            {errors.financeiro ? <dd role="alert">{errors.financeiro}</dd> : <dd>{valueOrUnavailable(financeiro?.faturamentoBruto, (value) => `R$ ${Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`)}</dd>}
+            <dd className="owner-summary__link"><Link className="owner-link" to="/relatorios/veiculos">Abrir financeiro <ChevronRight aria-hidden="true" /></Link></dd>
+          </div>
+        </dl>
+      </section>
 
-        <section className="owner-onboarding" aria-labelledby="owner-next-title">
+      <section className="owner-section" aria-labelledby="owner-alerts-title">
+        <div className="owner-section__head">
+          <h2 id="owner-alerts-title">Alertas da frota</h2>
+          <Link className="btn btn--secondary" to="/monitoramento">Abrir monitoramento</Link>
+        </div>
+        {errors.frota ? <p className="alert alert--danger" role="alert">{errors.frota}</p> : (
+          <ul className="owner-counts">
+            <li><span className="owner-counts__value">{valueOrUnavailable(alertas.INATIVIDADE, String)}</span><span><span className="owner-counts__label">Inatividade</span><br />Veículos parados há 7 dias ou mais.</span></li>
+            <li><span className="owner-counts__value">{valueOrUnavailable(alertas.BAIXA_AVALIACAO, String)}</span><span><span className="owner-counts__label">Baixa avaliação</span><br />Veículos com avaliações baixas recorrentes.</span></li>
+          </ul>
+        )}
+      </section>
+
+      <section className="owner-section" aria-labelledby="owner-next-title">
+        <div className="owner-section__head">
           <h2 id="owner-next-title">Próximas ações</h2>
-          <Link to="/cadastro-garagens">Gerenciar garagens</Link>
-          <Link to="/cadastro-carros">Cadastrar ou editar veículos</Link>
-          <span>Quilometragem: indisponível no backend.</span>
-        </section>
+        </div>
+        <ul className="owner-actions">
+          <li><Link to="/cadastro-garagens">Gerenciar garagens <ChevronRight aria-hidden="true" /></Link></li>
+          <li><Link to="/cadastro-carros">Cadastrar ou editar veículos <ChevronRight aria-hidden="true" /></Link></li>
+        </ul>
+        <p className="owner-note">Quilometragem: indisponível no backend.</p>
+      </section>
     </main>
   );
 }

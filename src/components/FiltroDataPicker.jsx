@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 const MESES = [
   "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO",
@@ -72,67 +72,68 @@ export default function FiltroDataPicker({ dataSelecionada, onChange }) {
 
   return (
     <>
-      <div className="filtro-card">
-        <p className="filtro-card__label">Selecione a Data</p>
-        <p className="filtro-date-trigger">
-          Insira a Data
-          <span className="filtro-date-divider" aria-hidden="true" />
-          <Calendar size={20} />
-        </p>
-        <button type="button" className="filtro-date-input" onClick={() => setCalOpen(true)}>
-          {dataSelecionada ? formatarDataBR(dataSelecionada) : "Clique para selecionar a data dd/mm/aaaa"}
+      <div className="field datepick">
+        <span className="field__label" id="filtro-data-label">Data</span>
+        <button type="button" className="datepick__trigger" aria-labelledby="filtro-data-label filtro-data-valor" aria-haspopup="dialog" onClick={() => setCalOpen(true)}>
+          <span id="filtro-data-valor" className={dataSelecionada ? undefined : "datepick__placeholder"}>
+            {dataSelecionada ? formatarDataBR(dataSelecionada) : "Selecionar data (dd/mm/aaaa)"}
+          </span>
+          <Calendar aria-hidden="true" />
         </button>
       </div>
 
       {calOpen && (
-        <div className="filtro-cal-overlay" onClick={() => setCalOpen(false)}>
-          <div className="filtro-cal-popup" onClick={(event) => event.stopPropagation()}>
-            <p className="filtro-cal-popup__title">Seleção de Data</p>
-            <div className="filtro-cal-popup__month">
+        <div className="datepick__overlay" onClick={() => setCalOpen(false)} onKeyDown={(event) => event.key === "Escape" && setCalOpen(false)}>
+          <div className="datepick__panel" role="dialog" aria-modal="true" aria-labelledby="filtro-cal-titulo" onClick={(event) => event.stopPropagation()}>
+            <p className="datepick__title" id="filtro-cal-titulo">Seleção de data</p>
+            <div className="datepick__month">
               <button
                 type="button"
-                className="filtro-cal-nav"
+                className="icon-btn icon-btn--outlined"
                 onClick={() => setCalRef((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
                 aria-label="Mês anterior"
               >
-                ‹
+                <ChevronLeft className="icon" aria-hidden="true" />
               </button>
-              <h3>
-                {MESES[calRef.getMonth()]} {calRef.getFullYear()}
+              <h3 aria-live="polite">
+                {MESES[calRef.getMonth()].toLowerCase()} {calRef.getFullYear()}
               </h3>
               <button
                 type="button"
-                className="filtro-cal-nav"
+                className="icon-btn icon-btn--outlined"
                 onClick={() => setCalRef((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
                 aria-label="Próximo mês"
               >
-                ›
+                <ChevronRight className="icon" aria-hidden="true" />
               </button>
             </div>
 
-            <div className="filtro-cal-daynames">
+            <div className="datepick__days" aria-hidden="true">
               {DIAS_SEMANA.map((dia) => (
                 <span key={dia}>{dia}</span>
               ))}
             </div>
 
-            <div className="filtro-cal-grid">
+            <div className="datepick__grid">
               {cells.map((cell) => {
                 if (cell.empty) {
-                  return <button key={cell.key} className="filtro-cal-day" disabled />;
+                  return <button key={cell.key} type="button" className="datepick__day" disabled aria-hidden="true" tabIndex={-1} />;
                 }
 
-                const isSelected =
+                const isSelected = Boolean(
                   dataSelecionada &&
                   dataSelecionada.getDate() === cell.day &&
                   dataSelecionada.getMonth() === calRef.getMonth() &&
-                  dataSelecionada.getFullYear() === calRef.getFullYear();
+                  dataSelecionada.getFullYear() === calRef.getFullYear()
+                );
 
                 return (
                   <button
                     key={cell.key}
                     type="button"
-                    className={`filtro-cal-day${cell.weekend ? " filtro-cal-day--weekend" : ""}${isSelected ? " filtro-cal-day--selected" : ""}`}
+                    className={`datepick__day${cell.weekend ? " datepick__day--weekend" : ""}`}
+                    aria-pressed={isSelected}
+                    aria-label={`${cell.day} de ${MESES[calRef.getMonth()].toLowerCase()}${cell.holidayLabel ? `, ${cell.holidayLabel}` : ""}`}
                     onClick={() => pickDay(cell.day)}
                   >
                     {cell.day}
@@ -142,10 +143,13 @@ export default function FiltroDataPicker({ dataSelecionada, onChange }) {
             </div>
 
             {selectedHoliday && (
-              <p className="filtro-cal-holiday">
-                {dataSelecionada.getDate()} - {selectedHoliday.toUpperCase()}
+              <p className="datepick__holiday">
+                {dataSelecionada.getDate()} - {selectedHoliday}
               </p>
             )}
+            <div className="datepick__close">
+              <button type="button" className="btn" onClick={() => setCalOpen(false)}>Concluir</button>
+            </div>
           </div>
         </div>
       )}
