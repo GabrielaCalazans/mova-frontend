@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { rotulo, STATUS_VEICULO_LABELS } from "../services/apiEnums";
+import ModalDialog from "../components/ui/ModalDialog";
 import { useNavigate } from "react-router-dom";
 import { CircleCheck, CircleSlash, KeyRound, Pencil, Plus, Trash2, Wrench } from "lucide-react";
 import BottomNav from "../components/BottomNav";
@@ -148,21 +149,27 @@ export default function CadastroDeCarros() {
       </section>
 
       {veiculoParaExcluir && (
-        <div className="owner-dialog" onClick={() => !excluindo && setVeiculoParaExcluir(null)} onKeyDown={(event) => event.key === "Escape" && !excluindo && setVeiculoParaExcluir(null)}>
-          <div className="owner-dialog__panel" role="alertdialog" aria-modal="true" aria-labelledby="excluir-veiculo-title" aria-describedby="excluir-veiculo-desc" onClick={(event) => event.stopPropagation()}>
-            <h2 id="excluir-veiculo-title">Deseja excluir esse veículo?</h2>
-            <p id="excluir-veiculo-desc">{`${veiculoParaExcluir.marca} ${veiculoParaExcluir.modelo}`.trim()} · {veiculoParaExcluir.placa}. Esta ação não pode ser desfeita.</p>
-            <div className="owner-dialog__actions">
-              <button type="button" className="btn btn--secondary" aria-label="Cancelar exclusão" onClick={() => setVeiculoParaExcluir(null)} disabled={excluindo} autoFocus>
-                Cancelar
-              </button>
-              <button type="button" className="btn btn--danger" aria-label="Confirmar exclusão" onClick={confirmarExclusao} disabled={excluindo}>
-                <Trash2 className="icon" aria-hidden="true" />
-                {excluindo ? "Excluindo…" : "Confirmar exclusão"}
-              </button>
-            </div>
+        <ModalDialog
+          role="alertdialog"
+          className="owner-dialog"
+          panelClassName="owner-dialog__panel"
+          labelledBy="excluir-veiculo-title"
+          describedBy="excluir-veiculo-desc"
+          onClose={() => setVeiculoParaExcluir(null)}
+          closeDisabled={excluindo}
+        >
+          <h2 id="excluir-veiculo-title">Deseja excluir esse veículo?</h2>
+          <p id="excluir-veiculo-desc">{`${veiculoParaExcluir.marca} ${veiculoParaExcluir.modelo}`.trim()} · {veiculoParaExcluir.placa}. Esta ação não pode ser desfeita.</p>
+          <div className="owner-dialog__actions">
+            <button type="button" className="btn btn--secondary" aria-label="Cancelar exclusão" onClick={() => setVeiculoParaExcluir(null)} disabled={excluindo} data-autofocus>
+              Cancelar
+            </button>
+            <button type="button" className="btn btn--danger" aria-label="Confirmar exclusão" onClick={confirmarExclusao} disabled={excluindo}>
+              <Trash2 className="icon" aria-hidden="true" />
+              {excluindo ? "Excluindo…" : "Confirmar exclusão"}
+            </button>
           </div>
-        </div>
+        </ModalDialog>
       )}
       <BottomNav />
     </main>

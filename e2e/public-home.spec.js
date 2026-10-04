@@ -1222,3 +1222,39 @@ test("carrossel de categorias entra depois do terceiro veículo", async ({ page 
   await expect(page.locator(".vehicle-card")).toHaveCount(4);
   await expect(page.locator(".public-home__grid > *").nth(3)).toHaveClass(/public-home__category-carousel/);
 });
+
+test("diálogo de exclusão prende o foco, fecha com Escape e devolve o foco", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("mova_auth_session", JSON.stringify({ token: "owner-token", user: { id: "owner-1", cargo: "LOCADOR" } }));
+  });
+  const ownerVehicle = {
+    id: "vehicle-1", idLocador: "owner-1", placa: "ABC1D23", status: "DISPONIVEL", garagemId: "garage-1",
+    garagem: { id: "garage-1", nome: "Garagem Centro", status: "ATIVA" },
+    modeloVeiculo: { marca: "Fiat", modelo: "Argo", ano: 2025, cambio: "Automatico", capacidade: 5, eletrico: false, adaptado: false, categoria: "ECONOMICO", valorDiaria: 180 },
+    imagens: [],
+  };
+  await page.route("**/api/veiculo/meus**", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ result: [ownerVehicle], pagination: { total: 1, page: 1, limit: 100, totalPages: 1 } }) }));
+  await page.route("**/api/dashboard/frota**", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ result: { veiculos: { total: 1, disponivel: 1, reservado: 0, manutencao: 0, inativo: 0 }, alertasAtivos: 0, ultimasLocalizacoes: [] } }) }));
+
+  await page.goto("/cadastro-carros");
+  const acionador = page.getByRole("button", { name: "Excluir Fiat Argo" });
+  await acionador.click();
+
+  const dialog = page.getByRole("alertdialog", { name: "Deseja excluir esse veículo?" });
+  await expect(dialog).toBeVisible();
+  const cancelar = dialog.getByRole("button", { name: "Cancelar exclusão" });
+  const confirmar = dialog.getByRole("button", { name: "Confirmar exclusão" });
+  await expect(cancelar).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(confirmar).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(cancelar).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(confirmar).toBeFocused();
+  await expect(page.locator("#root")).toHaveAttribute("inert", "");
+
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(acionador).toBeFocused();
+  await expect(page.locator("#root")).not.toHaveAttribute("inert", "");
+});
