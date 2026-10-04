@@ -823,7 +823,9 @@ function seedRenterJourney(page, reservationId, dates = {}) {
   return page.addInitScript(({ id, pickup, dropoff }) => {
     window.localStorage.setItem("mova_auth_session", JSON.stringify({
       token: "renter-token",
-      user: { id: "renter-1", cargo: "LOCATARIO" },
+      // O veículo da fixture é adaptado: sem deficiência declarada o backend
+      // recusaria a reserva (RN01) e o checkout pede a declaração.
+      user: { id: "renter-1", cargo: "LOCATARIO", deficienciaId: "deficiencia-1" },
     }));
     window.sessionStorage.setItem("mova_journey_flow", JSON.stringify({
       veiculo: { id: "vehicle-public-1", marca: "Fiat", modelo: "Argo", garagemId: "garage-1" },
@@ -980,6 +982,48 @@ test.describe("jornada de reserva e RN05", () => {
     expect(createRequests[0]).not.toHaveProperty("status");
     expect(createRequests[0]).not.toHaveProperty("statusPagamento");
     expect(createRequests[0]).not.toHaveProperty("valorTotal");
+  });
+
+  test("RN01: veículo adaptado exige declarar deficiência no checkout e envia deficienciaId", async ({ page }) => {
+    const reservationId = "reservation-rn01-1";
+    const createRequests = [];
+    await seedRenterJourney(page, reservationId);
+    await page.addInitScript(() => {
+      window.localStorage.setItem("mova_auth_session", JSON.stringify({
+        token: "renter-token",
+        user: { id: "renter-1", cargo: "LOCATARIO" },
+      }));
+    });
+    await page.route("**/api/veiculo/vehicle-public-1", async (route) => {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ result: { ...vehicle, valorDiaria: 180 } }) });
+    });
+    await page.route("**/api/deficiencia/all", async (route) => {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ result: [{ id: "deficiencia-1", descricao: "Mobilidade reduzida" }] }) });
+    });
+    await page.route("**/api/reserva/precificacao", async (route) => {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ result: { totalDiarias: 2, dailyRate: 180, servicesTotal: 0, total: 360 } }) });
+    });
+    await page.route("**/api/reserva", async (route) => {
+      if (route.request().method() !== "POST") return route.continue();
+      createRequests.push(JSON.parse(route.request().postData() || "{}"));
+      await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ result: { id: reservationId, valorTotal: 360, status: "AGUARDANDO_PAGAMENTO" } }) });
+    });
+    await page.route(`**/api/reserva/${reservationId}/condutores`, async (route) => {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ result: [] }) });
+    });
+
+    await page.goto("/checkout-reserva");
+    const declaracao = page.getByLabel("Deficiência declarada (obrigatório)");
+    await expect(declaracao).toBeVisible();
+    await page.getByRole("button", { name: "Confirmar e seguir para pagamento" }).click();
+    await expect(page.getByRole("alert")).toContainText("informe sua deficiência");
+    await expect(declaracao).toBeFocused();
+    expect(createRequests).toHaveLength(0);
+
+    await declaracao.selectOption("deficiencia-1");
+    await page.getByRole("button", { name: "Confirmar e seguir para pagamento" }).click();
+    await expect(page).toHaveURL(/\/condutores-adicionais$/);
+    expect(createRequests[0]).toMatchObject({ deficienciaId: "deficiencia-1" });
   });
 
   test("aceita exatamente 30 dias de duração", async ({ page }) => {
