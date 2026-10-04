@@ -67,7 +67,7 @@ test("reservas do locador envia filtros UTC/status/veículo ao contrato", async 
   await page.getByLabel("Data inicial").fill("2026-01-01");
   await page.getByLabel("Data final").fill("2026-01-31");
   await page.getByLabel("Status").selectOption("CONFIRMADA");
-  await page.getByLabel("Veículo").selectOption("vehicle-1");
+  await page.getByLabel("Veículo", { exact: true }).selectOption("vehicle-1");
   await page.getByRole("button", { name: "Aplicar filtros" }).click();
 
   await expect.poll(() => requests.length).toBe(requestCountBeforeFilter + 1);
@@ -308,7 +308,8 @@ test("capturas visuais das telas criticas em light/dark", async ({ page }) => {
     document.documentElement.setAttribute("data-theme", "light");
   });
   await expect(page.getByRole("heading", { name: "Login" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Cadastre-se" })).toHaveCSS("color", "rgb(255, 255, 255)");
+  // Task 8: "Cadastre-se" virou ação secundária na cor oficial #003366.
+  await expect(page.getByRole("link", { name: "Cadastre-se" })).toHaveCSS("color", "rgb(0, 51, 102)");
   await page.screenshot({ path: "../auditoria/fase-7-7/capturas/login-light-375.png", fullPage: true });
   const loginLightScan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(loginLightScan.violations.filter((violation) => ["critical", "serious"].includes(violation.impact))).toEqual([]);
@@ -319,7 +320,8 @@ test("capturas visuais das telas criticas em light/dark", async ({ page }) => {
   });
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await expect(page.getByRole("heading", { name: "Login" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Cadastre-se" })).toHaveCSS("color", "rgb(255, 255, 255)");
+  // No escuro a ação secundária usa a cor oficial #D0E7FF.
+  await expect(page.getByRole("link", { name: "Cadastre-se" })).toHaveCSS("color", "rgb(208, 231, 255)");
   await page.screenshot({ path: "../auditoria/fase-7-7/capturas/login-dark-375.png", fullPage: true });
   const loginDarkScan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(loginDarkScan.violations.filter((violation) => ["critical", "serious"].includes(violation.impact))).toEqual([]);
@@ -572,7 +574,8 @@ test("ação protegida retorna à intenção original após login", async ({ pag
   });
 
   await page.goto("/");
-  await page.getByRole("button", { name: /ver detalhes/i }).click();
+  // "Ver detalhes" agora é link para /carros/:id (antes botão com navigate()).
+  await page.getByRole("link", { name: /ver detalhes/i }).first().click();
   await page.getByRole("button", { name: /reservar este carro/i }).click();
   await expect(page).toHaveURL(/\/login$/);
 
@@ -726,7 +729,8 @@ test("relatório de veículos formata instantes UTC no timezone de exibição", 
   await expect(page.getByText(/31\/01\/2026 a 01\/02\/2026/)).toBeVisible();
   await page.getByLabel("Data inicial").fill("2026-01-01");
   await page.getByLabel("Data final").fill("2026-01-31");
-  await page.getByLabel("Veículo").selectOption("vehicle-1");
+  // exact: o <main> rotulado "Relatórios | Veículos" também casaria com "Veículo".
+  await page.getByLabel("Veículo", { exact: true }).selectOption("vehicle-1");
   await page.getByRole("button", { name: "Aplicar filtros" }).click();
   await expect.poll(() => reservationRequests.length).toBe(2);
   expect(reservationRequests[1].searchParams.get("dataInicio")).toBe("2026-01-01");

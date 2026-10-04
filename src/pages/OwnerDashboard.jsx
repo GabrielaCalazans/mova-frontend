@@ -89,8 +89,8 @@ export default function OwnerDashboard() {
         </div>
         {errors.frota ? <p className="alert alert--danger" role="alert">{errors.frota}</p> : (
           <ul className="owner-counts">
-            <li><span className="owner-counts__value">{valueOrUnavailable(alertas.INATIVIDADE, String)}</span><span><span className="owner-counts__label">Inatividade</span><br />Veículos parados há 7 dias ou mais.</span></li>
-            <li><span className="owner-counts__value">{valueOrUnavailable(alertas.BAIXA_AVALIACAO, String)}</span><span><span className="owner-counts__label">Baixa avaliação</span><br />Veículos com avaliações baixas recorrentes.</span></li>
+            <li><span className="owner-counts__value">{valueOrUnavailable(alertas.INATIVIDADE, String)}</span><span className="owner-counts__label">Inatividade</span><span className="owner-counts__desc">Veículos parados há 7 dias ou mais.</span></li>
+            <li><span className="owner-counts__value">{valueOrUnavailable(alertas.BAIXA_AVALIACAO, String)}</span><span className="owner-counts__label">Baixa avaliação</span><span className="owner-counts__desc">Veículos com avaliações baixas recorrentes.</span></li>
           </ul>
         )}
       </section>

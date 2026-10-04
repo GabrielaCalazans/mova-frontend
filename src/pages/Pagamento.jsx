@@ -407,10 +407,10 @@ export default function Pagamento() {
           {/* Sucesso só aparece com a confirmação REAL do backend. */}
           {aprovado ? (
             <section className="pay-success" aria-labelledby="pay-success-title" role="status">
-              <p className="pay-success__title" id="pay-success-title">
+              <h2 className="pay-success__title" id="pay-success-title">
                 <FontAwesomeIcon icon={faCircleCheck} aria-hidden="true" />
                 Pagamento aprovado
-              </p>
+              </h2>
               <p>Sua reserva está confirmada.</p>
               {reserva?.codigoDesbloqueio ? (
                 <div className="pay-success__code">
@@ -435,7 +435,7 @@ export default function Pagamento() {
                 <div className="pay-status" role="status" aria-live="polite">
                   <span className="spinner" aria-hidden="true" />
                   <div>
-                    <p className="pay-status__title">Processando pagamento</p>
+                    <h3 className="pay-status__title">Processando pagamento</h3>
                     <p className="journey-muted">Aguardando a confirmação do gateway. Não é preciso pagar de novo.</p>
                   </div>
                 </div>
