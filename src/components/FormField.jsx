@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 
 const EyeIcon = ({ open }) =>
   open ? (
@@ -46,6 +46,9 @@ function FormField({
   const hintId = `${id}-hint`;
   const hasMessage = Boolean(error || helperText);
 
+  // Rótulo sempre visível (nunca só placeholder); o aria-label continua como nome acessível.
+  const visibleLabel = label || ariaLabel;
+
   const messageClassName = error
     ? "auth-message auth-message--error"
     : `auth-message auth-message--${helperType}`;
@@ -54,13 +57,13 @@ function FormField({
 
   return (
     <div className="auth-field">
-      {label && <label htmlFor={id}>{label}</label>}
+      {visibleLabel && <label htmlFor={id}>{visibleLabel}</label>}
       <div className={isPasswordField ? "auth-field__password-wrapper" : undefined}>
         <input
           id={id}
           name={name}
           type={resolvedType}
-          placeholder={placeholder}
+          placeholder={placeholder === visibleLabel ? undefined : placeholder}
           aria-label={ariaLabel}
           aria-invalid={Boolean(error)}
           aria-describedby={hasMessage ? hintId : undefined}
@@ -79,7 +82,8 @@ function FormField({
             className="auth-field__eye-btn"
             onClick={() => setShowPassword((v) => !v)}
             aria-label={showPassword ? "Ocultar caracteres digitados" : "Exibir caracteres digitados"}
-            tabIndex={-1}
+            aria-controls={id}
+            disabled={disabled}
           >
             <EyeIcon open={showPassword} />
           </button>

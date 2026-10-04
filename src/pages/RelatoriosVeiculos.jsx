@@ -1,198 +1,209 @@
-import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Download, Share2 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from "recharts";
+import { useCallback, useEffect, useState } from "react";
+import { Download } from "lucide-react";
 import BottomNav from "../components/BottomNav";
-import "../styles/carselect.css";
+import { getAvaliacaoDashboard, getFinanceiro, getReservas, getUtilizacao } from "../services/dashboardService";
+import { rotulo, STATUS_RESERVA_LABELS } from "../services/apiEnums";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import "../styles/owner.css";
 import "../styles/relatorios.css";
 
-const CORES = { HB20: "#4f7cff", Sedan: "#b39ddb", SUV: "#f0ad4e", Gol: "#f4d35e" };
+const csvValue = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
 
-const QUILOMETRAGEM_DATA = [
-  { ano: "2021", HB20: 2100, Sedan: 2400, SUV: 3100, Gol: 3450 },
-  { ano: "2022", HB20: 2450, Sedan: 1500, SUV: 1700, Gol: 3050 },
-  { ano: "2023", HB20: 1750, Sedan: 3350, SUV: 1200, Gol: 1650 },
-  { ano: "2024", HB20: 1350, Sedan: 1150, SUV: 1050, Gol: 2350 },
-  { ano: "2025", HB20: 1950, Sedan: 1700, SUV: 1450, Gol: 900 },
-  { ano: "2026", HB20: 1500, Sedan: 1050, SUV: 2000, Gol: 3350 },
-];
-
-const ALUGUEL_DATA = [
-  { ano: "2021", HB20: 1200, Sedan: 2000, SUV: 2050, Gol: 2750 },
-  { ano: "2022", HB20: 2000, Sedan: 1250, SUV: 2200, Gol: 1750 },
-  { ano: "2023", HB20: 2100, Sedan: 1900, SUV: 2200, Gol: 1200 },
-  { ano: "2024", HB20: 1300, Sedan: 3000, SUV: 1200, Gol: 1200 },
-  { ano: "2025", HB20: 2200, Sedan: 1250, SUV: 1000, Gol: 1700 },
-  { ano: "2026", HB20: 1600, Sedan: 1250, SUV: 3200, Gol: 1250 },
-];
-
-function toCsv(data) {
-  const header = ["Ano", "HB20", "Sedan", "SUV", "Gol"];
-  const rows = data.map((row) => [row.ano, row.HB20, row.Sedan, row.SUV, row.Gol]);
-  return [header, ...rows].map((row) => row.join(";")).join("\n");
+function csvFinanceiro(porVeiculo) {
+  return [["Veículo", "Faturamento"], ...porVeiculo.map(({ placa, total }) => [placa, total])]
+    .map((row) => row.map(csvValue).join(";"))
+    .join("\n");
 }
 
-function downloadCsv(filename, data) {
-  const blob = new Blob([toCsv(data)], { type: "text/csv;charset=utf-8;" });
+function downloadCsv(porVeiculo) {
+  const blob = new Blob([`\uFEFF${csvFinanceiro(porVeiculo)}`], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = filename;
+  link.download = "relatorio-financeiro-veiculos.csv";
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
+  link.remove();
   URL.revokeObjectURL(url);
 }
 
-async function shareReport(title, data) {
-  const text = `${title}\n\n${toCsv(data)}`;
+const moeda = (valor) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(valor || 0));
+const percentual = (valor) => `${(Number(valor || 0) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%`;
+const DISPLAY_TIME_ZONE = import.meta.env.VITE_TIMEZONE_EXIBICAO || "America/Sao_Paulo";
+const data = (valor) => valor ? new Intl.DateTimeFormat("pt-BR", { timeZone: DISPLAY_TIME_ZONE }).format(new Date(valor)) : "—";
 
-  if (navigator.share) {
-    try {
-      await navigator.share({ title, text });
-      return;
-    } catch {
-      // usuário cancelou o compartilhamento — segue para o fallback
-    }
-  }
+const compacto = (valor) => new Intl.NumberFormat("pt-BR", { notation: "compact" }).format(Number(valor || 0));
+const horas = (valor) => `${Number(valor || 0).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} h`;
 
-  await navigator.clipboard?.writeText(text);
-}
-
-export default function RelatoriosVeiculos() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const filtro = location.state;
-
-  useEffect(() => {
-    document.title = "MOVA - Relatórios de Veículos";
-  }, []);
-
-  const filtroAtivo = Boolean(filtro?.data || filtro?.garagem || filtro?.veiculo);
-
+// Gráfico de barras com uma única cor de ação: a cor vem do CSS (relatorios.css),
+// então segue o tema. A lista abaixo do gráfico é a alternativa textual.
+// Barras horizontais: a placa fica no eixo vertical e nunca se sobrepõe à
+// vizinha, nem em 320 px; a altura cresce com o número de veículos.
+function GraficoBarras({ dados, campo, formatar }) {
   return (
-    <main className="carro-page">
-      <div className="carro-header">
-        <h1>Relatórios | Veículos</h1>
-      </div>
-
-      <div className="carro-content">
-        {filtroAtivo && (
-          <p className="relatorio-filter-summary">
-            Filtro: {[filtro?.data, filtro?.garagem, filtro?.veiculo, filtro?.status].filter(Boolean).join(" • ")}{" "}
-            <button type="button" onClick={() => navigate("/relatorios")}>
-              Editar
-            </button>
-          </p>
-        )}
-
-        <div className="relatorio-grid">
-        <div className="relatorio-card">
-          <ChartLegend />
-          <div className="relatorio-card__chart">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={QUILOMETRAGEM_DATA} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="ano" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Line type="monotone" dataKey="HB20" stroke={CORES.HB20} strokeWidth={2} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="Sedan" stroke={CORES.Sedan} strokeWidth={2} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="SUV" stroke={CORES.SUV} strokeWidth={2} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="Gol" stroke={CORES.Gol} strokeWidth={2} dot={{ r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="relatorio-card__footer">
-            <div>
-              <h3>Relatório 1 - Quilometragem</h3>
-              <p>Baixe ou compartilhe seu relatório</p>
-            </div>
-            <div className="relatorio-card__actions">
-              <button
-                type="button"
-                aria-label="Baixar relatório de quilometragem"
-                onClick={() => downloadCsv("relatorio-quilometragem.csv", QUILOMETRAGEM_DATA)}
-              >
-                <Download size={20} />
-              </button>
-              <button
-                type="button"
-                aria-label="Compartilhar relatório de quilometragem"
-                onClick={() => shareReport("Relatório 1 - Quilometragem", QUILOMETRAGEM_DATA)}
-              >
-                <Share2 size={20} />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="relatorio-card">
-          <ChartLegend />
-          <div className="relatorio-card__chart">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={ALUGUEL_DATA} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="ano" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Bar dataKey="HB20" stackId="a" fill={CORES.HB20} />
-                <Bar dataKey="Sedan" stackId="a" fill={CORES.Sedan} />
-                <Bar dataKey="SUV" stackId="a" fill={CORES.SUV} />
-                <Bar dataKey="Gol" stackId="a" fill={CORES.Gol} radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="relatorio-card__footer">
-            <div>
-              <h3>Relatório 2 - Aluguel</h3>
-              <p>Baixar ou compartilhe seu relatório</p>
-            </div>
-            <div className="relatorio-card__actions">
-              <button
-                type="button"
-                aria-label="Baixar relatório de aluguel"
-                onClick={() => downloadCsv("relatorio-aluguel.csv", ALUGUEL_DATA)}
-              >
-                <Download size={20} />
-              </button>
-              <button
-                type="button"
-                aria-label="Compartilhar relatório de aluguel"
-                onClick={() => shareReport("Relatório 2 - Aluguel", ALUGUEL_DATA)}
-              >
-                <Share2 size={20} />
-              </button>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
-          <BottomNav />
-    </main>
+    <div className="report-chart" aria-hidden="true" style={{ height: dados.length * 44 + 40 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={dados} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 0 }} accessibilityLayer={false}>
+          <CartesianGrid horizontal={false} />
+          <XAxis type="number" tickFormatter={compacto} tickLine={false} axisLine={false} />
+          <YAxis type="category" dataKey="placa" width={76} tickLine={false} interval={0} />
+          <Tooltip formatter={(valor) => formatar(valor)} contentStyle={{ background: "var(--surface-elevated)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }} labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-secondary)" }} />
+          <Bar dataKey={campo} radius={[0, 2, 2, 0]} maxBarSize={28} isAnimationActive={false} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
-function ChartLegend() {
+export default function RelatoriosVeiculos() {
+  const [relatorios, setRelatorios] = useState(null);
+  const [erro, setErro] = useState("");
+  const [carregando, setCarregando] = useState(true);
+  const [filtros, setFiltros] = useState({ dataInicio: "", dataFim: "", idVeiculo: "" });
+
+  const carregarRelatorios = useCallback(async (filtrosAtuais = {}, incluirAgregados = false) => {
+    setCarregando(true);
+    setErro("");
+    try {
+      if (!incluirAgregados) {
+        const reservas = await getReservas(filtrosAtuais);
+        setRelatorios((atual) => ({ ...atual, reservas }));
+        return;
+      }
+      const [reservas, financeiro, utilizacao, avaliacoes] = await Promise.all([
+        getReservas(filtrosAtuais),
+        getFinanceiro(),
+        getUtilizacao(),
+        getAvaliacaoDashboard(),
+      ]);
+      setRelatorios({ reservas, financeiro, utilizacao, avaliacoes });
+    } catch {
+      setErro("Não foi possível carregar os relatórios.");
+    } finally {
+      setCarregando(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.title = "MOVA - Relatórios de Veículos";
+    const carregamentoInicial = window.setTimeout(() => void carregarRelatorios({}, true), 0);
+    return () => window.clearTimeout(carregamentoInicial);
+  }, [carregarRelatorios]);
+
+  const porVeiculo = relatorios?.financeiro?.porVeiculo || [];
+  const maisUtilizados = relatorios?.utilizacao?.maisUtilizados || [];
+  const reservas = relatorios?.reservas?.reservas || [];
+  const avaliacoes = relatorios?.avaliacoes?.resumo || {};
+  const veiculosFiltro = Array.from(new Map([
+    ...porVeiculo.map((veiculo) => [veiculo.idVeiculo, { id: veiculo.idVeiculo, placa: veiculo.placa }]),
+    ...reservas.map((reserva) => [reserva.idVeiculo, { id: reserva.idVeiculo, placa: reserva.veiculo?.placa || reserva.idVeiculo }]),
+    ...(filtros.idVeiculo ? [[filtros.idVeiculo, { id: filtros.idVeiculo, placa: filtros.idVeiculo }]] : []),
+  ]).values());
+
+  function aplicarFiltros(event) {
+    event.preventDefault();
+    if (filtros.dataInicio && filtros.dataFim && filtros.dataFim < filtros.dataInicio) {
+      setErro("A data final deve ser igual ou posterior à data inicial.");
+      return;
+    }
+    void carregarRelatorios(filtros);
+  }
+
   return (
-    <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginBottom: "0.25rem", flexWrap: "wrap" }}>
-      {Object.entries(CORES).map(([label, cor]) => (
-        <span key={label} style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.78rem", color: "var(--color-text)" }}>
-          <span style={{ width: 9, height: 9, borderRadius: "50%", background: cor, display: "inline-block" }} />
-          {label}
-        </span>
-      ))}
-    </div>
+    <main className="owner-page" aria-labelledby="relatorio-veiculos-title">
+      <header className="page-head">
+        <h1 id="relatorio-veiculos-title">Relatórios | Veículos</h1>
+        <p className="page-head__lede">Dados reais da frota, reservas, receita e avaliações do Locador autenticado.</p>
+      </header>
+      <div className="owner-section">
+        <form className="owner-filter" onSubmit={aplicarFiltros} aria-describedby="relatorio-filtros-ajuda">
+          <fieldset className="fieldset">
+            <legend>Filtrar reservas</legend>
+            <div className="owner-filter__grid">
+              <div className="field">
+                <label className="field__label" htmlFor="relatorio-data-inicio">Data inicial</label>
+                <input className="field__control" id="relatorio-data-inicio" type="date" value={filtros.dataInicio} onChange={(event) => setFiltros((atual) => ({ ...atual, dataInicio: event.target.value }))} />
+              </div>
+              <div className="field">
+                <label className="field__label" htmlFor="relatorio-data-fim">Data final</label>
+                <input className="field__control" id="relatorio-data-fim" type="date" value={filtros.dataFim} onChange={(event) => setFiltros((atual) => ({ ...atual, dataFim: event.target.value }))} />
+              </div>
+              <div className="field">
+                <label className="field__label" htmlFor="relatorio-veiculo">Veículo</label>
+                <select className="field__control" id="relatorio-veiculo" value={filtros.idVeiculo} onChange={(event) => setFiltros((atual) => ({ ...atual, idVeiculo: event.target.value }))}>
+                  <option value="">Todos os veículos</option>
+                  {veiculosFiltro.map((veiculo) => <option key={veiculo.id} value={veiculo.id}>{veiculo.placa}</option>)}
+                </select>
+              </div>
+            </div>
+          </fieldset>
+          <div className="owner-filter__actions">
+            <button type="submit" className="btn" disabled={carregando}>Aplicar filtros</button>
+            <p id="relatorio-filtros-ajuda" className="owner-filter__help">Período e veículo filtram as reservas conforme o contrato atual. Financeiro, utilização e avaliações seguem seus endpoints agregados sem esses filtros.</p>
+          </div>
+        </form>
+        {carregando && <p className="loading-state" role="status" aria-busy="true"><span className="spinner" aria-hidden="true" />{relatorios ? "Atualizando relatórios…" : "Carregando relatórios…"}</p>}
+        {erro && <p className="alert alert--danger" role="alert">{erro}</p>}
+      </div>
+      {relatorios && (
+        <div className="report-grid">
+          <section className="report-block report-block--wide" aria-labelledby="rel-reservas">
+            <div className="report-block__head">
+              <h2 id="rel-reservas">Reservas</h2>
+              <p className="report-block__source">Reservas da frota · dados reais filtrados pelo backend.</p>
+            </div>
+            <p className="report-block__figure"><strong>{relatorios.reservas?.total ?? reservas.length}</strong> reservas no período consultado.</p>
+            {reservas.length ? (
+              <ul className="report-list">{reservas.map((reserva) => <li key={reserva.id}>{reserva.veiculo?.placa || reserva.idVeiculo}: {rotulo(STATUS_RESERVA_LABELS, reserva.status)} · {data(reserva.dataHoraInicio)} a {data(reserva.dataHoraFim)} · {moeda(reserva.valorTotal)}</li>)}</ul>
+            ) : <p className="report-empty">Nenhuma reserva encontrada.</p>}
+          </section>
+          <section className="report-block" aria-labelledby="rel-financeiro">
+            <div className="report-block__head">
+              <h2 id="rel-financeiro">Financeiro</h2>
+              <p className="report-block__source">Relatório financeiro por veículo · pagamentos concluídos.</p>
+            </div>
+            <p className="report-block__figure"><strong>{moeda(relatorios.financeiro?.faturamentoBruto)}</strong> de faturamento bruto</p>
+            {porVeiculo.length ? (
+              <>
+                <GraficoBarras dados={porVeiculo} campo="total" formatar={moeda} />
+                <ul className="report-list">{porVeiculo.map(({ idVeiculo, placa, total }) => <li key={idVeiculo}>{placa}: {moeda(total)}</li>)}</ul>
+              </>
+            ) : <p className="report-empty">Nenhum faturamento encontrado.</p>}
+            <div className="report-block__foot">
+              <button type="button" className="btn btn--secondary" disabled={!porVeiculo.length} onClick={() => downloadCsv(porVeiculo)}><Download aria-hidden="true" />Baixar relatório financeiro</button>
+            </div>
+          </section>
+          <section className="report-block" aria-labelledby="rel-utilizacao">
+            <div className="report-block__head">
+              <h2 id="rel-utilizacao">Utilização</h2>
+              <p className="report-block__source">Uso dos veículos · dados reais de reservas.</p>
+            </div>
+            <p className="report-block__figure"><strong>{percentual(relatorios.utilizacao?.taxaOcupacao)} de ocupação</strong>{horas(relatorios.utilizacao?.tempoMedioReservadoHoras)} em média por reserva</p>
+            {maisUtilizados.length ? (
+              <>
+                <GraficoBarras dados={maisUtilizados} campo="horasReservadas" formatar={(valor) => `${valor}h`} />
+                <ul className="report-list">{maisUtilizados.map(({ idVeiculo, placa, reservas, horasReservadas }) => <li key={idVeiculo}>{placa}: {reservas} reservas, {horasReservadas}h</li>)}</ul>
+              </>
+            ) : <p className="report-empty">Nenhuma utilização encontrada.</p>}
+          </section>
+          <section className="report-block" aria-labelledby="rel-avaliacoes">
+            <div className="report-block__head">
+              <h2 id="rel-avaliacoes">Avaliações</h2>
+              <p className="report-block__source">Avaliações dos usuários vinculadas aos veículos do Locador.</p>
+            </div>
+            <p className="report-block__figure"><strong>{avaliacoes.total ?? 0} avaliações · média {avaliacoes.media ?? 0}</strong></p>
+            {!avaliacoes.total && <p className="report-empty">Nenhuma avaliação encontrada.</p>}
+          </section>
+          <section className="report-block" aria-labelledby="rel-km">
+            <div className="report-block__head">
+              <h2 id="rel-km">Quilometragem</h2>
+              <p className="report-block__source">O sistema não possui uma fonte persistida confiável para este indicador.</p>
+            </div>
+            <p className="report-empty">Dados de quilometragem indisponíveis.</p>
+          </section>
+        </div>
+      )}
+      <BottomNav />
+    </main>
   );
 }

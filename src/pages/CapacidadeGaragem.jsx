@@ -1,34 +1,29 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Car } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
+import { ChevronLeft } from "lucide-react";
+import VehicleMedia from "../components/vehicle/VehicleMedia";
 import BottomNav from "../components/BottomNav";
 import { getGaragemById, listVeiculosDaGaragem } from "../services/garagemService";
-import "../styles/carselect.css";
+import "../styles/vehicle.css";
+import "../styles/owner.css";
 
-function VeiculoCard({ veiculo }) {
+function VeiculoLista({ veiculos, vazio }) {
+  if (veiculos.length === 0) return <p className="owner-note">{vazio}</p>;
   return (
-    <div className="fav-card" style={{ cursor: "default" }}>
-      <span
-        style={{
-          width: 46,
-          height: 46,
-          borderRadius: 10,
-          background: "var(--color-surface-muted, #ececee)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-          color: "var(--color-primary-strong)",
-        }}
-      >
-        <Car size={24} />
-      </span>
-      <div className="fav-card__info">
-        <p>ID: {veiculo.id.slice(0, 8)}</p>
-        <p>{veiculo.marca} {veiculo.modelo}</p>
-        <p>Placa: {veiculo.placa}</p>
-      </div>
-    </div>
+    <ul className="owner-list">
+      {veiculos.map((veiculo) => (
+        <li className="owner-row" key={veiculo.id}>
+          <VehicleMedia vehicle={veiculo} className="owner-row__media" />
+          <div className="owner-row__body">
+            <h3 className="owner-row__title">{veiculo.marca} {veiculo.modelo}</h3>
+            <p className="owner-row__meta">
+              <span>Placa: <span className="owner-plate">{veiculo.placa}</span></span>
+              <span className="tabular">ID: {veiculo.id.slice(0, 8)}</span>
+            </p>
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -69,54 +64,38 @@ export default function CapacidadeGaragem() {
   const disponiveisNaGaragem = veiculos.filter((v) => v.status !== "RESERVADO");
 
   return (
-    <main className="carro-page">
-      <div className="carro-header">
-        <h1>Capacidade Atual</h1>
-      </div>
-
-      <div className="carro-content">
-        <h2 style={{ color: "var(--color-primary-strong)", fontSize: "1.2rem", margin: "0 0 1.1rem" }}>
-          Veículos | Localizações
-        </h2>
-
-        {loading && <p className="carro-status">Carregando…</p>}
-        {!loading && erro && <p className="carro-status">{erro}</p>}
-
-        {!loading && !erro && (
-          <>
-            {garagem && (
-              <p style={{ color: "var(--color-text-secondary)", fontSize: "0.85rem", margin: "0 0 1.2rem" }}>
-                {garagem.nome} — {garagem.endereco} — Capacidade {garagem.capacidade - (garagem.veiculosAlocados ?? 0)}/{garagem.capacidade}
-              </p>
-            )}
-
-            <p style={{ color: "var(--color-primary-strong)", fontWeight: 600, margin: "0 0 0.6rem" }}>
-              Veículos em Reserva - {emReserva.length}
-            </p>
-            <div className="frota-list" style={{ marginBottom: "1.5rem" }}>
-              {emReserva.length === 0 && (
-                <p className="carro-empty-state" style={{ padding: "0.5rem 0" }}>Nenhum veículo reservado nesta garagem.</p>
-              )}
-              {emReserva.map((veiculo) => (
-                <VeiculoCard key={veiculo.id} veiculo={veiculo} />
-              ))}
-            </div>
-
-            <p style={{ color: "var(--color-primary-strong)", fontWeight: 600, margin: "0 0 0.6rem" }}>
-              Veículos em Garagem - {disponiveisNaGaragem.length}
-            </p>
-            <div className="frota-list">
-              {disponiveisNaGaragem.length === 0 && (
-                <p className="carro-empty-state" style={{ padding: "0.5rem 0" }}>Nenhum veículo alocado nesta garagem.</p>
-              )}
-              {disponiveisNaGaragem.map((veiculo) => (
-                <VeiculoCard key={veiculo.id} veiculo={veiculo} />
-              ))}
-            </div>
-          </>
+    <main className="owner-page" aria-labelledby="capacidade-title">
+      <header className="page-head">
+        <Link className="page-head__back" to="/cadastro-garagens"><ChevronLeft className="icon" aria-hidden="true" />Garagens</Link>
+        <h1 id="capacidade-title">Capacidade Atual</h1>
+        {garagem && (
+          <p className="page-head__lede">
+            {garagem.nome} — {garagem.endereco} — Capacidade {garagem.capacidade - (garagem.veiculosAlocados ?? 0)}/{garagem.capacidade}
+          </p>
         )}
-      </div>
-          <BottomNav />
+      </header>
+
+      {loading && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando…</p>}
+      {!loading && erro && <p className="alert alert--danger" role="alert">{erro}</p>}
+
+      {!loading && !erro && (
+        <>
+          <section className="owner-section" aria-labelledby="capacidade-reserva">
+            <div className="owner-section__head">
+              <h2 id="capacidade-reserva">Veículos em reserva <span className="badge badge--info tabular">{emReserva.length}</span></h2>
+            </div>
+            <VeiculoLista veiculos={emReserva} vazio="Nenhum veículo reservado nesta garagem." />
+          </section>
+
+          <section className="owner-section" aria-labelledby="capacidade-garagem">
+            <div className="owner-section__head">
+              <h2 id="capacidade-garagem">Veículos em garagem <span className="badge badge--neutral tabular">{disponiveisNaGaragem.length}</span></h2>
+            </div>
+            <VeiculoLista veiculos={disponiveisNaGaragem} vazio="Nenhum veículo alocado nesta garagem." />
+          </section>
+        </>
+      )}
+      <BottomNav />
     </main>
   );
 }

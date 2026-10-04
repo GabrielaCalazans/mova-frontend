@@ -1,5 +1,40 @@
 ﻿const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.API_BASE_URL;
 
+/**
+ * Erro de API com o status HTTP preservado. Antes o cliente lançava um Error
+ * genérico e quem chamava só conseguia distinguir 401 de 500 por regex na
+ * mensagem. Ver auditoria/CONTRATO-FRONTEND-BACKEND.md.
+ */
+import { clearAuthSession, saveAuthFeedback } from "./authSession";
+
+export class ApiError extends Error {
+  constructor(message, { status, code, errors, payload, requestId } = {}) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status ?? 0;
+    this.code = code ?? null;
+    this.errors = errors ?? null;
+    this.payload = payload ?? null;
+    this.requestId = requestId ?? null;
+  }
+
+  get isUnauthorized() {
+    return this.status === 401;
+  }
+
+  get isForbidden() {
+    return this.status === 403;
+  }
+
+  get isNotFound() {
+    return this.status === 404;
+  }
+
+  get isValidation() {
+    return this.status === 400 || this.status === 422;
+  }
+}
+
 function parseApiErrorMessage(payload) {
   if (!payload) {
     return null;
@@ -48,11 +83,77 @@ function buildUrl(path) {
   return `${normalizedBase}${normalizedPath}`;
 }
 
+function apiRequestWithUploadProgress(path, options) {
+  const {
+    authToken,
+    contentType: requestContentType = "application/json",
+    headers: customHeaders = {},
+    onUploadProgress,
+    ...requestOptions
+  } = options;
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open(requestOptions.method || "GET", buildUrl(path));
+
+    if (requestContentType) xhr.setRequestHeader("Content-Type", requestContentType);
+    Object.entries(customHeaders).forEach(([name, value]) => xhr.setRequestHeader(name, value));
+    if (authToken) xhr.setRequestHeader("Authorization", `Bearer ${authToken}`);
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) onUploadProgress(event.loaded, event.total);
+    };
+
+    xhr.onerror = () => reject(new ApiError("Nao foi possivel conectar com a API.", { status: 0 }));
+    xhr.onload = () => {
+      const responseContentType = xhr.getResponseHeader("content-type") || "";
+      let payload = xhr.responseText;
+      if (responseContentType.includes("application/json")) {
+        try {
+          payload = JSON.parse(xhr.responseText);
+        } catch {
+          payload = null;
+        }
+      }
+
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(payload);
+        return;
+      }
+
+      const message = parseApiErrorMessage(payload) || `Erro ao comunicar com a API (HTTP ${xhr.status}).`;
+      const requestId = payload?.requestId ?? xhr.getResponseHeader("x-request-id");
+      if (xhr.status === 401) {
+        saveAuthFeedback({ type: "error", message });
+        clearAuthSession();
+      }
+      console.error("[apiRequest] API operation failed", {
+        method: requestOptions.method || "GET",
+        status: xhr.status,
+        requestId,
+      });
+      reject(new ApiError(message, {
+        status: xhr.status,
+        code: payload?.code ?? null,
+        errors: Array.isArray(payload?.errors) ? payload.errors : null,
+        payload,
+        requestId,
+      }));
+    };
+
+    xhr.send(requestOptions.body ?? null);
+  });
+}
+
 export async function apiRequest(path, options = {}) {
-  const { authToken, headers: customHeaders = {}, ...requestOptions } = options;
+  if (typeof options.onUploadProgress === "function") {
+    return apiRequestWithUploadProgress(path, options);
+  }
+
+  const { authToken, contentType: requestContentType = "application/json", headers: customHeaders = {}, ...requestOptions } = options;
 
   const headers = {
-    "Content-Type": "application/json",
+    ...(requestContentType ? { "Content-Type": requestContentType } : {}),
     ...customHeaders,
   };
 
@@ -68,7 +169,7 @@ export async function apiRequest(path, options = {}) {
       headers,
     });
   } catch {
-    throw new Error("Nao foi possivel conectar com a API.");
+    throw new ApiError("Nao foi possivel conectar com a API.", { status: 0 });
   }
 
   const contentType = response.headers.get("content-type") || "";
@@ -78,17 +179,66 @@ export async function apiRequest(path, options = {}) {
   if (!response.ok) {
     const parsedMessage = parseApiErrorMessage(payload);
     const message = parsedMessage || `Erro ao comunicar com a API (HTTP ${response.status}).`;
+    const requestId = payload?.requestId ?? response.headers.get("x-request-id");
 
-    // eslint-disable-next-line no-console
-    console.error(
-      `[apiRequest] ${requestOptions.method || "GET"} ${path} -> HTTP ${response.status}`,
-      { contentType, hasJson, payload }
-    );
+    if (response.status === 401) {
+      saveAuthFeedback({ type: "error", message });
+      clearAuthSession();
+    }
 
-    throw new Error(message);
+    // Keep credentials and path parameters out of browser logs.
+    console.error("[apiRequest] API operation failed", {
+      method: requestOptions.method || "GET",
+      status: response.status,
+      requestId,
+    });
+
+    throw new ApiError(message, {
+      status: response.status,
+      code: payload?.code ?? null,
+      errors: Array.isArray(payload?.errors) ? payload.errors : null,
+      payload,
+      requestId,
+    });
   }
 
   return payload;
+}
+
+/**
+ * Consome uma listagem paginada do backend seguindo o pagination.totalPages.
+ *
+ * Todas as listagens da API respondem
+ *   { result: [...], pagination: { total, page, limit, totalPages } }
+ * com limit padrao 10. Antes o frontend lia so "result" e silenciosamente
+ * mostrava no maximo 10 itens. Aqui a metadata e de fato interpretada.
+ *
+ * @param {string} path caminho, podendo ja conter query string
+ * @param {object} options repassado ao apiRequest (authToken, etc.)
+ * @param {{limit?: number, maxPaginas?: number}} opcoes limit maximo da API e 100
+ * @returns {Promise<Array>} todos os itens, de todas as paginas
+ */
+export async function apiRequestPaginado(
+  path,
+  options = {},
+  { limit = 100, maxPaginas = 20 } = {},
+) {
+  const separador = path.includes("?") ? "&" : "?";
+  const itens = [];
+  let pagina = 1;
+  let totalPaginas = 1;
+
+  do {
+    const data = await apiRequest(
+      `${path}${separador}page=${pagina}&limit=${limit}`,
+      options,
+    );
+    itens.push(...(data?.result ?? []));
+    totalPaginas = data?.pagination?.totalPages ?? 1;
+    pagina += 1;
+  } while (pagina <= totalPaginas && pagina <= maxPaginas);
+
+  return itens;
 }
 
 export function isApiConfigured() {

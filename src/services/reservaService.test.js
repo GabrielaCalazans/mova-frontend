@@ -1,0 +1,152 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("./apiClient", () => ({
+  apiRequest: vi.fn(),
+  apiRequestPaginado: vi.fn(),
+}));
+vi.mock("./authSession", () => ({ getAuthSession: vi.fn() }));
+
+import { apiRequest } from "./apiClient";
+import { getAuthSession } from "./authSession";
+import {
+  buildShareUrl,
+  cancelarReserva,
+  criarCompartilhamentoReserva,
+  getQrDesbloqueio,
+  getPagamentoReserva,
+  getRastreamentoReserva,
+  getReservasDoLocatarioPage,
+  revogarCompartilhamentoReserva,
+} from "./reservaService";
+
+describe("getReservasDoLocatarioPage", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    getAuthSession.mockReturnValue({ token: "token-teste" });
+  });
+
+  it("preserva result e pagination da página retornada pela API", async () => {
+    apiRequest.mockResolvedValue({
+      result: [{ id: "reserva-2" }],
+      pagination: { page: 2, limit: 10, total: 11, totalPages: 2 },
+    });
+
+    await expect(getReservasDoLocatarioPage("locatario-1", { page: 2 })).resolves.toEqual({
+      reservas: [{ id: "reserva-2" }],
+      pagination: { page: 2, limit: 10, total: 11, totalPages: 2 },
+    });
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/reserva/locatario/locatario-1?page=2&limit=10",
+      { authToken: "token-teste" },
+    );
+  });
+});
+
+describe("getRastreamentoReserva", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    getAuthSession.mockReturnValue({ token: "token-teste" });
+  });
+
+  it("consulta a localização pelo identificador da reserva", async () => {
+    apiRequest.mockResolvedValue({ result: { reservaId: "reserva-1", localizacao: null } });
+
+    await expect(getRastreamentoReserva("reserva-1")).resolves.toEqual({
+      reservaId: "reserva-1", localizacao: null,
+    });
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/reserva/reserva-1/localizacao",
+      { authToken: "token-teste" },
+    );
+  });
+});
+
+describe("getQrDesbloqueio", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    getAuthSession.mockReturnValue({ token: "token-teste" });
+  });
+
+  it("consulta o token assinado somente pelo endpoint autenticado", async () => {
+    apiRequest.mockResolvedValue({ result: { qr: "token-qr-assinado" } });
+
+    await expect(getQrDesbloqueio("reserva-1")).resolves.toBe("token-qr-assinado");
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/reserva/reserva-1/desbloqueio/qr",
+      { authToken: "token-teste" },
+    );
+  });
+});
+
+describe("getPagamentoReserva", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    getAuthSession.mockReturnValue({ token: "token-teste" });
+  });
+
+  it("consulta status financeiro real pelo endpoint autenticado", async () => {
+    apiRequest.mockResolvedValue({ result: { statusPagamento: "SUCESSO", statusEstorno: "CONCLUIDO" } });
+
+    await expect(getPagamentoReserva("reserva-1")).resolves.toEqual({
+      statusPagamento: "SUCESSO",
+      statusEstorno: "CONCLUIDO",
+    });
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/reserva/reserva-1/pagamento",
+      { authToken: "token-teste" },
+    );
+  });
+});
+
+describe("cancelarReserva", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    getAuthSession.mockReturnValue({ token: "token-teste" });
+  });
+
+  it("usa somente o endpoint de cancelamento POST", async () => {
+    apiRequest.mockResolvedValue({ result: { id: "reserva-1", status: "CANCELADA" } });
+
+    await expect(cancelarReserva("reserva-1")).resolves.toEqual({
+      id: "reserva-1",
+      status: "CANCELADA",
+    });
+    expect(apiRequest).toHaveBeenCalledWith("/reserva/reserva-1/cancelar", {
+      method: "POST",
+      authToken: "token-teste",
+    });
+  });
+});
+
+describe("compartilhamento da reserva", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    getAuthSession.mockReturnValue({ token: "token-teste" });
+  });
+
+  it("cria link pelo endpoint autenticado real sem enviar dados da reserva", async () => {
+    apiRequest.mockResolvedValue({ result: { token: "A".repeat(43), urlPath: "/viagem/compartilhada/token" } });
+
+    await expect(criarCompartilhamentoReserva("reserva-1")).resolves.toMatchObject({
+      token: "A".repeat(43),
+    });
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/reserva/reserva-1/compartilhamento",
+      { method: "POST", ...{ authToken: "token-teste" } },
+    );
+  });
+
+  it("revoga link pelo endpoint autenticado", async () => {
+    apiRequest.mockResolvedValue({});
+
+    await expect(revogarCompartilhamentoReserva("reserva-1")).resolves.toBeUndefined();
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/reserva/reserva-1/compartilhamento",
+      { method: "DELETE", ...{ authToken: "token-teste" } },
+    );
+  });
+
+  it("monta URL pública usando base configurada ou origem atual", () => {
+    expect(buildShareUrl("/viagem/compartilhada/token")).toContain("/viagem/compartilhada/token");
+  });
+});

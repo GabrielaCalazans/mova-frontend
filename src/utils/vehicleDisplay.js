@@ -6,21 +6,81 @@ import fiatArgoImg from "../assets/fiat-argo-drive.png";
 import hb20Img from "../assets/hiunday-hb20-plus.png";
 import onixImg from "../assets/chevrolet-onix-flex.png";
 
-// Detalhes ilustrativos (imagem, cor, preco, autonomia e garagem) para os
-// modelos mais comuns do catalogo. Modelos fora desta lista usam um icone
-// generico do tipo e valores de preco/autonomia indisponiveis.
+// MODEL_DETAILS contains visual assets only. Functional attributes come from the API.
 const MODEL_DETAILS = {
-  "fiat argo": { image: fiatArgoImg, cor: "Branco", autonomia: "455km", precoDia: 95, garagem: "Garagem Norte" },
-  "hyundai hb20": { image: hb20Img, cor: "Cinza", autonomia: "255km", precoDia: 90, garagem: "Garagem Sul" },
-  "chevrolet onix": { image: onixImg, cor: "Branco", autonomia: "380km", precoDia: 80, garagem: "Garagem Centro" },
-  "honda civic": { image: null, cor: "Branco", autonomia: "480km", precoDia: 99, garagem: "Garagem Centro" },
+  "fiat argo": { image: fiatArgoImg },
+  "hyundai hb20": { image: hb20Img },
+  "chevrolet onix": { image: onixImg },
+  "honda civic": { image: null },
 };
+
+const CATEGORY_LABELS = {
+  ECONOMICO: "Econômico",
+  ESPACOSO: "Espaçoso",
+  EXECUTIVO: "Executivo",
+  PCD: "PCD",
+  ELETRICO: "Elétrico",
+};
+
+function resolveVehicleField(vehicle, field) {
+  return vehicle?.[field] ?? vehicle?.modeloVeiculo?.[field];
+}
+
+export function vehicleTitle(vehicle) {
+  return [resolveVehicleField(vehicle, "marca"), resolveVehicleField(vehicle, "modelo")].filter(Boolean).join(" ") || "Veículo";
+}
+
+export function formatCategoria(categoria) {
+  return CATEGORY_LABELS[categoria] ?? "Não informado";
+}
+
+export function formatCambio(cambio) {
+  if (!cambio) return "Não informado";
+  if (String(cambio).toLowerCase() === "automatico") return "Automático";
+  return String(cambio);
+}
+
+export function getVehicleCharacteristics(vehicle) {
+  const characteristics = [];
+  const cambio = resolveVehicleField(vehicle, "cambio");
+  const capacidade = resolveVehicleField(vehicle, "capacidade");
+  const categoria = resolveVehicleField(vehicle, "categoria");
+
+  if (cambio) characteristics.push(formatCambio(cambio));
+  if (capacidade !== undefined && capacidade !== null && capacidade !== "") {
+    characteristics.push(`${capacidade} lugares`);
+  }
+  if (categoria) characteristics.push(formatCategoria(categoria));
+  if (resolveVehicleField(vehicle, "eletrico") === true) characteristics.push("Elétrico");
+  if (resolveVehicleField(vehicle, "adaptado") === true) characteristics.push("Adaptado PCD");
+
+  return characteristics;
+}
 
 export function resolveTipoIcon(tipoFiltro) {
   if (tipoFiltro === "executivo") return executivoImg;
+  if (tipoFiltro === "espacoso") return executivoImg;
   if (tipoFiltro === "adaptado") return adaptadoImg;
   if (tipoFiltro === "eletrico") return eletricoImg;
   return economicoImg;
+}
+
+/**
+ * Imagem do veículo sem inventar: 1) foto real da API (com alt do locador);
+ * 2) foto ilustrativa empacotada do mesmo modelo, rotulada como tal;
+ * 3) nenhuma — a UI mostra um marcador "sem foto" em vez de um ícone de
+ * categoria fingindo ser o carro.
+ */
+export function resolveVehicleImages(vehicle) {
+  const marca = resolveVehicleField(vehicle, "marca") || "";
+  const modelo = resolveVehicleField(vehicle, "modelo") || "";
+  const nome = `${marca} ${modelo}`.trim() || "Veículo";
+  const reais = (Array.isArray(vehicle?.imagens) ? vehicle.imagens : [])
+    .filter((imagem) => imagem?.url)
+    .map((imagem) => ({ src: imagem.url, alt: imagem.altText || `Foto de ${nome}`, kind: "real" }));
+  if (reais.length) return reais;
+  const ilustrativa = MODEL_DETAILS[nome.toLowerCase()]?.image;
+  return ilustrativa ? [{ src: ilustrativa, alt: `Foto ilustrativa de ${nome}`, kind: "illustrative" }] : [];
 }
 
 export function resolveModelDetails(marca, modelo, tipoFiltro) {
@@ -29,9 +89,5 @@ export function resolveModelDetails(marca, modelo, tipoFiltro) {
 
   return {
     image: details?.image || resolveTipoIcon(tipoFiltro),
-    cor: details?.cor || "—",
-    autonomia: details?.autonomia || "—",
-    precoDia: details?.precoDia ?? null,
-    garagem: details?.garagem || "—",
   };
 }

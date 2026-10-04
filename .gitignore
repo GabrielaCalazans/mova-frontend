@@ -1,5 +1,11 @@
 node_modules/
 .env
 .env.local
+.env.*
+!.env.example
+*.dump
+*.sql.gz
 dist/
 coverage/
+.worktrees/
+test-results/

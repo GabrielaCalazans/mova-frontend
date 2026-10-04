@@ -1,10 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav";
+import CursorGlowArea from "../components/ui/CursorGlowArea";
+import VehicleCard from "../components/vehicle/VehicleCard";
 import { listVeiculos } from "../services/veiculoService";
 import { updateJourneyStep } from "../utils/journeyStorage";
-import { resolveModelDetails } from "../utils/vehicleDisplay";
-import "../styles/carselect.css";
+import "../styles/vehicle.css";
 
 function resolveModeloVeiculo(veiculo) {
   return veiculo?.modeloVeiculo ?? {};
@@ -14,17 +15,26 @@ function resolveVeiculoField(veiculo, modeloVeiculo, field) {
   return veiculo?.[field] ?? modeloVeiculo?.[field] ?? "";
 }
 
-function formatCambio(cambio) {
-  return cambio || "—";
+const FILTROS_CATEGORIA = [
+  { id: "economico", label: "Econômicos" },
+  { id: "espacoso", label: "Espaçosos" },
+  { id: "executivo", label: "Executivos" },
+  { id: "adaptado", label: "Adaptados PCD" },
+];
+
+function veiculoSelecionavel(veiculo) {
+  if (veiculo?.status !== "DISPONIVEL") return false;
+  if (!veiculo.garagem) return true;
+  return veiculo.garagem.status === "ATIVA";
 }
 
 function CarrosScreen() {
   const navigate = useNavigate();
   const location = useLocation();
-  const tipoFiltro = location.state?.tipo ?? null;
+  const [tipoFiltro, setTipoFiltro] = useState(location.state?.tipo ?? null);
 
   const [veiculos, setVeiculos] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
 
   const buscar = useCallback(async () => {
@@ -32,38 +42,32 @@ function CarrosScreen() {
     setErro(null);
 
     try {
-      // Filtragem feita no cliente (nao no servidor): evita depender de o
-      // backend aceitar exatamente os mesmos nomes/valores de filtro que
-      // usamos aqui (ex.: diferenca de maiusculas/minusculas em "cambio").
-      const resultado = await listVeiculos();
-      // eslint-disable-next-line no-console
-      console.log("[CarrosScreen] veiculos recebidos da API:", resultado);
+      const filtrosPorTipo = {
+        economico: { categoria: "ECONOMICO" },
+        espacoso: { categoria: "ESPACOSO" },
+        executivo: { categoria: "EXECUTIVO" },
+        adaptado: { pcd: true },
+        eletrico: { eletrico: true },
+      };
+      const resultado = await listVeiculos(filtrosPorTipo[tipoFiltro] ?? {});
       setVeiculos(resultado);
     } catch (e) {
       setErro(e.message || "Não foi possível carregar os veículos.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tipoFiltro]);
 
   useEffect(() => {
     document.title = "MOVA - Escolha seu Carro";
-    buscar();
+    queueMicrotask(() => {
+      void buscar();
+    });
   }, [buscar]);
 
-  const veiculosFiltrados = veiculos.filter((v) => {
-    const eletrico = v.eletrico === true || v.eletrico === "true";
-    const adaptado = v.adaptado === true || v.adaptado === "true";
-    const cambio = String(v.cambio ?? v.modeloVeiculo?.cambio ?? "").toLowerCase();
-
-    if (tipoFiltro === "eletrico") return eletrico;
-    if (tipoFiltro === "adaptado") return adaptado;
-    if (tipoFiltro === "executivo") return cambio.includes("automat");
-    if (tipoFiltro === "economico") return !eletrico && !adaptado;
-    return true;
-  });
-
   function selecionarVeiculo(veiculo) {
+    if (!veiculoSelecionavel(veiculo)) return;
+
     const modeloVeiculo = resolveModeloVeiculo(veiculo);
 
     updateJourneyStep("veiculo", {
@@ -75,10 +79,9 @@ function CarrosScreen() {
         `${resolveVeiculoField(veiculo, modeloVeiculo, "marca")} ${resolveVeiculoField(veiculo, modeloVeiculo, "modelo")}`.trim(),
       marca: resolveVeiculoField(veiculo, modeloVeiculo, "marca"),
       modelo: resolveVeiculoField(veiculo, modeloVeiculo, "modelo"),
-      categoria: veiculo.categoria ?? veiculo.tipo ?? "",
+      categoria: resolveVeiculoField(veiculo, modeloVeiculo, "categoria"),
       imagem: veiculo.imagem ?? veiculo.image ?? veiculo.foto ?? "",
       capacidade: resolveVeiculoField(veiculo, modeloVeiculo, "capacidade"),
-      caracteristicas: veiculo.caracteristicas ?? [],
       acessibilidade: resolveVeiculoField(veiculo, modeloVeiculo, "adaptado"),
       adaptado: veiculo.adaptado ?? false,
       eletrico: veiculo.eletrico ?? false,
@@ -86,8 +89,6 @@ function CarrosScreen() {
         resolveVeiculoField(veiculo, modeloVeiculo, "cambio") ||
         veiculo.transmissao ||
         "",
-      autonomia: veiculo.autonomia ?? "",
-      combustivel: veiculo.combustivel ?? veiculo.energia ?? "",
       ano: resolveVeiculoField(veiculo, modeloVeiculo, "ano"),
       placa: veiculo.placa ?? "",
       status: veiculo.status ?? "",
@@ -98,84 +99,88 @@ function CarrosScreen() {
   }
 
   return (
-    <main className="carro-page">
-      <div className="carro-header">
-        <h1>Escolha Seu Carro</h1>
-      </div>
+    <main className="carro-page catalog-page">
+      <header className="page-head">
+        <h1>Escolha seu carro</h1>
+        <p className="page-head__lede">Selecione o veículo; em seguida você confirma a garagem de retirada e o período.</p>
+      </header>
 
-      <div className="carro-content">
-        {loading && <p className="carro-status">Carregando veículos…</p>}
+      <div className="catalog-page__body">
+        <fieldset className="fieldset category-strip carro-filters" aria-label="Filtros de categoria">
+          <legend>Filtrar por categoria</legend>
+          <div className="category-strip__list">
+            {FILTROS_CATEGORIA.map(({ id, label }) => (
+              <button
+                key={id}
+                type="button"
+                className="chip"
+                aria-pressed={tipoFiltro === id}
+                onClick={() => setTipoFiltro((atual) => atual === id ? null : id)}
+              >
+                {label}
+              </button>
+            ))}
+            <button type="button" className="btn btn--quiet" onClick={() => setTipoFiltro(null)}>
+              Limpar filtros
+            </button>
+          </div>
+        </fieldset>
 
-        {!loading && erro && <p className="carro-status">{erro}</p>}
+        {loading && <p className="loading-state carro-status" role="status"><span className="spinner" aria-hidden="true" />Carregando veículos…</p>}
 
-        {!loading && !erro && veiculosFiltrados.length === 0 && (
-          <p className="carro-empty-state">
-            {veiculos.length === 0
-              ? "Nenhum veículo cadastrado no momento. Volte mais tarde."
-              : "Nenhum veículo desse tipo disponível no momento."}
-            {veiculos.length > 0 && tipoFiltro && (
-              <>
-                {" "}
-                <button
-                  type="button"
-                  onClick={() => navigate("/carros/lista")}
-                  style={{ background: "none", border: "none", color: "var(--color-primary-strong)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}
-                >
-                  Ver todos os veículos
-                </button>
-              </>
-            )}
-          </p>
-        )}
-
-        {!loading && !erro && veiculosFiltrados.length > 0 && (
-          <div className="carro-list">
-            {veiculosFiltrados.map((veiculo) => {
-              const modeloVeiculo = resolveModeloVeiculo(veiculo);
-              const marca = resolveVeiculoField(veiculo, modeloVeiculo, "marca");
-              const modelo = resolveVeiculoField(veiculo, modeloVeiculo, "modelo");
-              const ano = resolveVeiculoField(veiculo, modeloVeiculo, "ano");
-              const cambio = resolveVeiculoField(veiculo, modeloVeiculo, "cambio");
-              const disponivel = veiculo.status === "DISPONIVEL";
-              const details = resolveModelDetails(marca, modelo, tipoFiltro);
-
-              return (
-                <div className="carro-list-card" key={veiculo.id}>
-                  <img
-                    src={details.image}
-                    alt={`${marca} ${modelo}`}
-                    className="carro-list-card__image"
-                  />
-                  <h3>
-                    {marca} {modelo}
-                  </h3>
-                  <p className="carro-list-card__specs">
-                    {marca} - {modelo}
-                    <br />
-                    {ano} - {formatCambio(cambio)}
-                    <br />
-                    Autonomia: {details.autonomia}
-                    <br />
-                    Local: {details.garagem}
-                  </p>
-                  <p className="carro-list-card__price">
-                    {details.precoDia ? `Preço: R$${details.precoDia},00/dia` : "Consulte o preço"}
-                  </p>
-                  <button
-                    type="button"
-                    className="carro-button"
-                    disabled={!disponivel}
-                    onClick={() => selecionarVeiculo(veiculo)}
-                  >
-                    {disponivel ? "Selecionar" : "Indisponível"}
-                  </button>
-                </div>
-              );
-            })}
+        {!loading && erro && (
+          <div className="state-block state-block--error carro-status" role="alert">
+            <h2 className="state-block__title">Não conseguimos carregar os veículos</h2>
+            <p className="state-block__text">{erro}</p>
+            <button type="button" className="btn btn--secondary" onClick={() => void buscar()}>Tentar novamente</button>
           </div>
         )}
+
+        {!loading && !erro && veiculos.length === 0 && (
+          <div className="state-block carro-empty-state">
+            <h2 className="state-block__title">Nenhum veículo encontrado</h2>
+            <p className="state-block__text">
+              {tipoFiltro ? "Nenhum veículo cadastrado nesta categoria no momento." : "Nenhum veículo cadastrado no momento. Volte mais tarde."}
+            </p>
+            {tipoFiltro && (
+              <button type="button" className="btn btn--secondary" onClick={() => setTipoFiltro(null)}>Ver todos os veículos</button>
+            )}
+          </div>
+        )}
+
+        {!loading && !erro && veiculos.length > 0 && (
+          <CursorGlowArea className="vehicle-grid carro-list">
+            {veiculos.map((veiculo) => {
+              const disponivel = veiculo.status === "DISPONIVEL";
+              const selecionavel = veiculoSelecionavel(veiculo);
+              const garagemIndisponivel = disponivel && Boolean(veiculo.garagem) && veiculo.garagem.status !== "ATIVA";
+              const noteId = `nota-${veiculo.id}`;
+
+              return (
+                <VehicleCard
+                  key={veiculo.id}
+                  vehicle={veiculo}
+                  className="carro-list-card"
+                  note={garagemIndisponivel ? "Local indisponível para reserva." : undefined}
+                  noteId={noteId}
+                  actions={(
+                    <button
+                      type="button"
+                      className="btn"
+                      disabled={!selecionavel}
+                      aria-describedby={garagemIndisponivel ? noteId : undefined}
+                      onClick={() => selecionarVeiculo(veiculo)}
+                    >
+                      {selecionavel ? "Selecionar" : "Indisponível"}
+                    </button>
+                  )}
+                />
+              );
+            })}
+          </CursorGlowArea>
+        )}
       </div>
-          <BottomNav />
+      <BottomNav />
     </main>
   );
 }

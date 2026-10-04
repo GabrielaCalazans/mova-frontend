@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { rotulo, STATUS_GARAGEM_LABELS } from "../services/apiEnums";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import AuthenticatedLayout from "../layout/AuthenticatedLayout";
-import { createGaragem, updateGaragem } from "../services/garagemService";
+import { createGaragem, listGaragens, updateGaragem } from "../services/garagemService";
 import { getAuthSession } from "../services/authSession";
-import "../styles/relatorios.css";
+import "../styles/owner.css";
+
+const STATUS_OPCOES = ["ATIVA", "INATIVA", "MANUTENCAO"];
 
 export default function CadastroGaragemForm() {
   const navigate = useNavigate();
@@ -19,9 +21,45 @@ export default function CadastroGaragemForm() {
     endereco: garagemOriginal?.endereco || "",
     capacidade: garagemOriginal?.capacidade ? String(garagemOriginal.capacidade) : "",
     acessibilidade: garagemOriginal?.acessibilidade ?? true,
+    status: garagemOriginal?.status || "ATIVA",
   });
   const [erro, setErro] = useState(null);
   const [salvando, setSalvando] = useState(false);
+  const [carregandoGaragem, setCarregandoGaragem] = useState(!isNovo && !garagemOriginal);
+
+  useEffect(() => {
+    if (isNovo || garagemOriginal || !idLocador || !id) return undefined;
+
+    let ativo = true;
+    listGaragens({ idLocador })
+      .then((garagens) => {
+        if (!ativo) return;
+        const garagem = (Array.isArray(garagens) ? garagens : []).find(
+          (item) => String(item.id) === String(id),
+        );
+        if (!garagem) {
+          throw new Error("Garagem não encontrada na sua conta.");
+        }
+        setValues({
+          nome: garagem.nome || "",
+          endereco: garagem.endereco || "",
+          capacidade: garagem.capacidade ? String(garagem.capacidade) : "",
+          acessibilidade: garagem.acessibilidade ?? true,
+          status: garagem.status || "ATIVA",
+        });
+        setErro(null);
+      })
+      .catch((error) => {
+        if (ativo) setErro(error.message || "Não foi possível carregar a garagem.");
+      })
+      .finally(() => {
+        if (ativo) setCarregandoGaragem(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [garagemOriginal, id, idLocador, isNovo]);
 
   useEffect(() => {
     document.title = isNovo ? "MOVA - Adicionar Garagem" : "MOVA - Editar Garagem";
@@ -40,6 +78,7 @@ export default function CadastroGaragemForm() {
       endereco: values.endereco,
       capacidade: Number(values.capacidade),
       acessibilidade: Boolean(values.acessibilidade),
+      ...(isNovo ? {} : { status: values.status }),
     };
 
     setSalvando(true);
@@ -58,54 +97,94 @@ export default function CadastroGaragemForm() {
     }
   }
 
+  const titulo = isNovo ? "Adicionar garagem" : "Editar garagem";
+
+  if (carregandoGaragem) {
+    return (
+      <main className="owner-page" aria-labelledby="garagem-form-title">
+        <header className="page-head"><h1 id="garagem-form-title">{titulo}</h1></header>
+        <p className="loading-state" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" />Carregando garagem…</p>
+      </main>
+    );
+  }
+
   return (
-    <AuthenticatedLayout title="Informações" align={isNovo ? "left" : "center"}>
-      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+    <main className="owner-page" aria-labelledby="garagem-form-title">
+      <header className="page-head">
+        <h1 id="garagem-form-title">{titulo}</h1>
+        <p className="page-head__lede">Ponto de retirada e devolução: endereço, vagas e acessibilidade.</p>
+      </header>
+      <form className="owner-form" onSubmit={handleSubmit} noValidate>
         {erro && (
-          <p className="auth-feedback auth-feedback--error" role="status" aria-live="polite">
+          <p className="alert alert--danger" role="status" aria-live="polite">
             {erro}
           </p>
         )}
 
-        <div className="auth-field">
-          {isNovo && <label htmlFor="nome">Nome*</label>}
-          <input
-            id="nome"
-            type="text"
-            placeholder="Nome*"
-            required
-            value={values.nome}
-            onChange={(e) => handleChange("nome", e.target.value)}
-          />
-        </div>
+        <fieldset className="fieldset">
+          <legend>Dados da garagem</legend>
+          <div className="field">
+            <label className="field__label" htmlFor="nome">Nome*</label>
+            <input
+              id="nome"
+              className="field__control"
+              type="text"
+              placeholder="Nome*"
+              required
+              value={values.nome}
+              onChange={(e) => handleChange("nome", e.target.value)}
+            />
+          </div>
 
-        <div className="auth-field">
-          {isNovo && <label htmlFor="endereco">Endereço*</label>}
-          <input
-            id="endereco"
-            type="text"
-            placeholder="Endereço*"
-            required
-            value={values.endereco}
-            onChange={(e) => handleChange("endereco", e.target.value)}
-          />
-        </div>
+          <div className="field">
+            <label className="field__label" htmlFor="endereco">Endereço*</label>
+            <input
+              id="endereco"
+              className="field__control"
+              type="text"
+              placeholder="Endereço*"
+              required
+              value={values.endereco}
+              onChange={(e) => handleChange("endereco", e.target.value)}
+            />
+          </div>
+        </fieldset>
 
-        <div className="auth-field">
-          {isNovo && <label htmlFor="capacidade">Capacidade Total*</label>}
-          <input
-            id="capacidade"
-            type="text"
-            inputMode="numeric"
-            placeholder="Capacidade Total* (nº de vagas)"
-            required
-            value={values.capacidade}
-            onChange={(e) => handleChange("capacidade", e.target.value.replace(/\D/g, ""))}
-          />
-        </div>
+        <fieldset className="fieldset">
+          <legend>Operação</legend>
+          <div className="owner-form__grid">
+            <div className="field">
+              <label className="field__label" htmlFor="capacidade">Capacidade Total*</label>
+              <input
+                id="capacidade"
+                className="field__control"
+                type="text"
+                inputMode="numeric"
+                placeholder="Capacidade Total* (nº de vagas)"
+                required
+                value={values.capacidade}
+                onChange={(e) => handleChange("capacidade", e.target.value.replace(/\D/g, ""))}
+              />
+            </div>
 
-        <div className="auth-checkbox-group">
-          <label className="auth-checkbox">
+            {!isNovo && (
+              <div className="field">
+                <label className="field__label" htmlFor="status">Status</label>
+                <select
+                  id="status"
+                  className="field__control"
+                  value={values.status}
+                  onChange={(e) => handleChange("status", e.target.value)}
+                >
+                  {STATUS_OPCOES.map((status) => (
+                    <option key={status} value={status}>{rotulo(STATUS_GARAGEM_LABELS, status)}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
+          <label className="checkline">
             <input
               type="checkbox"
               checked={values.acessibilidade}
@@ -113,14 +192,19 @@ export default function CadastroGaragemForm() {
             />
             Garagem acessível (vagas para veículos adaptados)
           </label>
+        </fieldset>
+
+        {isNovo && <p className="owner-form__note">Todos os campos com * são obrigatórios</p>}
+
+        <div className="owner-form__actions">
+          <button type="button" className="btn btn--secondary btn--lg" onClick={() => navigate("/cadastro-garagens")} disabled={salvando}>
+            Cancelar
+          </button>
+          <button type="submit" className="btn btn--lg" disabled={salvando}>
+            {salvando ? "Salvando..." : isNovo ? "Finalizar Cadastro" : "Editar"}
+          </button>
         </div>
-
-        {isNovo && <p className="auth-required-note">Todos os campos com * são obrigatórios</p>}
-
-        <button type="submit" className="auth-button" disabled={salvando}>
-          {salvando ? "Salvando..." : isNovo ? "Finalizar Cadastro" : "Editar"}
-        </button>
       </form>
-    </AuthenticatedLayout>
+    </main>
   );
 }

@@ -1,18 +1,24 @@
 import { useCallback, useEffect, useState } from "react";
+import { rotulo, STATUS_GARAGEM_LABELS } from "../services/apiEnums";
 import { useNavigate } from "react-router-dom";
-import { Pencil, XCircle, CheckCircle2 } from "lucide-react";
+import { CircleCheck, CircleSlash, Gauge, Pencil, Plus, Trash2, Wrench } from "lucide-react";
 import BottomNav from "../components/BottomNav";
-import garagemImg from "../assets/garagem.png";
 import { listGaragens, deleteGaragem } from "../services/garagemService";
 import { getAuthSession } from "../services/authSession";
-import "../styles/carselect.css";
-import "../styles/payment.css";
+import "../styles/owner.css";
+
+// Status com ícone e texto: nunca só cor.
+const STATUS_GARAGEM = {
+  ATIVA: ["success", CircleCheck],
+  MANUTENCAO: ["warning", Wrench],
+  INATIVA: ["neutral", CircleSlash],
+};
 
 export default function CadastroDeGaragens() {
   const navigate = useNavigate();
   const idLocador = getAuthSession()?.user?.id;
   const [garagens, setGaragens] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(Boolean(idLocador));
   const [erro, setErro] = useState(null);
   const [garagemParaExcluir, setGaragemParaExcluir] = useState(null);
   const [excluindo, setExcluindo] = useState(false);
@@ -37,7 +43,9 @@ export default function CadastroDeGaragens() {
 
   useEffect(() => {
     document.title = "MOVA - Cadastro de Garagens";
-    carregar();
+    queueMicrotask(() => {
+      void carregar();
+    });
   }, [carregar]);
 
   async function confirmarExclusao() {
@@ -57,110 +65,106 @@ export default function CadastroDeGaragens() {
   }
 
   return (
-    <main className="carro-page">
-      <div className="carro-header">
-        <h1>Cadastro de Garagens</h1>
-      </div>
+    <main className="owner-page" aria-labelledby="garagens-title">
+      <header className="page-head">
+        <h1 id="garagens-title">Cadastro de Garagens</h1>
+        <p className="page-head__lede">Pontos de retirada e devolução da sua frota, com vagas e status.</p>
+      </header>
 
-      <div className="carro-content">
-        <div className="frota-header-row">
-          <h2>Garagens</h2>
-          <button
-            type="button"
-            className="frota-add-btn"
-            onClick={() => navigate("/cadastro-garagens/novo")}
-          >
+      <section className="owner-section" aria-labelledby="garagens-lista-title">
+        <div className="owner-section__head">
+          <h2 id="garagens-lista-title">Garagens</h2>
+          <button type="button" className="btn" onClick={() => navigate("/cadastro-garagens/novo")}>
+            <Plus className="icon" aria-hidden="true" />
             Adicionar
           </button>
         </div>
 
-        {loading && <p className="carro-status">Carregando garagens…</p>}
-        {!loading && erro && <p className="carro-status">{erro}</p>}
+        {loading && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando garagens…</p>}
+        {!loading && erro && <p className="alert alert--danger" role="alert">{erro}</p>}
         {!loading && !erro && garagens.length === 0 && (
-          <p className="carro-empty-state">
-            Você ainda não cadastrou nenhuma garagem. Toque em "Adicionar" para começar.
-          </p>
+          <div className="state-block">
+            <p className="state-block__title">Nenhuma garagem cadastrada</p>
+            <p className="state-block__text">Você ainda não cadastrou nenhuma garagem. Toque em "Adicionar" para começar.</p>
+          </div>
         )}
 
         {!loading && !erro && garagens.length > 0 && (
-          <div className="frota-list">
+          <ul className="owner-list">
             {garagens.map((garagem) => {
               const disponivel = garagem.capacidade - (garagem.veiculosAlocados ?? 0);
+              const ocupacao = garagem.capacidade > 0 ? Math.min(100, Math.round(((garagem.veiculosAlocados ?? 0) / garagem.capacidade) * 100)) : 0;
+              const [tom, IconeStatus] = STATUS_GARAGEM[garagem.status] || ["neutral", null];
 
               return (
-                <div
-                  className="frota-card"
-                  key={garagem.id}
-                  onClick={() => navigate(`/cadastro-garagens/${garagem.id}/capacidade`)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <img src={garagemImg} alt={garagem.nome} className="frota-card__image" />
-                  <div className="frota-card__info">
-                    <h3>{garagem.nome}</h3>
-                    <p>{garagem.endereco}</p>
-                    <p>
-                      Capacidade: {disponivel}/{garagem.capacidade} Carros
+                <li className="owner-row owner-row--plain" key={garagem.id}>
+                  <div className="owner-row__body">
+                    <h3 className="owner-row__title">{garagem.nome}</h3>
+                    <p className="owner-row__meta">
+                      <span className={`badge badge--${tom}`}>
+                        {IconeStatus && <IconeStatus className="icon-sm" aria-hidden="true" />}
+                        Status: {rotulo(STATUS_GARAGEM_LABELS, garagem.status)}
+                      </span>
+                      <span>{garagem.endereco}</span>
                     </p>
+                    <div className="owner-meter">
+                      <span className="owner-row__meta tabular">{disponivel} de {garagem.capacidade} vagas livres</span>
+                      <span className="owner-meter__bar" aria-hidden="true"><span className="owner-meter__fill" style={{ width: `${ocupacao}%` }} /></span>
+                    </div>
                   </div>
-                  <div className="frota-card__actions">
+                  <div className="owner-row__actions">
                     <button
                       type="button"
-                      className="frota-edit"
+                      className="btn btn--quiet"
+                      onClick={() => navigate(`/cadastro-garagens/${garagem.id}/capacidade`)}
+                    >
+                      <Gauge aria-hidden="true" />
+                      Ver ocupação
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--secondary"
                       aria-label={`Editar ${garagem.nome}`}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        navigate(`/cadastro-garagens/${garagem.id}`, { state: { garagem } });
-                      }}
+                      onClick={() => navigate(`/cadastro-garagens/${garagem.id}`, { state: { garagem } })}
                     >
-                      <Pencil size={22} />
+                      <Pencil aria-hidden="true" />
+                      Editar
                     </button>
                     <button
                       type="button"
-                      className="frota-delete"
+                      className="btn btn--danger"
                       aria-label={`Excluir ${garagem.nome}`}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setGaragemParaExcluir(garagem);
-                      }}
+                      onClick={() => setGaragemParaExcluir(garagem)}
                     >
-                      <XCircle size={26} />
+                      <Trash2 aria-hidden="true" />
+                      Excluir
                     </button>
                   </div>
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
         )}
-      </div>
+      </section>
 
       {garagemParaExcluir && (
-        <div className="payment-validating-overlay" onClick={() => !excluindo && setGaragemParaExcluir(null)}>
-          <div className="payment-validating-card" onClick={(event) => event.stopPropagation()}>
-            <h2>Deseja excluir essa garagem?</h2>
-            <div style={{ display: "flex", justifyContent: "center", gap: "2rem", marginTop: "0.5rem" }}>
-              <button
-                type="button"
-                aria-label="Confirmar exclusão"
-                onClick={confirmarExclusao}
-                disabled={excluindo}
-                style={{ background: "none", border: "none", cursor: "pointer", color: "#1e8e5a" }}
-              >
-                <CheckCircle2 size={30} />
+        <div className="owner-dialog" onClick={() => !excluindo && setGaragemParaExcluir(null)} onKeyDown={(event) => event.key === "Escape" && !excluindo && setGaragemParaExcluir(null)}>
+          <div className="owner-dialog__panel" role="alertdialog" aria-modal="true" aria-labelledby="excluir-garagem-title" aria-describedby="excluir-garagem-desc" onClick={(event) => event.stopPropagation()}>
+            <h2 id="excluir-garagem-title">Deseja excluir essa garagem?</h2>
+            <p id="excluir-garagem-desc">{garagemParaExcluir.nome}. Esta ação não pode ser desfeita.</p>
+            <div className="owner-dialog__actions">
+              <button type="button" className="btn btn--secondary" aria-label="Cancelar exclusão" onClick={() => setGaragemParaExcluir(null)} disabled={excluindo} autoFocus>
+                Cancelar
               </button>
-              <button
-                type="button"
-                aria-label="Cancelar exclusão"
-                onClick={() => setGaragemParaExcluir(null)}
-                disabled={excluindo}
-                style={{ background: "none", border: "none", cursor: "pointer", color: "#c0392b" }}
-              >
-                <XCircle size={30} />
+              <button type="button" className="btn btn--danger" aria-label="Confirmar exclusão" onClick={confirmarExclusao} disabled={excluindo}>
+                <Trash2 className="icon" aria-hidden="true" />
+                {excluindo ? "Excluindo…" : "Confirmar exclusão"}
               </button>
             </div>
           </div>
         </div>
       )}
-          <BottomNav />
+      <BottomNav />
     </main>
   );
 }

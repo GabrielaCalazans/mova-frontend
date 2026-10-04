@@ -1,0 +1,42 @@
+/* =============================================================================
+   MOVA — camada de compatibilidade das telas legadas (Task 8).
+   Telas que ainda usam `carro-page`, `carro-header`, `carro-content`,
+   `carro-button` etc. passam a se comportar como conteúdo do AppShell:
+   sem fundo próprio, sem altura de viewport, título 32 px, cartões neutros.
+   Estilos de .auth-page vivem em auth.css.
+   ========================================================================== */
+
+main.carro-page { display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; color: var(--text-primary); }
+
+.carro-page .carro-header { padding: 0; background: none; border: 0; border-radius: 0; text-align: left; }
+.carro-page .carro-header h1 { margin: 0; color: var(--text-primary); font-size: var(--text-h1); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
+.carro-page .carro-content { display: flex; flex-direction: column; gap: var(--space-4); width: 100%; max-width: none; margin: 0; padding: 0; }
+
+.carro-page :is(.payment-method-card, .carro-type-card, .carro-list-card, .garage-card, .fav-card, .frota-card) {
+  background: var(--surface-secondary); color: var(--text-primary);
+  border: 1px solid var(--border-default); border-radius: var(--radius-md); box-shadow: none;
+}
+.carro-page .payment-method-card { padding: var(--space-5); }
+.carro-page :is(.payment-method-card h2, .carro-list-card h3, .garage-card__info h3, .fav-card__info h3, .frota-card__info h3) { color: var(--text-primary); }
+
+.carro-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  width: 100%; min-height: var(--control-h-lg); padding: var(--space-2) var(--space-5);
+  border: 1px solid transparent; border-radius: var(--radius-sm);
+  background: var(--action-primary); color: var(--action-primary-text);
+  font-size: var(--text-control); font-weight: var(--weight-semibold); cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.carro-button:hover:not(:disabled) { background: var(--action-primary-hover); }
+.carro-button:disabled { background: var(--action-disabled-bg); color: var(--action-disabled-text); border-color: var(--action-disabled-border); cursor: not-allowed; }
+@media (min-width: 720px) { .carro-button { width: auto; min-width: 14rem; } }
+
+.carro-page :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  min-height: var(--control-h); padding: var(--space-2) var(--space-3);
+  background: var(--surface-secondary); color: var(--text-primary);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  font-size: var(--text-control);
+}
+.carro-page label { font-size: var(--text-label); font-weight: var(--weight-semibold); }
+
+.carro-status, .carro-empty-state { color: var(--text-secondary); font-size: var(--text-meta); }

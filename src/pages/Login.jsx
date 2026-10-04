@@ -1,12 +1,13 @@
-﻿import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useCallback } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import AuthLayout from "../layout/AuthLayout";
 import movaLogo from "../assets/mova_logo.png";
 import FormField from "../components/FormField";
 import { useFormState } from "../hooks/useFormState";
 import { useFormSubmit } from "../hooks/useFormSubmit";
 import { resolveAuthRoute } from "../services/authIdentity";
-import { getAuthSession } from "../services/authSession";
+import { consumeAuthFeedback, getAuthSession } from "../services/authSession";
 import { loginUser } from "../services/authService";
 import { validateLoginForm } from "../utils/formValidators";
 
@@ -16,6 +17,16 @@ function resolvePostLoginRoute(user) {
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const redirectAfterLogin = useCallback((user) => {
+    const from = location.state?.from;
+    if (from?.pathname) {
+      navigate(`${from.pathname}${from.search || ""}${from.hash || ""}`, { replace: true, state: from.state });
+      return;
+    }
+    navigate(resolvePostLoginRoute(user), { replace: true });
+  }, [location.state, navigate]);
 
   const {
     values,
@@ -32,11 +43,16 @@ function Login() {
   useEffect(() => {
     document.title = "MOVA - Login";
 
+    const authFeedback = consumeAuthFeedback();
+    if (authFeedback?.message) {
+      setFeedback({ type: authFeedback.type || "error", message: authFeedback.message });
+    }
+
     const session = getAuthSession();
     if (session?.user) {
-      navigate(resolvePostLoginRoute(session.user), { replace: true });
+      redirectAfterLogin(session.user);
     }
-  }, [navigate]);
+  }, [redirectAfterLogin, setFeedback]);
 
   const { handleSubmit, isSubmitting } = useFormSubmit({
     values,
@@ -57,7 +73,7 @@ function Login() {
     }),
     onSubmit: loginUser,
     onSuccess: (submitResult) => {
-      navigate(resolvePostLoginRoute(submitResult?.user), { replace: true });
+      redirectAfterLogin(submitResult?.user);
     },
   });
 
@@ -71,7 +87,7 @@ function Login() {
     >
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         {feedback && (
-          <p className={`auth-feedback auth-feedback--${feedback.type}`} role="status" aria-live="polite">
+          <p className={`auth-feedback auth-feedback--${feedback.type}`} role={feedback.type === "error" ? "alert" : "status"} aria-live="polite">
             {feedback.message}
           </p>
         )}
@@ -102,18 +118,20 @@ function Login() {
           autoComplete="current-password"
         />
 
-        <div className="auth-actions">
-          <button type="submit" className="auth-button" disabled={isSubmitting}>
-            {isSubmitting ? "Entrando..." : "Entrar"}
-          </button>
-          <Link to="/cadastro" className="auth-button-secondary">
-            Cadastre-se
-          </Link>
-        </div>
+        <button type="submit" className="auth-button" disabled={isSubmitting}>
+          {isSubmitting ? "Entrando..." : "Entrar"}
+        </button>
 
         <p className="auth-forgot">
           <Link to="/recuperar-senha">Esqueci minha senha</Link>
         </p>
+
+        <div className="auth-actions auth-divider">
+          <p className="auth-footer">Ainda não tem conta?</p>
+          <Link to="/cadastro" className="auth-button-secondary">
+            Cadastre-se
+          </Link>
+        </div>
       </form>
     </AuthLayout>
   );

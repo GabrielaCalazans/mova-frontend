@@ -1,6 +1,6 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, ChevronDown } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import AuthenticatedLayout from "../layout/AuthenticatedLayout";
 import FormField from "../components/FormField";
 import { useFormState } from "../hooks/useFormState";
@@ -17,18 +17,6 @@ import {
 import { maskCelphone, maskCep, maskCpf, maskCnpj } from "../utils/inputMasks";
 import { validateProfileForm, isSenhaForte } from "../utils/formValidators";
 
-const CONTA_DEBUG_ENABLED = String(import.meta.env.AUTH_DEBUG).toLowerCase() === "true";
-
-function contaDebug(label, payload) {
-  if (!CONTA_DEBUG_ENABLED) {
-    return;
-  }
-
-  console.groupCollapsed(`[conta-debug] ${label}`);
-  console.log(payload);
-  console.groupEnd();
-}
-
 function ProfileMenuRow({ label, open, onToggle, tone = "default", children }) {
   const isExpandable = Boolean(children);
 
@@ -41,9 +29,10 @@ function ProfileMenuRow({ label, open, onToggle, tone = "default", children }) {
         aria-expanded={isExpandable ? open : undefined}
       >
         <span>{label}</span>
-        {isExpandable && (
-          <ChevronDown
-            size={18}
+        {tone === "default" && (
+          <ChevronRight
+            size={20}
+            aria-hidden="true"
             className={`profile-menu-row__chevron${open ? " profile-menu-row__chevron--open" : ""}`}
           />
         )}
@@ -112,20 +101,24 @@ function Conta() {
     let isMounted = true;
 
     if (!authToken) {
-      setProfileStatus("error");
-      setProfileFeedback({
-        type: "error",
-        message: "Sua sessao expirou. Entre novamente para acessar a conta.",
+      queueMicrotask(() => {
+        if (!isMounted) return;
+        setProfileStatus("error");
+        setProfileFeedback({
+          type: "error",
+          message: "Sua sessao expirou. Entre novamente para acessar a conta.",
+        });
       });
       return () => {
         isMounted = false;
       };
     }
 
-    contaDebug("hydrateProfile.sessionUser", sessionUser);
-
-    setProfileStatus("loading");
-    setProfileFeedback(null);
+    queueMicrotask(() => {
+      if (!isMounted) return;
+      setProfileStatus("loading");
+      setProfileFeedback(null);
+    });
 
     async function hydrateProfile() {
       try {
@@ -133,8 +126,6 @@ function Conta() {
           authToken,
           persistToSession: true,
         });
-
-        contaDebug("hydrateProfile.freshProfile", freshProfile);
 
         if (!isMounted || !freshProfile) {
           return;
@@ -157,18 +148,19 @@ function Conta() {
             cep: freshProfile.cep || "",
           };
 
-          contaDebug("hydrateProfile.nextFormValues", nextValues);
           return nextValues;
         });
 
         setProfileStatus("ready");
       } catch (error) {
-        contaDebug("hydrateProfile.error", error);
         const message = error instanceof Error ? error.message : "Nao foi possivel carregar os dados da conta.";
 
         if (/sessao expirada|faca login novamente/i.test(message)) {
           clearAuthSession();
-          setSession(null);
+          if (isMounted) {
+            navigate("/login", { replace: true });
+          }
+          return;
         }
 
         if (isMounted) {
@@ -186,7 +178,7 @@ function Conta() {
     return () => {
       isMounted = false;
     };
-  }, [authToken, setValues]);
+  }, [authToken, navigate, setValues]);
 
   function applyMask(field, value) {
     if (field === "celphone") return maskCelphone(value);
@@ -299,8 +291,6 @@ function Conta() {
     return (
       <AuthenticatedLayout
         title="Minha Conta"
-
-        hideTitle
         footerText="Quer sair da conta?"
         footerLinkTo="/login"
         footerLinkLabel="Voltar ao login"
@@ -321,10 +311,9 @@ function Conta() {
     return (
       <AuthenticatedLayout
         title="Minha Conta"
-
-        hideTitle
       >
-        <p className="auth-feedback auth-feedback--warning" role="status" aria-live="polite">
+        <p className="loading-state" role="status" aria-live="polite">
+          <span className="spinner" aria-hidden="true" />
           Carregando dados da conta...
         </p>
       </AuthenticatedLayout>
@@ -335,8 +324,6 @@ function Conta() {
     return (
       <AuthenticatedLayout
         title="Minha Conta"
-
-        hideTitle
         footerText="Quer sair da conta?"
         footerLinkTo="/login"
         footerLinkLabel="Voltar ao login"
@@ -356,8 +343,6 @@ function Conta() {
   return (
     <AuthenticatedLayout
       title="Minha Conta"
-
-      hideTitle
     >
       {profileStatus === "loading" && (
         <StatusMessage role="status" aria-live="polite">
@@ -371,15 +356,11 @@ function Conta() {
         </p>
       )}
 
-      <p className="auth-profile-badge" role="status" aria-live="polite">
+      <p className="badge badge--neutral auth-profile-badge" role="status" aria-live="polite">
         {profileLabel}
       </p>
 
       <div className="profile-menu-card">
-        <div className="profile-avatar">
-          <User size={34} strokeWidth={1.75} />
-        </div>
-
         {feedback && (
           <p className={`auth-feedback auth-feedback--${feedback.type}`} role="status" aria-live="polite">
             {feedback.message}
@@ -673,7 +654,7 @@ function Conta() {
             <SuccessSubtitle>
               Tem certeza que deseja excluir sua conta? Essa acao nao pode ser desfeita.
             </SuccessSubtitle>
-            <div className="auth-actions" style={{ width: "100%" }}>
+            <div className="auth-actions auth-actions--split" style={{ width: "100%" }}>
               <button
                 type="button"
                 className="auth-button-secondary"
@@ -684,7 +665,7 @@ function Conta() {
               </button>
               <button
                 type="button"
-                className="auth-button"
+                className="auth-button auth-button--danger"
                 onClick={confirmDeleteAccount}
                 disabled={isDeletingAccount}
               >

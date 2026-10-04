@@ -1,0 +1,18 @@
+/* =============================================================================
+   MOVA — detalhe da reserva (Task 8). Estrutura vem de journey.css
+   (itinerário, resumo financeiro) e postcompra.css; aqui só o encaixe.
+   ========================================================================== */
+
+.detail-head { flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.detail-head h1 { overflow-wrap: anywhere; min-width: 0; }
+
+.detail-vehicle { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-5); align-items: start; }
+.detail-vehicle .summary-vehicle__media { max-width: 16rem; }
+
+/* No mobile o resumo financeiro e as ações vêm logo após o cabeçalho. */
+.detail-layout .journey-layout__aside { order: -1; }
+@media (min-width: 1024px) { .detail-layout .journey-layout__aside { order: 0; } }
+@media (min-width: 640px) { .detail-vehicle { grid-template-columns: 220px minmax(0, 1fr); } }
+
+.detail-actions { display: flex; flex-direction: column; gap: var(--space-2); }
+.detail-share > .btn--quiet { flex: 0 0 auto; }

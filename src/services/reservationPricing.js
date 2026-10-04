@@ -1,34 +1,36 @@
-﻿const DEFAULT_RESERVATION_PRICING = {
-  dailyRate: 250,
-  feeRate: 0.12,
-  fixedFees: 19.9,
-};
+import { apiRequest } from "./apiClient";
+import { getAuthSession } from "./authSession";
 
-function toNumber(value, fallback) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
-
-function roundCurrency(value) {
-  return Math.round(value * 100) / 100;
-}
-
-export async function getReservationPricing({ days, vehicle } = {}) {
-  const safeDays = Math.max(1, Number(days) || 1);
-  const dailyRate = toNumber(
-    vehicle?.valorDiaria ?? vehicle?.precoDiaria ?? vehicle?.dailyRate,
-    DEFAULT_RESERVATION_PRICING.dailyRate,
-  );
-
-  const subtotal = dailyRate * safeDays;
-  const fees = roundCurrency(subtotal * DEFAULT_RESERVATION_PRICING.feeRate + DEFAULT_RESERVATION_PRICING.fixedFees);
-  const total = roundCurrency(subtotal + fees);
-
+// Cotação obtida do servidor. A criação recalcula o mesmo valor no POST final.
+export async function getReservationPricing(payload) {
+  const {
+    idVeiculo,
+    idGaragemRetirada,
+    idGaragemDevolucao,
+    dataHoraInicio,
+    dataHoraFim,
+    servicosIds,
+  } = payload;
+  const session = getAuthSession();
+  const data = await apiRequest("/reserva/precificacao", {
+    method: "POST",
+    authToken: session?.token,
+    body: JSON.stringify({
+      idVeiculo,
+      idGaragemRetirada,
+      idGaragemDevolucao,
+      dataHoraInicio,
+      dataHoraFim,
+      servicosIds,
+    }),
+  });
+  const result = data.result ?? data;
   return {
-    dailyRate,
-    fees,
-    total,
+    dailyRate: result.valorDiaria,
+    totalDiarias: result.diarias,
+    subtotal: result.valorBase,
+    servicesTotal: result.valorServicos,
+    total: result.valorTotal,
+    servicos: result.servicos,
   };
 }
-
-export { DEFAULT_RESERVATION_PRICING };

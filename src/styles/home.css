@@ -1,137 +1,24 @@
-.home-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+/* MOVA — Home (Task 8). Cartões e catálogo vivem em vehicle.css. */
+
+.public-main { display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; }
+.public-home__catalog { display: flex; flex-direction: column; gap: var(--space-4); }
+.public-home__results { display: flex; flex-direction: column; gap: var(--space-5); }
+
+/* Reserva ativa: a próxima ação do locatário, acima do catálogo. */
+.active-reservation-card {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-md);
 }
-
-.home-page {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(180deg, var(--color-background-start), var(--color-background-end));
-  padding-bottom: 5rem;
-}
-
-.home-content {
-  flex: 1;
-  width: 100%;
-  max-width: 420px;
-  margin: 0 auto;
-  padding: var(--space-xl) var(--space-lg) 0;
-  box-sizing: border-box;
-}
-
-.home-location-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: var(--color-brand-fill);
-  color: var(--color-on-brand);
-  border: none;
-  border-radius: 999px;
-  padding: 0.5rem 1rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-bottom: var(--space-md);
-}
-
-.home-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-sm);
-}
-
-.home-tile {
-  grid-column: span 1;
-  background: var(--color-surface-muted, #f2f2f4);
-  border: none;
-  border-radius: 16px;
-  padding: var(--space-md);
-  text-align: left;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  min-height: 92px;
-  transition: transform 150ms, box-shadow 150ms;
-}
-
-.home-tile:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(0, 31, 63, 0.12);
-}
-
-.home-tile--full {
-  grid-column: 1 / -1;
-}
-
-.home-tile__title {
-  color: var(--color-primary-strong);
-  font-weight: 700;
-  font-size: 1rem;
-}
-
-.home-tile__description {
-  color: var(--color-text-secondary);
-  font-size: 0.82rem;
-  line-height: 1.35;
-}
-
-.home-bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  background: var(--color-brand-fill);
-  padding: 0.65rem 0.5rem calc(0.65rem + env(safe-area-inset-bottom, 0px));
-}
-
-.home-bottom-nav__item {
-  background: none;
-  border: none;
-  color: var(--color-on-brand);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.4rem 0.65rem;
-  border-radius: 999px;
-  cursor: pointer;
-  opacity: 0.75;
-  transition: opacity 150ms, background 150ms;
-}
-
-.home-bottom-nav__item:hover {
-  opacity: 1;
-}
-
-.home-bottom-nav__item--active {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.18);
-}
-
-/* ══ Telas grandes ═════════════════════════════════════════════ */
-@media (min-width: 720px) {
-  .home-content {
-    max-width: 960px;
-    padding: var(--space-lg) var(--space-xl) 0;
-  }
-
-  .home-tile {
-    min-height: 120px;
-  }
-
-  .home-bottom-nav {
-    padding-left: max(0.5rem, calc((100vw - 960px) / 2));
-    padding-right: max(0.5rem, calc((100vw - 960px) / 2));
-  }
+.active-reservation-card h2 { font-size: var(--text-h2); }
+.active-reservation-card__status { display: inline-flex; margin-top: var(--space-2); }
+.active-reservation-card dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3) var(--space-5); margin: 0; }
+.active-reservation-card dt { color: var(--text-muted); font-size: var(--text-meta); }
+.active-reservation-card dd { margin: 2px 0 0; font-size: var(--text-label); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+.active-reservation-card__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.active-reservation-card__actions .btn { flex: 1 1 12rem; }
+@media (min-width: 900px) {
+  .active-reservation-card { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) auto; align-items: center; gap: var(--space-6); }
+  .active-reservation-card__actions { flex-direction: column; min-width: 12rem; }
 }

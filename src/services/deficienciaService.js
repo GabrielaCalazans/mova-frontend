@@ -13,7 +13,7 @@ export async function listDeficiencias() {
     // Loga o motivo real (rede, CORS, backend fora do ar, etc.) em vez de
     // esconder o erro — o campo continua opcional e não bloqueia o cadastro,
     // mas agora dá pra saber PORQUE a lista veio vazia.
-    console.error("[deficienciaService] Falha ao buscar /deficiencia/all:", error);
+    console.error("[deficienciaService] Falha ao buscar /deficiencia/all:", error?.message || "erro desconhecido");
     return [];
   }
 }

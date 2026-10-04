@@ -9,13 +9,33 @@ import {
 const AUTH_DEBUG_ENABLED =
   String(import.meta.env.AUTH_DEBUG).toLowerCase() === "true";
 
+const SENSITIVE_DEBUG_KEY = /authorization|token|senha|password|secret|cookie|cpf|cnh|cnpj|cvv|cartao|card/i;
+
+export function sanitizeAuthDebug(value, key = "") {
+  if (SENSITIVE_DEBUG_KEY.test(key)) {
+    return "[redacted]";
+  }
+  if (value instanceof Error) {
+    return { name: value.name, message: value.message };
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeAuthDebug(item));
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([entryKey, entryValue]) => [entryKey, sanitizeAuthDebug(entryValue, entryKey)]),
+    );
+  }
+  return value;
+}
+
 function authDebug(label, payload) {
   if (!AUTH_DEBUG_ENABLED) {
     return;
   }
 
   console.groupCollapsed(`[auth-debug] ${label}`);
-  console.log(payload);
+  console.log(sanitizeAuthDebug(payload));
   console.groupEnd();
 }
 
@@ -95,20 +115,19 @@ function onlyDigits(value) {
   return String(value || "").replace(/\D/g, "");
 }
 
-function buildContaPayload(values) {
-  // O backend exige o campo "cargo" (LOCATARIO | LOCADOR | ADMIN).
-  // Inferimos pelo contexto: se vier em values.cargo, usamos;
-  // caso contrario, values.cnpj ou values.empresa indicam LOCADOR; default LOCATARIO.
-  const cargo =
-    values.cargo ||
-    (values.cnpj || values.empresa ? "LOCADOR" : "LOCATARIO");
-
+function buildProfileUpdatePayload(values) {
   return {
     nome: values.name,
     email: values.email,
     telefone: onlyDigits(values.celphone),
     endereco: values.address || "",
     cep: onlyDigits(values.cep),
+  };
+}
+
+function buildRegistrationPayload(values, cargo) {
+  return {
+    ...buildProfileUpdatePayload(values),
     cargo,
   };
 }
@@ -312,6 +331,8 @@ function normalizeCurrentUserFromMe(payload) {
     cnpj: roleData.cnpj || "",
     cpf: roleData.cpf || "",
     cnh: roleData.cnh || "",
+    // RN01: usado no POST /reserva quando o veículo é adaptado/PCD.
+    deficienciaId: roleData.deficienciaId || "",
     address:
       conta.endereco ||
       conta.address ||
@@ -505,23 +526,20 @@ export async function registerLocatario(values) {
     const contaResult = await apiRequest("/conta/auth/register", {
       method: "POST",
       body: JSON.stringify({
-        ...buildContaPayload(values),
+        ...buildRegistrationPayload(values, "LOCATARIO"),
         senha: values.password,
-        cargo: "LOCATARIO",
       }),
     });
 
-    const conta = normalizeApiUser(contaResult, values.email);
-    const contaId = conta.id || contaResult?.id || contaResult?.result?.id;
-
-    if (!contaId) {
-      throw new Error("Nao foi possivel identificar a conta do locatario.");
+    const token = extractToken(contaResult);
+    if (!token) {
+      throw new Error("Nao foi possivel autenticar o cadastro do locatario.");
     }
 
     const locatarioResult = await apiRequest("/locatario/", {
       method: "POST",
+      authToken: token,
       body: JSON.stringify({
-        id: contaId,
         cpf: values.cpf.replace(/\D/g, ""),
         cnh: values.cnh.replace(/\D/g, ""),
         rg: values.rg.replace(/[.\-\s]/g, "").toUpperCase(),
@@ -553,20 +571,26 @@ export async function registerLocador(values) {
     const contaResult = await apiRequest("/conta/auth/register", {
       method: "POST",
       body: JSON.stringify({
-        ...buildContaPayload(values),
+        ...buildRegistrationPayload(values, "LOCADOR"),
         senha: values.password,
       }),
     });
 
     const conta = normalizeApiUser(contaResult, values.email);
     const contaId = conta.id || contaResult?.id || contaResult?.result?.id;
+    const token = contaResult?.result?.token;
 
     if (!contaId) {
       throw new Error("Nao foi possivel identificar a conta do locador.");
     }
 
+    if (!token) {
+      throw new Error("Nao foi possivel autenticar o cadastro do locador.");
+    }
+
     const result = await apiRequest("/locador", {
       method: "POST",
+      authToken: token,
       body: JSON.stringify({
         id: contaId,
         empresa: values.empresa,
@@ -642,7 +666,7 @@ export async function updateUserProfile(values) {
       method: "PUT",
       authToken: token,
       body: JSON.stringify({
-        ...buildContaPayload(values),
+        ...buildProfileUpdatePayload(values),
       }),
     });
 
@@ -722,14 +746,17 @@ export async function requestPasswordReset({ email }) {
   }
 
   try {
-    const result = await apiRequest("/auth/forgot-password", {
+    const result = await apiRequest("/conta/auth/forgot-password", {
       method: "POST",
       body: JSON.stringify({ email }),
     });
+    const payload = result?.result || result || {};
 
     return {
       mode: "api",
-      message: "Solicitacao de recuperacao enviada com sucesso.",
+      message:
+        payload.message ||
+        "Se existir uma conta associada a este e-mail, enviaremos as instruções de recuperação.",
       ...result,
     };
   } catch (error) {
@@ -737,6 +764,27 @@ export async function requestPasswordReset({ email }) {
       error,
       "Nao foi possivel solicitar recuperacao de senha.",
     );
+  }
+}
+
+export async function resetPassword({ token, novaSenha }) {
+  if (!isApiConfigured()) {
+    throw new Error("API_BASE_URL nao configurada.");
+  }
+
+  try {
+    const result = await apiRequest("/conta/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, novaSenha }),
+    });
+
+    return {
+      mode: "api",
+      message: "Senha redefinida com sucesso.",
+      ...result,
+    };
+  } catch (error) {
+    throw normalizeError(error, "Nao foi possivel redefinir a senha.");
   }
 }
 

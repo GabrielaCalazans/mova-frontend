@@ -1,27 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBell, faBellSlash } from "@fortawesome/free-solid-svg-icons";
 import BottomNav from "../components/BottomNav";
-import { listVeiculos } from "../services/veiculoService";
-import { resolveModelDetails } from "../utils/vehicleDisplay";
-import { getFavoriteIds, toggleFavorite } from "../utils/favoritesStore";
-import "../styles/carselect.css";
-import "../styles/home.css";
-import "../styles/relatorios.css";
-
-function resolveModeloVeiculo(veiculo) {
-  return veiculo?.modeloVeiculo ?? {};
-}
-
-function resolveVeiculoField(veiculo, modeloVeiculo, field) {
-  return veiculo?.[field] ?? modeloVeiculo?.[field] ?? "";
-}
+import CursorGlowArea from "./ui/CursorGlowArea";
+import VehicleCard from "./vehicle/VehicleCard";
+import { listVeiculos, normalizeVeiculo } from "../services/veiculoService";
+import { desfavoritar, favoritar, listarFavoritos } from "../services/favoritoService";
+import { cancelarInteresse, listarInteresses, registrarInteresse } from "../services/interesseService";
+import "../styles/vehicle.css";
 
 export default function FavoritableCarList({ title, onlyFavorites, emptyMessage, documentTitle }) {
   const navigate = useNavigate();
   const [veiculos, setVeiculos] = useState([]);
-  const [favoritos, setFavoritos] = useState(() => new Set(getFavoriteIds()));
-  const [loading, setLoading] = useState(false);
+  const [favoritos, setFavoritos] = useState(new Set());
+  const [interesses, setInteresses] = useState(new Set());
+  const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
 
   const crossLinkRoute = onlyFavorites ? "/carros/disponiveis" : "/carros/favoritos";
@@ -32,24 +26,55 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
     setErro(null);
 
     try {
-      const resultado = await listVeiculos();
-      setVeiculos(resultado);
+      const [favoritosApi, interessesApi, resultado] = await Promise.all([
+        listarFavoritos(),
+        listarInteresses(),
+        onlyFavorites ? Promise.resolve([]) : listVeiculos(),
+      ]);
+      setFavoritos(new Set(favoritosApi.map((item) => String(item.idVeiculo))));
+      setInteresses(new Set(interessesApi.map((item) => String(item.idVeiculo))));
+      setVeiculos(onlyFavorites ? favoritosApi.map((item) => normalizeVeiculo(item.veiculo)) : resultado);
     } catch (e) {
       setErro(e.message || "Não foi possível carregar os veículos.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [onlyFavorites]);
 
   useEffect(() => {
     document.title = documentTitle;
-    carregar();
+    queueMicrotask(() => {
+      void carregar();
+    });
   }, [carregar, documentTitle]);
 
-  function handleToggleFavorito(event, id) {
-    event.stopPropagation();
-    const nextIds = toggleFavorite(id);
-    setFavoritos(new Set(nextIds));
+  function toggleIn(setter, id) {
+    setter((atual) => {
+      const proximo = new Set(atual);
+      if (proximo.has(String(id))) proximo.delete(String(id));
+      else proximo.add(String(id));
+      return proximo;
+    });
+  }
+
+  async function handleToggleFavorito(id) {
+    try {
+      if (favoritos.has(String(id))) await desfavoritar(id);
+      else await favoritar(id);
+      toggleIn(setFavoritos, id);
+    } catch (e) {
+      setErro(e.message || "Não foi possível atualizar o favorito.");
+    }
+  }
+
+  async function handleToggleInteresse(id) {
+    try {
+      if (interesses.has(String(id))) await cancelarInteresse(id);
+      else await registrarInteresse(id);
+      toggleIn(setInteresses, id);
+    } catch (e) {
+      setErro(e.message || "Não foi possível atualizar o aviso de disponibilidade.");
+    }
   }
 
   const listaExibida = veiculos.filter((veiculo) =>
@@ -57,58 +82,50 @@ export default function FavoritableCarList({ title, onlyFavorites, emptyMessage,
   );
 
   return (
-    <main className="carro-page">
-      <div className="carro-header">
+    <main className="carro-page catalog-page">
+      <header className="page-head">
         <h1>{title}</h1>
-      </div>
+      </header>
 
-      <div className="carro-content">
-        {loading && <p className="carro-status">Carregando veículos…</p>}
-        {!loading && erro && <p className="carro-status">{erro}</p>}
+      <div className="catalog-page__body">
+        {loading && <p className="loading-state carro-status" role="status"><span className="spinner" aria-hidden="true" />Carregando veículos…</p>}
+        {!loading && erro && <p className="alert alert--danger carro-status" role="alert">{erro}</p>}
 
         {!loading && !erro && listaExibida.length === 0 && (
-          <p className="carro-empty-state">{emptyMessage}</p>
-        )}
-
-        {!loading && !erro && listaExibida.length > 0 && (
-          <div className="fav-list">
-            {listaExibida.map((veiculo) => {
-              const modeloVeiculo = resolveModeloVeiculo(veiculo);
-              const marca = resolveVeiculoField(veiculo, modeloVeiculo, "marca");
-              const modelo = resolveVeiculoField(veiculo, modeloVeiculo, "modelo");
-              const details = resolveModelDetails(marca, modelo);
-              const isFav = favoritos.has(String(veiculo.id));
-
-              return (
-                <div
-                  className="fav-card"
-                  key={veiculo.id}
-                  onClick={() => navigate("/carros/lista", { state: {} })}
-                >
-                  <img src={details.image} alt={`${marca} ${modelo}`} className="fav-card__image" />
-                  <div className="fav-card__info">
-                    <h3>{modelo}</h3>
-                    <p>{marca}</p>
-                    <p>{details.cor}</p>
-                    <p>{details.precoDia ? `R$${details.precoDia},00 /dia` : "Consulte o preço"}</p>
-                  </div>
-                  <button
-                    type="button"
-                    className="fav-card__heart"
-                    aria-label={isFav ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-                    aria-pressed={isFav}
-                    onClick={(event) => handleToggleFavorito(event, veiculo.id)}
-                  >
-                    <Heart size={24} fill={isFav ? "currentColor" : "none"} />
-                  </button>
-                </div>
-              );
-            })}
+          <div className="state-block carro-empty-state">
+            <p className="state-block__text">{emptyMessage}</p>
           </div>
         )}
 
-        <p className="relatorio-filter-summary" style={{ marginTop: "1rem" }}>
-          <button type="button" onClick={() => navigate(crossLinkRoute)}>
+        {!loading && !erro && listaExibida.length > 0 && (
+          <CursorGlowArea className="vehicle-grid fav-list">
+            {listaExibida.map((veiculo) => {
+              const avisando = interesses.has(String(veiculo.id));
+              return (
+                <VehicleCard
+                  key={veiculo.id}
+                  vehicle={veiculo}
+                  className="fav-card"
+                  favorite={{ active: favoritos.has(String(veiculo.id)), onToggle: () => handleToggleFavorito(veiculo.id) }}
+                  actions={(
+                    <>
+                      <button type="button" className="btn btn--secondary" onClick={() => navigate(`/carros/${veiculo.id}`)}>
+                        Ver detalhes
+                      </button>
+                      <button type="button" className="btn btn--quiet" aria-pressed={avisando} onClick={() => handleToggleInteresse(veiculo.id)}>
+                        <FontAwesomeIcon icon={avisando ? faBellSlash : faBell} aria-hidden="true" />
+                        {avisando ? "Cancelar aviso" : "Avisar quando disponível"}
+                      </button>
+                    </>
+                  )}
+                />
+              );
+            })}
+          </CursorGlowArea>
+        )}
+
+        <p className="catalog-page__crosslink">
+          <button type="button" className="btn btn--quiet" onClick={() => navigate(crossLinkRoute)}>
             {crossLinkLabel}
           </button>
         </p>

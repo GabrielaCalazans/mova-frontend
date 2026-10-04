@@ -1,156 +1,63 @@
-import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { User, Clock, HeadphonesIcon, Settings, LogOut, Sun, Moon } from "lucide-react";
-import { Icone01, Icone02, Icone03, Icone04, Icone05 } from "./icons";
-import { ModalOverlay, ModalContent, MenuItem } from "../styles/authStyle";
-import { clearAuthSession } from "../services/authSession";
-import { useTheme } from "../context/ThemeContext";
-import "../styles/home.css";
-
-const NAV_ITEMS = [
-  { key: "home", icon: Icone01, route: "/home", label: "Início" },
-  { key: "carros", icon: Icone02, route: "/carros", label: "Carros" },
-  { key: "historico", icon: Icone03, route: "/historico", label: "Histórico" },
-  { key: "relatorios", icon: Icone04, route: "/relatorios/avaliacoes-filtro", label: "Relatórios" },
-];
-
-const MENU_ITEMS = [
-  { label: "Minha Conta", icon: <User size={18} />, route: "/conta" },
-  { label: "Histórico", icon: <Clock size={18} />, route: "/historico" },
-  { label: "Suporte", icon: <HeadphonesIcon size={18} />, route: "/suporte" },
-  { label: "Configurações", icon: <Settings size={18} />, route: "/configuracoes" },
-];
+import { useCallback, useRef, useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { getUserCargo } from "../services/authIdentity";
+import { useAuthSession } from "../hooks/useAuthSession";
+import { useActiveReservation } from "../hooks/useActiveReservation";
+import { useShell } from "./layout/shell-context";
+import AccountMenu from "./layout/AccountMenu";
+import { isNavItemActive, renterNavItems } from "./layout/navItems";
 
 /**
- * Menu inferior fixo, presente em toda tela autenticada (exceto
- * login/cadastro/esqueci-minha-senha). O ultimo botao (Perfil) abre o menu
- * principal (Minha Conta, Historico, Suporte, Configuracoes, Tema, Sair) -
- * a navegacao "voltar/inicio/menu" que antes vivia no topo agora vive toda
- * aqui embaixo.
+ * Tab bar do locatário. Dentro do AppShell só a instância do próprio shell
+ * (shellOwned) renderiza; chamadas legadas nas páginas viram no-op.
  */
-export default function BottomNav() {
-  const navigate = useNavigate();
+export default function BottomNav({ activeReservation: providedReservation, shellOwned = false, onOpenMenu, menuOpen } = {}) {
   const location = useLocation();
-  const { temaEscuro, toggleTemaEscuro } = useTheme();
-  const [menuVisible, setMenuVisible] = useState(false);
+  const session = useAuthSession();
+  const shell = useShell();
+  const [localMenu, setLocalMenu] = useState(false);
+  const menuButtonRef = useRef(null);
+  const skip = Boolean(shell) && !shellOwned;
+  const localActivity = useActiveReservation({ enabled: !skip && providedReservation === undefined });
+  const activeReservation = providedReservation === undefined ? localActivity.reservation : providedReservation;
 
-  function handleKeyAction(event, action) {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      action();
-    }
-  }
+  const closeLocalMenu = useCallback(() => {
+    setLocalMenu(false);
+    menuButtonRef.current?.focus();
+  }, []);
+
+  if (skip || !session?.token || getUserCargo(session.user) === "LOCADOR") return null;
+
+  const open = onOpenMenu ? menuOpen : localMenu;
 
   return (
     <>
-      <nav className="home-bottom-nav" aria-label="Navegação principal">
-        {NAV_ITEMS.map(({ key, icon: Icon, route, label }) => {
-          const isActive = location.pathname === route || location.pathname.startsWith(`${route}/`);
-
+      <nav className="tabbar" aria-label="Navegação principal">
+        {renterNavItems(activeReservation).map((item) => {
+          const active = isNavItemActive(item, location.pathname);
           return (
-            <button
-              key={key}
-              type="button"
-              className={`home-bottom-nav__item${isActive ? " home-bottom-nav__item--active" : ""}`}
-              onClick={() => navigate(route)}
-              aria-label={label}
-              aria-current={isActive ? "page" : undefined}
-            >
-              <Icon size={24} />
-            </button>
+            <NavLink key={item.key} to={item.route} end={item.end} className="tabbar__item" aria-current={active ? "page" : false}>
+              <FontAwesomeIcon icon={item.icon} aria-hidden="true" />
+              <span>{item.label}</span>
+            </NavLink>
           );
         })}
-
         <button
+          ref={menuButtonRef}
           type="button"
-          className={`home-bottom-nav__item${location.pathname === "/conta" ? " home-bottom-nav__item--active" : ""}`}
-          onClick={() => setMenuVisible(true)}
-          aria-label="Menu"
-          aria-haspopup="true"
-          aria-expanded={menuVisible}
+          className="tabbar__item"
+          aria-haspopup="dialog"
+          aria-expanded={Boolean(open)}
+          aria-current={location.pathname === "/conta" ? "page" : undefined}
+          onClick={(event) => (onOpenMenu ? onOpenMenu(event.currentTarget) : setLocalMenu(true))}
         >
-          <Icone05 size={24} />
+          <FontAwesomeIcon icon={faUser} aria-hidden="true" />
+          <span>Conta</span>
         </button>
       </nav>
-
-      {menuVisible && (
-        <ModalOverlay onClick={() => setMenuVisible(false)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            {MENU_ITEMS.map(({ label, icon, route }) => (
-              <MenuItem
-                key={route}
-                role="button"
-                tabIndex={0}
-                onClick={() => { setMenuVisible(false); navigate(route); }}
-                onKeyDown={(event) => handleKeyAction(event, () => { setMenuVisible(false); navigate(route); })}
-                style={{ display: "flex", alignItems: "center", gap: "10px" }}
-              >
-                {icon}
-                {label}
-              </MenuItem>
-            ))}
-
-            <MenuItem
-              role="switch"
-              aria-checked={temaEscuro}
-              aria-label={temaEscuro ? "Desativar tema escuro" : "Ativar tema escuro"}
-              tabIndex={0}
-              onClick={toggleTemaEscuro}
-              onKeyDown={(event) => handleKeyAction(event, toggleTemaEscuro)}
-              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px" }}
-            >
-              <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                {temaEscuro ? <Moon size={18} /> : <Sun size={18} />}
-                {temaEscuro ? "Tema Escuro" : "Tema Claro"}
-              </span>
-              <span
-                aria-hidden="true"
-                style={{
-                  width: 34,
-                  height: 18,
-                  borderRadius: 999,
-                  background: temaEscuro ? "var(--color-brand-fill)" : "#c8c8c8",
-                  position: "relative",
-                  flexShrink: 0,
-                  transition: "background 150ms",
-                }}
-              >
-                <span
-                  style={{
-                    position: "absolute",
-                    top: 2,
-                    left: temaEscuro ? 18 : 2,
-                    width: 14,
-                    height: 14,
-                    borderRadius: "50%",
-                    background: "#fff",
-                    transition: "left 150ms",
-                  }}
-                />
-              </span>
-            </MenuItem>
-
-            <MenuItem
-              role="button"
-              tabIndex={0}
-              onClick={() => {
-                setMenuVisible(false);
-                clearAuthSession();
-                navigate("/login", { replace: true });
-              }}
-              onKeyDown={(event) => handleKeyAction(event, () => {
-                setMenuVisible(false);
-                clearAuthSession();
-                navigate("/login", { replace: true });
-              })}
-              style={{ display: "flex", alignItems: "center", gap: "10px", color: "#c0392b", fontWeight: "700" }}
-            >
-              <LogOut size={18} color="#c0392b" />
-              Sair
-            </MenuItem>
-          </ModalContent>
-        </ModalOverlay>
-      )}
+      {!onOpenMenu && <AccountMenu open={localMenu} onClose={closeLocalMenu} />}
     </>
   );
 }

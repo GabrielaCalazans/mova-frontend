@@ -15,18 +15,6 @@ import {
 import { maskCelphone, maskCep, maskCpf } from "../utils/inputMasks";
 import { validateProfileForm } from "../utils/formValidators";
 
-const PROFILE_DEBUG_ENABLED = String(import.meta.env.AUTH_DEBUG).toLowerCase() === "true";
-
-function profileDebug(label, payload) {
-  if (!PROFILE_DEBUG_ENABLED) {
-    return;
-  }
-
-  console.groupCollapsed(`[profile-debug] ${label}`);
-  console.log(payload);
-  console.groupEnd();
-}
-
 function Perfil() {
   const navigate = useNavigate();
   const [sessionUser] = useState(() => getAuthSession()?.user || null);
@@ -73,15 +61,11 @@ function Perfil() {
       };
     }
 
-    profileDebug("hydrateProfile.sessionUser", sessionUser);
-
     async function hydrateProfile() {
       try {
         const freshProfile = await fetchCurrentUserProfile({
           persistToSession: true,
         });
-
-        profileDebug("hydrateProfile.freshProfile", freshProfile);
 
         if (!isMounted || !freshProfile) {
           return;
@@ -100,11 +84,9 @@ function Perfil() {
             cep: freshProfile.cep || prev.cep,
           };
 
-          profileDebug("hydrateProfile.nextFormValues", nextValues);
           return nextValues;
         });
-      } catch (error) {
-        profileDebug("hydrateProfile.error", error);
+      } catch {
         // If API fetch fails, keep current session profile in the form.
       }
     }

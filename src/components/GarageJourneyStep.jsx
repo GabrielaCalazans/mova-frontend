@@ -1,9 +1,12 @@
 ﻿import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import garagemImg from "../assets/garagem.png";
+import { Navigate, useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import BottomNav from "../components/BottomNav";
-import "../styles/carselect.css";
-import "../styles/home.css";
+import JourneySteps from "./reservation/JourneySteps";
+import VehicleMedia from "./vehicle/VehicleMedia";
+import "../styles/vehicle.css";
+import "../styles/journey.css";
 import {
   StyledForm,
   JourneySectionHint,
@@ -32,13 +35,19 @@ import {
   AmPmBtn,
 } from "../styles/authStyle";
 import { getJourneyStep, updateJourneyStep } from "../utils/journeyStorage";
+import { parseJourneyDateTime, validarPeriodoReserva } from "../utils/reservationMath";
+import { getGaragemById, listGaragens } from "../services/garagemService";
 
-const GARAGES = [
-  { id: 1, nome: "Garagem Norte", endereco: "Rua Principal, 12", info: "Capacidade: 30 Carros" },
-  { id: 2, nome: "Garagem Centro", endereco: "Av. Pompeia, 150", info: "Capacidade: 30 Carros" },
-  { id: 3, nome: "Garagem Sul", endereco: "Rua Jabuti, 172", info: "Capacidade: 30 Carros" },
-  { id: 4, nome: "Garagem Leste", endereco: "Rua Piraporinha, 12", info: "Capacidade: 30 Carros" },
-];
+// As garagens vêm da API (GET /api/garagem). O locatário enxerga apenas as
+// ATIVAS — o escopo é aplicado no backend, não aqui.
+// Antes esta lista era fixa, com ids 1..4, incompatíveis com os UUIDs reais;
+// por isso a reserva nunca conseguia enviar idGaragemRetirada/idGaragemDevolucao.
+function descreverCapacidade(garagem) {
+  if (typeof garagem.capacidade !== "number") return "";
+  const alocados = garagem.veiculosAlocados ?? 0;
+  const livres = Math.max(garagem.capacidade - alocados, 0);
+  return `${livres} de ${garagem.capacidade} vagas livres`;
+}
 
 const MONTHS = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -94,6 +103,12 @@ function buildStepLabel(stepKey) {
   return stepKey === "retirada" ? "Retirada" : "Devolução";
 }
 
+function abrirSeletor(event, abrir) {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  abrir();
+}
+
 export default function GarageJourneyStep({
   stepKey,
   title,
@@ -107,7 +122,24 @@ export default function GarageJourneyStep({
 
   const storedStep = useMemo(() => getJourneyStep(stepKey), [stepKey]);
 
-  const [selectedGarageId, setSelectedGarageId] = useState(storedStep.garageId ? String(storedStep.garageId) : "");
+  // O veículo escolhido define as duas garagens possíveis:
+  //  - retirada  -> exatamente veiculo.garagemId (ReservaService.resolverGaragemRetirada)
+  //  - devolução -> qualquer garagem ATIVA do locador do veículo (assertGaragemDevolucao)
+  const veiculoSelecionado = useMemo(() => getJourneyStep("veiculo"), []);
+  const garagemDoVeiculo = veiculoSelecionado?.garagemId || "";
+  const veiculoId = veiculoSelecionado?.id || "";
+  const retiradaFixa = stepKey === "retirada";
+
+  const [garagens, setGaragens] = useState([]);
+  const [carregandoGaragens, setCarregandoGaragens] = useState(true);
+  const [erroGaragens, setErroGaragens] = useState("");
+  const [selectedGarageId, setSelectedGarageId] = useState(
+    retiradaFixa
+      ? garagemDoVeiculo
+      : storedStep.garageId
+        ? String(storedStep.garageId)
+        : "",
+  );
   const [data, setData] = useState(storedStep.date || "");
   const [hora, setHora] = useState(storedStep.time || "");
 
@@ -122,7 +154,38 @@ export default function GarageJourneyStep({
   const [clockMode, setClockMode] = useState("hour");
   const [clockH, setClockH] = useState(parsedTime.clockH);
   const [clockM, setClockM] = useState(parsedTime.clockM);
-  const selectedGarage = GARAGES.find((garage) => String(garage.id) === selectedGarageId) ?? null;
+  useEffect(() => {
+    let ativo = true;
+
+    // Retirada: uma única garagem — a do veículo. Devolução: as do locador dono.
+    const consulta = retiradaFixa
+      ? garagemDoVeiculo
+        ? getGaragemById(garagemDoVeiculo).then((g) => (g ? [g] : []))
+        : Promise.resolve([])
+      : listGaragens(veiculoId ? { veiculoId } : {});
+
+    consulta
+      .then((lista) => {
+        if (!ativo) return;
+        setGaragens(lista);
+        setErroGaragens("");
+      })
+      .catch((e) => {
+        if (!ativo) return;
+        setGaragens([]);
+        setErroGaragens(e?.message || "Não foi possível carregar as garagens.");
+      })
+      .finally(() => {
+        if (ativo) setCarregandoGaragens(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [retiradaFixa, garagemDoVeiculo, veiculoId]);
+
+  const selectedGarage =
+    garagens.find((garage) => String(garage.id) === selectedGarageId) ?? null;
 
   useEffect(() => {
     document.title = documentTitle;
@@ -133,14 +196,37 @@ export default function GarageJourneyStep({
       garageId: selectedGarageId,
       garageName: selectedGarage?.nome ?? "",
       garageAddress: selectedGarage?.endereco ?? "",
-      garageInfo: selectedGarage?.info ?? "",
+      garageInfo: selectedGarage ? descreverCapacidade(selectedGarage) : "",
       date: data,
       time: hora,
     });
   }, [data, hora, selectedGarage, selectedGarageId, stepKey]);
 
-  const visibleGarages = selectedGarage ? [selectedGarage] : GARAGES;
-  const canContinue = Boolean(selectedGarage && data && hora);
+  const visibleGarages = selectedGarage ? [selectedGarage] : garagens;
+  const etapaLiberada = retiradaFixa
+    ? !carregandoGaragens && !erroGaragens && garagens.length > 0
+    : Boolean(selectedGarage);
+
+  // Valida o instante escolhido já nesta etapa, com as MESMAS mensagens do
+  // backend (RN05). O servidor continua sendo a autoridade — isto só evita que
+  // o usuário só descubra o problema depois de percorrer o checkout.
+  const erroPeriodo = useMemo(() => {
+    if (!data || !hora) return "";
+
+    const instante = parseJourneyDateTime({ date: data, time: hora });
+    if (retiradaFixa) {
+      return validarPeriodoReserva(instante, null) ?? "";
+    }
+
+    const retiradaSalva = getJourneyStep("retirada");
+    const inicio = parseJourneyDateTime({
+      date: retiradaSalva.date,
+      time: retiradaSalva.time,
+    });
+    return validarPeriodoReserva(inicio, instante) ?? "";
+  }, [data, hora, retiradaFixa]);
+
+  const canContinue = Boolean(etapaLiberada && data && hora && !erroPeriodo);
 
   const prevMonth = () => setCalDate((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1));
   const nextMonth = () => setCalDate((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1));
@@ -262,73 +348,112 @@ export default function GarageJourneyStep({
     }
   };
 
+  // A jornada é veículo-primeiro: o local de retirada SAI do veículo e a
+  // devolução é restrita ao locador dele. Sem veículo escolhido, esta etapa não
+  // tem o que mostrar — volta para a escolha do carro em vez de exibir um
+  // estado vazio enganoso.
+  if (!veiculoSelecionado?.id) {
+    return <Navigate to="/carros" replace />;
+  }
+
   const days = buildDays();
   const numbers = buildNumbers();
 
   return (
-    <main className="carro-page">
-      <div className="carro-header">
+    <main className="journey-page">
+      <JourneySteps current={stepKey} />
+      <header className="journey-head">
         <h1>{title}</h1>
+        <p className="page-head__lede">
+          {retiradaFixa
+            ? "A retirada acontece na garagem onde o veículo está alocado. Escolha a data e o horário."
+            : selectedGarage
+              ? "A garagem selecionada fica em destaque até você trocar a opção."
+              : subtitle}
+        </p>
+      </header>
+
+      <div className="vehicle-strip">
+        <VehicleMedia vehicle={veiculoSelecionado} />
+        <div>
+          <p className="vehicle-strip__label">Você está reservando</p>
+          <p className="vehicle-strip__name">{[veiculoSelecionado.marca, veiculoSelecionado.modelo].filter(Boolean).join(" ") || veiculoSelecionado.nome || "Veículo selecionado"}</p>
+        </div>
       </div>
 
-      <div className="carro-content">
-        <StyledForm
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (canContinue) {
-              navigate(nextPath);
-            }
-          }}
-        >
-          <JourneySectionHint style={{ textAlign: "center", display: "block", marginBottom: "0.75rem" }}>
-            {selectedGarage
-              ? "A garagem selecionada permanece em destaque até você trocar a opção."
-              : subtitle}
-          </JourneySectionHint>
+      <StyledForm
+        className="journey-form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (canContinue) {
+            navigate(nextPath);
+          }
+        }}
+      >
+        <section className="journey-section" aria-labelledby={`${stepKey}-garagem-title`}>
+          <h2 id={`${stepKey}-garagem-title`}>Garagem de {stepLabel.toLowerCase()}</h2>
 
-          {!selectedGarage && (
-            <div className="garage-list">
+          {!selectedGarage && carregandoGaragens && (
+            <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando garagens…</p>
+          )}
+
+          {!selectedGarage && !carregandoGaragens && erroGaragens && (
+            <p className="alert alert--danger" role="status">{erroGaragens}</p>
+          )}
+
+          {!selectedGarage && !carregandoGaragens && !erroGaragens && garagens.length === 0 && (
+            <p className="alert alert--warning" role="status">
+              {retiradaFixa
+                ? "Este veículo não está alocado em nenhuma garagem, então não há local de retirada definido."
+                : "Nenhuma garagem de devolução disponível para este locador."}
+            </p>
+          )}
+
+          {!selectedGarage && !carregandoGaragens && !erroGaragens && garagens.length > 0 && (
+            <ul className="garage-options">
               {visibleGarages.map((garage) => (
-                <button
-                  type="button"
-                  key={garage.id}
-                  className="garage-card"
-                  onClick={() => setSelectedGarageId(String(garage.id))}
-                  aria-pressed={String(garage.id) === selectedGarageId}
-                >
-                  <img src={garagemImg} alt="Garagem" className="garage-card__image" />
-                  <div className="garage-card__info">
-                    <h3>{garage.nome}</h3>
-                    <p>Endereço: {garage.endereco}</p>
-                    {garage.info && <p>{garage.info}</p>}
-                  </div>
-                </button>
+                <li key={garage.id}>
+                  <button
+                    type="button"
+                    className="garage-option"
+                    onClick={() => setSelectedGarageId(String(garage.id))}
+                    aria-pressed={String(garage.id) === selectedGarageId}
+                  >
+                    <span className="garage-option__icon"><FontAwesomeIcon icon={faLocationDot} aria-hidden="true" /></span>
+                    <span>
+                      <span className="garage-option__name">{garage.nome}</span>
+                      <span className="garage-option__address">Endereço: {garage.endereco}</span>
+                      {descreverCapacidade(garage) && <span className="garage-option__info">{descreverCapacidade(garage)}</span>}
+                    </span>
+                  </button>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
 
           {selectedGarage && (
             <>
-              <div className="garage-list">
-                <div className="garage-card garage-card--selected" style={{ cursor: "default" }}>
-                  <img src={garagemImg} alt="Garagem selecionada" className="garage-card__image" />
-                  <div className="garage-card__info">
-                    <h3>{selectedGarage.nome}</h3>
-                    <p>Endereço: {selectedGarage.endereco}</p>
-                    {selectedGarage.info && <p>{selectedGarage.info}</p>}
-                  </div>
-                </div>
+              <div className="garage-option garage-option--selected">
+                <span className="garage-option__icon"><FontAwesomeIcon icon={faLocationDot} aria-hidden="true" /></span>
+                <span>
+                  <span className="garage-option__name">{selectedGarage.nome}</span>
+                  <span className="garage-option__address">Endereço: {selectedGarage.endereco}</span>
+                  {descreverCapacidade(selectedGarage) && <span className="garage-option__info">{descreverCapacidade(selectedGarage)}</span>}
+                </span>
               </div>
 
-              <div style={{ textAlign: "center", marginTop: "0.6rem" }}>
-                <button type="button" className="garage-change-link" onClick={() => setSelectedGarageId("")}>
+              {!retiradaFixa && (
+                <button type="button" className="btn btn--quiet journey-edit" onClick={() => setSelectedGarageId("")}>
                   Trocar garagem
                 </button>
-              </div>
+              )}
             </>
           )}
+        </section>
 
-        <JourneyFieldsGrid>
+        <section className="journey-section" aria-labelledby={`${stepKey}-quando-title`}>
+        <h2 id={`${stepKey}-quando-title`}>Data e horário</h2>
+        <JourneyFieldsGrid className="datetime-grid">
           <JourneyFieldGroup>
             <JourneyFieldLabel htmlFor={`${stepKey}-date`}>Data da {stepLabel.toLowerCase()}</JourneyFieldLabel>
             <FieldWrapper>
@@ -337,11 +462,19 @@ export default function GarageJourneyStep({
                 type="text"
                 placeholder="Digite a data (DD/MM/AAAA)"
                 value={data}
-                readOnly
                 required
-                disabled={!selectedGarage}
+                disabled={!etapaLiberada}
+                inputMode="numeric"
+                aria-describedby={`${stepKey}-date-help`}
+                onChange={(event) => setData(event.target.value.replace(/[^\d/]/g, "").slice(0, 10))}
+                onKeyDown={(event) => abrirSeletor(event, () => {
+                  if (etapaLiberada) {
+                    setCalOpen(true);
+                    setClockOpen(false);
+                  }
+                })}
                 onClick={() => {
-                  if (selectedGarage) {
+                  if (etapaLiberada) {
                     setCalOpen((value) => !value);
                     setClockOpen(false);
                   }
@@ -358,7 +491,9 @@ export default function GarageJourneyStep({
                 </svg>
               </IconBtn>
 
-              {calOpen && selectedGarage && (
+              <span id={`${stepKey}-date-help`} className="sr-only">Digite no formato dia, mês e ano ou use o calendário.</span>
+
+              {calOpen && etapaLiberada && (
                 <>
                   <PopupOverlay onClick={() => setCalOpen(false)} />
                   <Popup>
@@ -408,11 +543,19 @@ export default function GarageJourneyStep({
                 type="text"
                 placeholder="Digite o horário (HH:MM)"
                 value={hora}
-                readOnly
                 required
-                disabled={!selectedGarage}
+                disabled={!etapaLiberada}
+                inputMode="numeric"
+                aria-describedby={`${stepKey}-time-help`}
+                onChange={(event) => setHora(event.target.value.replace(/[^\d:]/g, "").slice(0, 5))}
+                onKeyDown={(event) => abrirSeletor(event, () => {
+                  if (etapaLiberada) {
+                    setClockOpen(true);
+                    setCalOpen(false);
+                  }
+                })}
                 onClick={() => {
-                  if (selectedGarage) {
+                  if (etapaLiberada) {
                     setClockOpen((value) => !value);
                     setCalOpen(false);
                   }
@@ -427,19 +570,21 @@ export default function GarageJourneyStep({
                 </svg>
               </IconBtn>
 
-              {clockOpen && selectedGarage && (
+              <span id={`${stepKey}-time-help`} className="sr-only">Digite no formato horas e minutos ou use o relógio.</span>
+
+              {clockOpen && etapaLiberada && (
                 <>
                   <PopupOverlay onClick={() => setClockOpen(false)} />
                   <Popup>
                     <ClockDisplay>
-                      <ClockPart active={clockMode === "hour"} onClick={() => setClockMode("hour")}>
+                      <ClockPart as="button" type="button" active={clockMode === "hour"} onClick={() => setClockMode("hour")}>
                         {String(clockH).padStart(2, "0")}
                       </ClockPart>
-                      <span style={{ color: "#aec5e7" }}>:</span>
-                      <ClockPart active={clockMode === "minute"} onClick={() => setClockMode("minute")}>
+                      <span className="clock-face__sep">:</span>
+                      <ClockPart as="button" type="button" active={clockMode === "minute"} onClick={() => setClockMode("minute")}>
                         {String(clockM).padStart(2, "0")}
                       </ClockPart>
-                      <span style={{ fontSize: "1.2rem", marginLeft: "8px", color: "#aec5e7" }}>
+                      <span className="clock-face__sep" style={{ fontSize: "1.2rem", marginLeft: "8px" }}>
                         {amPm}
                       </span>
                     </ClockDisplay>
@@ -455,15 +600,28 @@ export default function GarageJourneyStep({
                     </ModeBtns>
 
                     <ClockFaceWrap>
-                      <FaceSvg width="200" height="200" viewBox="0 0 200 200" onClick={handleFaceClick}>
-                        <circle cx={CX} cy={CY} r="95" fill="#f0f8ff" stroke="#aec5e7" strokeWidth="2" />
-                        <line x1={CX} y1={CY} x2={hEnd.x} y2={hEnd.y} stroke="#003366" strokeWidth="4" strokeLinecap="round" />
-                        <line x1={CX} y1={CY} x2={mEnd.x} y2={mEnd.y} stroke="#2b5ba8" strokeWidth="3" strokeLinecap="round" />
-                        <circle cx={CX} cy={CY} r="5" fill="#003366" />
+                      <FaceSvg width="200" height="200" viewBox="0 0 200 200" role="application" aria-label={`Relógio para selecionar ${clockMode === "hour" ? "a hora" : "os minutos"}`} onClick={handleFaceClick}>
+                        <circle className="clock-face__dial" cx={CX} cy={CY} r="95" strokeWidth="2" />
+                        <line className="clock-face__hour" x1={CX} y1={CY} x2={hEnd.x} y2={hEnd.y} strokeWidth="4" strokeLinecap="round" />
+                        <line className="clock-face__minute" x1={CX} y1={CY} x2={mEnd.x} y2={mEnd.y} strokeWidth="3" strokeLinecap="round" />
+                        <circle className="clock-face__pin" cx={CX} cy={CY} r="5" />
 
                         {numbers.map((number, index) => (
                           <g
                             key={index}
+                            tabIndex="0"
+                            role="button"
+                            aria-label={`${clockMode === "hour" ? "Hora" : "Minutos"} ${number.label}`}
+                            onKeyDown={(event) => {
+                              if (event.key !== "Enter" && event.key !== " ") return;
+                              event.preventDefault();
+                              if (clockMode === "hour") {
+                                setClockH(number.val);
+                                setTimeout(() => setClockMode("minute"), 200);
+                              } else {
+                                setClockM(number.val);
+                              }
+                            }}
                             onClick={(event) => {
                               event.stopPropagation();
                               if (clockMode === "hour") {
@@ -474,8 +632,9 @@ export default function GarageJourneyStep({
                               }
                             }}
                           >
-                            <circle cx={number.x} cy={number.y} r="13" fill={number.sel ? "#003366" : "transparent"} />
+                            <circle className={`clock-face__mark${number.sel ? " clock-face__mark--selected" : ""}`} cx={number.x} cy={number.y} r="13" />
                             <text
+                              className={`clock-face__num${number.sel ? " clock-face__num--selected" : ""}`}
                               x={number.x}
                               y={number.y}
                               textAnchor="middle"
@@ -483,7 +642,6 @@ export default function GarageJourneyStep({
                               fontSize="11"
                               fontWeight="700"
                               fontFamily="inherit"
-                              fill={number.sel ? "#fff" : "#003366"}
                               style={{ cursor: "pointer", userSelect: "none" }}
                             >
                               {number.label}
@@ -501,11 +659,19 @@ export default function GarageJourneyStep({
           </JourneyFieldGroup>
         </JourneyFieldsGrid>
 
-        <button type="submit" className="carro-button" disabled={!canContinue} style={{ marginTop: "1rem" }}>
-          {nextButtonLabel}
-        </button>
+          {erroPeriodo && (
+            <p className="alert alert--danger" role="status">
+              {erroPeriodo}
+            </p>
+          )}
+        </section>
+
+        <div className="journey-footer">
+          <button type="submit" className="btn btn--lg" disabled={!canContinue}>
+            {nextButtonLabel}
+          </button>
+        </div>
       </StyledForm>
-      </div>
 
       <BottomNav />
     </main>

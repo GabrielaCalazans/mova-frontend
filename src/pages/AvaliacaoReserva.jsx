@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Star } from "lucide-react";
-import BottomNav from "../components/BottomNav";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleCheck, faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { getJourneyStep } from "../utils/journeyStorage";
+import { METODO_PAGAMENTO_LABELS, rotulo, STATUS_RESERVA } from "../services/apiEnums";
 import { formatMoneyBRL } from "../utils/reservationMath";
 import { getReservaById } from "../services/reservaService";
 import { createAvaliacao, getAvaliacaoDaReserva } from "../services/avaliacaoService";
-import "../styles/carselect.css";
-import "../styles/payment.css";
+import "../styles/journey.css";
+import "../styles/postcompra.css";
 
 function resolveField(value, fallback = "—") {
   return value === undefined || value === null || value === "" ? fallback : value;
@@ -34,7 +36,6 @@ function formatarDataHora(valor) {
 }
 
 export default function AvaliacaoReserva() {
-  const navigate = useNavigate();
   const location = useLocation();
 
   // A tela e alcancada de duas formas: (1) logo apos o desbloqueio, no
@@ -42,8 +43,8 @@ export default function AvaliacaoReserva() {
   // (2) clicando numa reserva concluida no Historico (recebe o id via
   // location.state). Nos dois casos, o id real da reserva manda.
   const veiculoJourney = getJourneyStep("veiculo");
-  const pagamentoJourney = getJourneyStep("pagamento");
   const reservaId = location.state?.reservaId || getJourneyStep("reserva")?.id;
+  const semReservaId = !reservaId;
 
   const [reserva, setReserva] = useState(null);
   const [avaliacaoExistente, setAvaliacaoExistente] = useState(null);
@@ -52,7 +53,7 @@ export default function AvaliacaoReserva() {
 
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
-  const [enviado, setEnviado] = useState(false);
+  const [comentario, setComentario] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [erroAvaliacao, setErroAvaliacao] = useState("");
 
@@ -62,24 +63,26 @@ export default function AvaliacaoReserva() {
 
   useEffect(() => {
     if (!reservaId) {
-      setCarregando(false);
-      setErroCarregamento("Não encontramos a reserva a ser avaliada.");
       return;
     }
 
     let active = true;
-    setCarregando(true);
-    setErroCarregamento("");
 
     Promise.all([
-      getReservaById(reservaId).catch(() => null),
+      getReservaById(reservaId).catch((error) => ({ erro: error })),
       getAvaliacaoDaReserva(reservaId).catch(() => null),
     ]).then(([reservaResult, avaliacaoResult]) => {
       if (!active) return;
+      if (reservaResult?.erro) {
+        setErroCarregamento(reservaResult.erro.message || "Não foi possível carregar a reserva.");
+        setCarregando(false);
+        return;
+      }
       setReserva(reservaResult);
       if (avaliacaoResult) {
         setAvaliacaoExistente(avaliacaoResult);
         setRating(Math.round(avaliacaoResult.nota) || 5);
+        setComentario(avaliacaoResult.comentario || "");
       }
       setCarregando(false);
     });
@@ -91,21 +94,28 @@ export default function AvaliacaoReserva() {
 
   const nomeVeiculo = resolveVeiculoNome(reserva, veiculoJourney);
   const jaAvaliada = Boolean(avaliacaoExistente);
+  const podeAvaliar = reserva?.status === STATUS_RESERVA.REALIZADA;
+  const mensagemCarregamento = semReservaId
+    ? "Não encontramos a reserva a ser avaliada."
+    : erroCarregamento;
 
   function handleEnviarAvaliacao(event) {
     event.preventDefault();
     setErroAvaliacao("");
 
-    if (!reservaId) {
-      setErroAvaliacao("Não encontramos a reserva associada a esta viagem.");
+    if (!reservaId || !podeAvaliar) {
+      setErroAvaliacao("A avaliação fica disponível após a devolução da reserva.");
       return;
     }
 
     setEnviando(true);
-    createAvaliacao({ idReserva: reservaId, nota: rating })
-      .then(() => {
-        setEnviado(true);
-        setTimeout(() => navigate("/historico"), 1400);
+    createAvaliacao({
+      idReserva: reservaId,
+      nota: rating,
+      ...(comentario.trim() ? { comentario: comentario.trim() } : {}),
+    })
+      .then((avaliacao) => {
+        setAvaliacaoExistente(avaliacao);
       })
       .catch((error) => {
         setErroAvaliacao(error?.message || "Não foi possível enviar sua avaliação.");
@@ -113,94 +123,110 @@ export default function AvaliacaoReserva() {
       .finally(() => setEnviando(false));
   }
 
+  const notaExibida = hoverRating || rating;
+
   return (
-    <main className="carro-page">
-      <div className="carro-header">
+    <main className="journey-page">
+      <header className="journey-head">
         <h1>Avalie sua Experiência</h1>
-      </div>
+      </header>
 
-      <div className="carro-content">
-        {carregando && <p className="carro-status">Carregando dados da reserva…</p>}
+      {!semReservaId && carregando && (
+        <p className="loading-state" aria-live="polite"><span className="spinner" aria-hidden="true" />Carregando dados da reserva…</p>
+      )}
 
-        {!carregando && erroCarregamento && !reserva && (
-          <p className="carro-status">{erroCarregamento}</p>
-        )}
+      {((semReservaId || !carregando) && mensagemCarregamento && !reserva) && (
+        <div className="alert alert--danger">
+          <FontAwesomeIcon icon={faCircleExclamation} aria-hidden="true" />
+          <p className="alert__body" role="alert">{mensagemCarregamento}</p>
+        </div>
+      )}
 
-        {!carregando && (reserva || veiculoJourney) && (
-          <div className="payment-method-card" style={{ textAlign: "center" }}>
-            <div style={{ textAlign: "left" }}>
-              <h2 style={{ color: "var(--color-primary-strong)", fontSize: "1.05rem", margin: "0 0 0.6rem" }}>
-                Informações da Reserva
-              </h2>
-              <p className="carro-list-card__specs" style={{ marginBottom: "1rem" }}>
-                Início: {resolveField(formatarDataHora(reserva?.dataHoraInicio))}
-                <br />
-                Fim: {resolveField(formatarDataHora(reserva?.dataHoraFim))}
-                <br />
-                Preço: {reserva?.valorTotal != null ? formatMoneyBRL(reserva.valorTotal) : "—"}
-                <br />
-                Forma de Pagamento: {resolveField(pagamentoJourney?.metodo)}
-              </p>
-
-              <h2 style={{ color: "var(--color-primary-strong)", fontSize: "1.05rem", margin: "0 0 0.6rem" }}>
-                Informações do Veículo
-              </h2>
-              <p className="carro-list-card__specs" style={{ marginBottom: "1.1rem" }}>
-                Veículo: {nomeVeiculo}
-              </p>
-            </div>
+      {!carregando && (reserva || veiculoJourney) && (
+        <div className="journey-layout">
+          <section className="post-panel" aria-labelledby="avaliacao-titulo">
+            <h2 id="avaliacao-titulo">Sua nota</h2>
 
             {jaAvaliada && (
-              <p style={{ color: "var(--color-primary-strong)", fontWeight: 600, marginBottom: "0.5rem" }}>
-                Você já avaliou esta reserva.
-              </p>
+              <div className="alert alert--success" role="status">
+                <FontAwesomeIcon icon={faCircleCheck} aria-hidden="true" />
+                <div className="alert__body">
+                  <p>Você já avaliou esta reserva com nota {avaliacaoExistente.nota}.</p>
+                  {avaliacaoExistente.comentario && <p>“{avaliacaoExistente.comentario}”</p>}
+                </div>
+              </div>
             )}
 
-            <div
-              role="radiogroup"
-              aria-label="Avaliação em estrelas"
-              style={{ display: "flex", justifyContent: "center", gap: "0.35rem", marginBottom: "1.25rem" }}
-            >
-              {[1, 2, 3, 4, 5].map((star) => {
-                const filled = star <= (hoverRating || rating);
-                return (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => !jaAvaliada && setRating(star)}
-                    onMouseEnter={() => !jaAvaliada && setHoverRating(star)}
-                    onMouseLeave={() => !jaAvaliada && setHoverRating(0)}
-                    aria-label={`${star} estrela${star > 1 ? "s" : ""}`}
-                    aria-pressed={star === rating}
-                    disabled={jaAvaliada}
-                    style={{ background: "none", border: "none", cursor: jaAvaliada ? "default" : "pointer", padding: 0 }}
-                  >
-                    <Star
-                      size={28}
-                      color="var(--color-primary-strong)"
-                      fill={filled ? "var(--color-primary-strong)" : "none"}
-                    />
-                  </button>
-                );
-              })}
+            <div className="rating">
+              <p className="rating__label" id="rating-label">Avaliação em estrelas</p>
+              <div className="rating__stars" role="group" aria-labelledby="rating-label">
+                {[1, 2, 3, 4, 5].map((star) => {
+                  const filled = star <= notaExibida;
+                  return (
+                    <button
+                      key={star}
+                      type="button"
+                      className="rating__star"
+                      onClick={() => !jaAvaliada && setRating(star)}
+                      onMouseEnter={() => !jaAvaliada && setHoverRating(star)}
+                      onMouseLeave={() => !jaAvaliada && setHoverRating(0)}
+                      aria-label={`${star} estrela${star > 1 ? "s" : ""}`}
+                      aria-pressed={star === rating}
+                      disabled={jaAvaliada}
+                    >
+                      <Star size={28} aria-hidden="true" fill={filled ? "currentColor" : "none"} />
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="rating__value" aria-live="polite">
+                Nota selecionada: <span className="tabular">{rating}</span> de 5
+              </p>
             </div>
 
             {erroAvaliacao && (
-              <p className="auth-feedback auth-feedback--error" role="status" aria-live="polite">
-                {erroAvaliacao}
-              </p>
+              <div className="alert alert--danger">
+                <FontAwesomeIcon icon={faCircleExclamation} aria-hidden="true" />
+                <p className="alert__body" role="alert">{erroAvaliacao}</p>
+              </div>
             )}
 
-            {!jaAvaliada && (
-              <button type="button" className="carro-button" onClick={handleEnviarAvaliacao} disabled={enviado || enviando}>
-                {enviado ? "Avaliação enviada ✓" : enviando ? "Enviando..." : "Enviar Avaliação"}
-              </button>
-            )}
-          </div>
-        )}
-      </div>
+            {!jaAvaliada && !podeAvaliar && <p className="journey-muted">A avaliação fica disponível após a devolução da reserva.</p>}
 
-      <BottomNav />
+            {!jaAvaliada && podeAvaliar && <>
+              <div className="field">
+                <label className="field__label" htmlFor="comentario-avaliacao">Comentário (opcional)</label>
+                <textarea
+                  id="comentario-avaliacao"
+                  className="field__control"
+                  value={comentario}
+                  onChange={(event) => setComentario(event.target.value)}
+                  maxLength={255}
+                  rows={4}
+                  aria-describedby="comentario-contador"
+                />
+                <p className="rating__counter tabular" id="comentario-contador">{comentario.length}/255</p>
+              </div>
+              <div className="journey-actions">
+                <button type="button" className="btn btn--lg" onClick={handleEnviarAvaliacao} disabled={enviando} aria-busy={enviando || undefined}>
+                  {enviando ? "Enviando..." : "Enviar Avaliação"}
+                </button>
+              </div>
+            </>}
+          </section>
+
+          <aside className="post-panel" aria-labelledby="avaliacao-reserva">
+            <h2 id="avaliacao-reserva">Informações da Reserva</h2>
+            <ul className="post-facts">
+              <li>Veículo: {nomeVeiculo}</li>
+              <li>Início: <span className="tabular">{resolveField(formatarDataHora(reserva?.dataHoraInicio))}</span></li>
+              <li>Fim: <span className="tabular">{resolveField(formatarDataHora(reserva?.dataHoraFim))}</span></li>
+              <li>Preço: <span className="tabular">{reserva?.valorTotal != null ? formatMoneyBRL(reserva.valorTotal) : "—"}</span></li>
+              <li>Forma de Pagamento: {resolveField(rotulo(METODO_PAGAMENTO_LABELS, reserva?.metodoPagamento))}</li>
+            </ul>
+          </aside>
+        </div>
+      )}
     </main>
   );
 }

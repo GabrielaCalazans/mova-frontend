@@ -4,7 +4,10 @@ import { getAuthSession, saveAuthSession } from "./authSession";
 import {
   fetchCurrentUserProfile,
   loginUser,
+  requestPasswordReset,
+  registerLocatario,
   registerLocador,
+  resetPassword,
   updateUserProfile,
 } from "./authService";
 
@@ -118,6 +121,7 @@ describe("authService profile flow via /conta/auth/me", () => {
       .mockResolvedValueOnce({
         result: {
           id: "conta-locador-1",
+          token: "token-cadastro-locador",
           nome: "Maria Silva",
           email: "maria@empresa.com",
         },
@@ -153,6 +157,7 @@ describe("authService profile flow via /conta/auth/me", () => {
     });
     expect(apiRequestMock).toHaveBeenNthCalledWith(2, "/locador", {
       method: "POST",
+      authToken: "token-cadastro-locador",
       body: JSON.stringify({
         id: "conta-locador-1",
         empresa: "Empresa Silva LTDA",
@@ -160,6 +165,73 @@ describe("authService profile flow via /conta/auth/me", () => {
       }),
     });
     expect(result.message).toBe("Cadastro de locador realizado com sucesso.");
+  });
+
+  it("cadastra locatario com token da conta e sem ID controlado pelo cliente", async () => {
+    apiRequestMock
+      .mockResolvedValueOnce({
+        result: {
+          conta: { id: "conta-locatario-1" },
+          token: "token-cadastro-locatario",
+        },
+      })
+      .mockResolvedValueOnce({ result: { id: "conta-locatario-1" } });
+
+    await registerLocatario({
+      name: "Ana Silva",
+      email: "ana@example.com",
+      celphone: "(11) 99999-8888",
+      address: "Rua A, 1",
+      cep: "01001-000",
+      password: "Senha12345",
+      cpf: "123.456.789-09",
+      cnh: "12345678909",
+      rg: "12.345.678-9",
+      dataNascimento: "1990-05-15",
+    });
+
+    expect(apiRequestMock).toHaveBeenNthCalledWith(1, "/conta/auth/register", {
+      method: "POST",
+      body: JSON.stringify({
+        nome: "Ana Silva",
+        email: "ana@example.com",
+        telefone: "11999998888",
+        endereco: "Rua A, 1",
+        cep: "01001000",
+        cargo: "LOCATARIO",
+        senha: "Senha12345",
+      }),
+    });
+
+    expect(apiRequestMock).toHaveBeenNthCalledWith(2, "/locatario/", {
+      method: "POST",
+      authToken: "token-cadastro-locatario",
+      body: JSON.stringify({
+        cpf: "12345678909",
+        cnh: "12345678909",
+        rg: "123456789",
+        dataNascimento: "1990-05-15",
+      }),
+    });
+
+    const [, request] = apiRequestMock.mock.calls[1];
+    const body = JSON.parse(request.body);
+    expect(body).not.toHaveProperty("id");
+    expect(body).not.toHaveProperty("idConta");
+    expect(body).not.toHaveProperty("cargo");
+    expect(body).not.toHaveProperty("propriedade");
+  });
+
+  it("não conclui perfil quando cadastro não retorna token", async () => {
+    apiRequestMock.mockResolvedValueOnce({ result: { conta: { id: "conta-1" } } });
+
+    await expect(registerLocatario({
+      name: "Ana", email: "ana@example.com", password: "Senha12345",
+      cpf: "12345678909", cnh: "12345678909", rg: "123456789", dataNascimento: "1990-05-15",
+    })).rejects.toThrow("Nao foi possivel autenticar o cadastro do locatario.");
+
+    expect(apiRequestMock).toHaveBeenCalledTimes(1);
+    expect(saveAuthSessionMock).not.toHaveBeenCalled();
   });
 });
 
@@ -217,9 +289,9 @@ describe("updateUserProfile two-step flow", () => {
         telefone: "11988887777",
         endereco: "Rua A",
         cep: "00000000",
-        cargo: "LOCATARIO",
       }),
     });
+    expect(JSON.parse(apiRequestMock.mock.calls[0][1].body)).not.toHaveProperty("cargo");
     expect(apiRequestMock).toHaveBeenNthCalledWith(2, "/locatario/perfil-1", {
       method: "PUT",
       authToken: "token-123",
@@ -334,9 +406,9 @@ describe("updateUserProfile two-step flow", () => {
         telefone: "11988887777",
         endereco: "Rua B",
         cep: "01001000",
-        cargo: "LOCADOR",
       }),
     });
+    expect(JSON.parse(apiRequestMock.mock.calls[0][1].body)).not.toHaveProperty("cargo");
     expect(apiRequestMock).toHaveBeenNthCalledWith(2, "/locador/perfil-locador-1", {
       method: "PUT",
       authToken: "token-456",
@@ -410,9 +482,9 @@ describe("updateUserProfile two-step flow", () => {
         telefone: "11977776666",
         endereco: "",
         cep: "",
-        cargo: "LOCATARIO",
       }),
     });
+    expect(JSON.parse(apiRequestMock.mock.calls[1][1].body)).not.toHaveProperty("cargo");
     expect(apiRequestMock).toHaveBeenNthCalledWith(3, "/locatario/perfil-legacy", {
       method: "PUT",
       authToken: "token-legacy",
@@ -447,6 +519,42 @@ describe("updateUserProfile two-step flow", () => {
     ).rejects.toThrow("Sessao expirada. Faca login novamente.");
 
     expect(apiRequestMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("password recovery contract", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    isApiConfiguredMock.mockReturnValue(true);
+    getAuthSessionMock.mockReturnValue(null);
+  });
+
+  it("solicita recuperação pelo endpoint real sem autenticação", async () => {
+    apiRequestMock.mockResolvedValue({
+      result: {
+        message: "Se existir uma conta associada a este e-mail, enviaremos as instruções de recuperação.",
+      },
+    });
+
+    const result = await requestPasswordReset({ email: "user@example.com" });
+
+    expect(apiRequestMock).toHaveBeenCalledWith("/conta/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email: "user@example.com" }),
+    });
+    expect(result.message).toContain("Se existir");
+  });
+
+  it("redefine senha com token no body e sem authToken", async () => {
+    apiRequestMock.mockResolvedValue({ result: { ok: true } });
+
+    await resetPassword({ token: "A".repeat(43), novaSenha: "NovaSenha#123" });
+
+    expect(apiRequestMock).toHaveBeenCalledWith("/conta/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token: "A".repeat(43), novaSenha: "NovaSenha#123" }),
+    });
+    expect(apiRequestMock.mock.calls[0][1]).not.toHaveProperty("authToken");
   });
 });
 

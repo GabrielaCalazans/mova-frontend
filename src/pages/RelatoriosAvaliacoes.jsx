@@ -1,195 +1,117 @@
-import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Download, Share2 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-} from "recharts";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Download } from "lucide-react";
 import BottomNav from "../components/BottomNav";
-import "../styles/carselect.css";
+import { getAvaliacaoDashboard } from "../services/dashboardService";
+import "../styles/owner.css";
 import "../styles/relatorios.css";
 
-// Media de avaliacao (0 a 5) por modelo de veiculo e por tipo de cambio.
-// Sem endpoint de relatorio agregado no backend, os dados abaixo sao
-// ilustrativos - mesma abordagem ja usada em Relatorios | Veiculos.
-const VEICULOS_DATA = [
-  { nome: "Civic", nota: 1.2, cor: "#4f7cff" },
-  { nome: "Gol", nota: 2.0, cor: "#b39ddb" },
-  { nome: "HB20", nota: 2.8, cor: "#f0ad4e" },
-  { nome: "Sedan", nota: 4.0, cor: "#f4d35e" },
-  { nome: "SUV", nota: 4.6, cor: "#ef5b5b" },
-];
+const csvValue = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
 
-const CATEGORIAS_DATA = [
-  { nome: "Automático", nota: 1.0, cor: "#4f7cff" },
-  { nome: "Manual", nota: 2.0, cor: "#b39ddb" },
-  { nome: "Semi-automático", nota: 3.0, cor: "#f0ad4e" },
-];
-
-function toCsv(data) {
-  const header = ["Categoria", "Nota Media"];
-  const rows = data.map((row) => [row.nome, row.nota]);
-  return [header, ...rows].map((row) => row.join(";")).join("\n");
+function csvAvaliacoes(rows) {
+  return [["Veículo", "Quantidade", "Nota média", "Maior nota", "Menor nota"], ...rows.map(({ veiculo, quantidade, media, maior, menor }) => [veiculo?.placa, quantidade, media, maior, menor])]
+    .map((row) => row.map(csvValue).join(";"))
+    .join("\n");
 }
 
-function downloadCsv(filename, data) {
-  const blob = new Blob([toCsv(data)], { type: "text/csv;charset=utf-8;" });
+function downloadCsv(rows) {
+  const blob = new Blob([`\uFEFF${csvAvaliacoes(rows)}`], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = filename;
+  link.download = "relatorio-avaliacoes.csv";
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
+  link.remove();
   URL.revokeObjectURL(url);
 }
 
-async function shareReport(title, data) {
-  const text = `${title}\n\n${toCsv(data)}`;
-
-  if (navigator.share) {
-    try {
-      await navigator.share({ title, text });
-      return;
-    } catch {
-      // usuário cancelou o compartilhamento — segue para o fallback
-    }
-  }
-
-  await navigator.clipboard?.writeText(text);
-}
-
-function Legend({ data }) {
-  return (
-    <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginBottom: "0.25rem", flexWrap: "wrap" }}>
-      {data.map((item) => (
-        <span key={item.nome} style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.78rem", color: "var(--color-text)" }}>
-          <span style={{ width: 9, height: 9, borderRadius: "50%", background: item.cor, display: "inline-block" }} />
-          {item.nome}
-        </span>
-      ))}
-    </div>
-  );
-}
-
 export default function RelatoriosAvaliacoes() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const filtro = location.state;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filtros, setFiltros] = useState(() => ({
+    dataInicio: searchParams.get("dataInicio") || "",
+    dataFim: searchParams.get("dataFim") || "",
+    idVeiculo: searchParams.get("idVeiculo") || "",
+    notaMin: searchParams.get("notaMin") || "",
+  }));
+  const [relatorio, setRelatorio] = useState(null);
+  const [erro, setErro] = useState("");
+  const [carregando, setCarregando] = useState(true);
+
+  const carregar = async (filtrosAtuais = filtros) => {
+    setCarregando(true);
+    setErro("");
+    try {
+      setRelatorio(await getAvaliacaoDashboard(filtrosAtuais));
+    } catch {
+      setErro("Não foi possível carregar o relatório de avaliações.");
+      setRelatorio(null);
+    } finally {
+      setCarregando(false);
+    }
+  };
 
   useEffect(() => {
     document.title = "MOVA - Relatórios de Avaliações";
+    queueMicrotask(() => {
+      void carregar();
+    });
+    // A carga inicial deve acontecer apenas uma vez.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const filtroAtivo = Boolean(filtro?.data || filtro?.veiculo || filtro?.tipo || filtro?.avaliacao);
+  const linhas = relatorio?.mediaPorVeiculo || [];
+  const veiculos = relatorio?.ranking || [];
+  const atualizarFiltro = (campo, valor) => setFiltros((atual) => ({ ...atual, [campo]: valor }));
+  const aplicarFiltros = (event) => {
+    event.preventDefault();
+    const proximos = { ...filtros };
+    const params = new URLSearchParams();
+    Object.entries(proximos).forEach(([chave, valor]) => {
+      if (valor) params.set(chave, valor);
+    });
+    setSearchParams(params);
+    carregar(proximos);
+  };
 
   return (
-    <main className="carro-page">
-      <div className="carro-header">
-        <h1>Relatórios | Avaliações</h1>
-      </div>
-
-      <div className="carro-content">
-        {filtroAtivo && (
-          <p className="relatorio-filter-summary">
-            Filtro: {[filtro?.data, filtro?.veiculo, filtro?.tipo, filtro?.avaliacao && `Nota ${filtro.avaliacao}`].filter(Boolean).join(" • ")}{" "}
-            <button type="button" onClick={() => navigate("/relatorios/avaliacoes-filtro")}>
-              Editar
-            </button>
-          </p>
-        )}
-
-        <div className="relatorio-grid">
-          <div className="relatorio-card">
-            <Legend data={VEICULOS_DATA} />
-            <div className="relatorio-card__chart">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={VEICULOS_DATA} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="nome" tick={{ fontSize: 11 }} />
-                  <YAxis domain={[0, 5]} tick={{ fontSize: 11 }} />
-                  <Tooltip />
-                  <Bar dataKey="nota" radius={[4, 4, 0, 0]}>
-                    {VEICULOS_DATA.map((entry) => (
-                      <Cell key={entry.nome} fill={entry.cor} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+    <main className="owner-page" aria-labelledby="relatorio-avaliacoes-title">
+      <header className="page-head">
+        <h1 id="relatorio-avaliacoes-title">Relatórios | Avaliações</h1>
+        <p className="page-head__lede">Notas recebidas pelos veículos da sua frota, por período, veículo e nota mínima.</p>
+      </header>
+      <div className="owner-section">
+        <form className="owner-filter" onSubmit={aplicarFiltros}>
+          <fieldset className="fieldset">
+            <legend>Filtrar avaliações</legend>
+            <div className="owner-filter__grid">
+              <div className="field"><label className="field__label" htmlFor="dataInicio">Data inicial</label><input className="field__control" id="dataInicio" type="date" value={filtros.dataInicio} onChange={(e) => atualizarFiltro("dataInicio", e.target.value)} /></div>
+              <div className="field"><label className="field__label" htmlFor="dataFim">Data final</label><input className="field__control" id="dataFim" type="date" value={filtros.dataFim} onChange={(e) => atualizarFiltro("dataFim", e.target.value)} /></div>
+              <div className="field"><label className="field__label" htmlFor="idVeiculo">Veículo</label><select className="field__control" id="idVeiculo" value={filtros.idVeiculo} onChange={(e) => atualizarFiltro("idVeiculo", e.target.value)}><option value="">Todos</option>{veiculos.map(({ veiculo }) => <option key={veiculo.id} value={veiculo.id}>{veiculo.placa} — {veiculo.marca} {veiculo.modelo}</option>)}</select></div>
+              <div className="field"><label className="field__label" htmlFor="notaMin">Nota mínima</label><select className="field__control" id="notaMin" value={filtros.notaMin} onChange={(e) => atualizarFiltro("notaMin", e.target.value)}><option value="">Todas</option>{[1, 2, 3, 4, 5].map((nota) => <option key={nota} value={nota}>{nota}</option>)}</select></div>
             </div>
-            <div className="relatorio-card__footer">
-              <div>
-                <h3>Relatório 1 - Veículos</h3>
-                <p>Baixe ou compartilhe seu relatório</p>
-              </div>
-              <div className="relatorio-card__actions">
-                <button
-                  type="button"
-                  aria-label="Baixar relatório de avaliações por veículo"
-                  onClick={() => downloadCsv("relatorio-avaliacoes-veiculos.csv", VEICULOS_DATA)}
-                >
-                  <Download size={20} />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Compartilhar relatório de avaliações por veículo"
-                  onClick={() => shareReport("Relatório 1 - Veículos", VEICULOS_DATA)}
-                >
-                  <Share2 size={20} />
-                </button>
-              </div>
-            </div>
+          </fieldset>
+          <div className="owner-filter__actions">
+            <button type="submit" className="btn">Aplicar filtros</button>
           </div>
-
-          <div className="relatorio-card">
-            <Legend data={CATEGORIAS_DATA} />
-            <div className="relatorio-card__chart">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={CATEGORIAS_DATA} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="nome" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip />
-                  <Bar dataKey="nota" radius={[4, 4, 0, 0]}>
-                    {CATEGORIAS_DATA.map((entry) => (
-                      <Cell key={entry.nome} fill={entry.cor} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="relatorio-card__footer">
-              <div>
-                <h3>Relatório 2 - Categorias</h3>
-                <p>Baixar ou compartilhe seu relatório</p>
-              </div>
-              <div className="relatorio-card__actions">
-                <button
-                  type="button"
-                  aria-label="Baixar relatório de avaliações por categoria"
-                  onClick={() => downloadCsv("relatorio-avaliacoes-categorias.csv", CATEGORIAS_DATA)}
-                >
-                  <Download size={20} />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Compartilhar relatório de avaliações por categoria"
-                  onClick={() => shareReport("Relatório 2 - Categorias", CATEGORIAS_DATA)}
-                >
-                  <Share2 size={20} />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        </form>
+        {carregando && <p className="loading-state" role="status"><span className="spinner" aria-hidden="true" />Carregando relatórios…</p>}
+        {erro && <p className="alert alert--danger" role="alert">{erro}</p>}
       </div>
-
+      {!carregando && !erro && relatorio && (
+        <section className="report-block" aria-labelledby="rel-aval-resumo">
+          <div className="report-block__head">
+            <h2 id="rel-aval-resumo">Avaliações por veículo</h2>
+            <p className="report-block__source">Dados reais das avaliações recebidas.</p>
+          </div>
+          <p className="report-block__figure"><strong>{relatorio.resumo?.total ?? 0} avaliações · média {relatorio.resumo?.media ?? 0}</strong></p>
+          {!linhas.length && <p className="report-empty">Nenhuma avaliação encontrada para os filtros selecionados.</p>}
+          {linhas.length > 0 && <ul className="report-list">{linhas.map(({ veiculo, quantidade, media }) => <li key={veiculo.id}>{veiculo.placa}: {media} ({quantidade} avaliações)</li>)}</ul>}
+          <div className="report-block__foot">
+            <button type="button" className="btn btn--secondary" disabled={!linhas.length} onClick={() => downloadCsv(linhas)}><Download aria-hidden="true" />Baixar relatório de avaliações</button>
+          </div>
+        </section>
+      )}
       <BottomNav />
     </main>
   );
