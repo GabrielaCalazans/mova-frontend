@@ -298,7 +298,8 @@ details.disclosure > div { padding: 0 var(--space-4) var(--space-4); color: var(
 }
 .themetoggle__opt:hover { color: var(--text-primary); }
 .themetoggle__opt[aria-checked="true"] { background: var(--surface-elevated); color: var(--text-primary); border-color: var(--border-strong); }
-.themetoggle--labeled .themetoggle__opt { flex: 1; padding-inline: var(--space-3); }
+.themetoggle--labeled { display: flex; width: 100%; max-width: 26rem; }
+.themetoggle--labeled .themetoggle__opt { flex: 1 1 0; min-width: 0; padding-inline: var(--space-2); }
 
 /* ---------------------------------------------------------------- marca */
 /* Os PNGs oficiais têm versão clara e escura; a troca segue o tema efetivo

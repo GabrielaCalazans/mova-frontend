@@ -145,10 +145,13 @@ const TELAS = [
   ["notfound", "/rota-inexistente", null],
 ];
 
-const VIEWPORTS = [
-  { id: "mobile", width: 375, height: 812 },
-  { id: "desktop", width: 1440, height: 900 },
-];
+// MOVA_WIDTHS="320,402,768,1024" varre larguras extras (reflow/overflow).
+const VIEWPORTS = process.env.MOVA_WIDTHS
+  ? process.env.MOVA_WIDTHS.split(",").map((w) => ({ id: `w${w}`, width: Number(w), height: 900 }))
+  : [
+      { id: "mobile", width: 375, height: 812 },
+      { id: "desktop", width: 1440, height: 900 },
+    ];
 const TEMAS = ["light", "dark"];
 
 await mkdir(DIR, { recursive: true });
