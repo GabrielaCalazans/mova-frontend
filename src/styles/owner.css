@@ -234,3 +234,10 @@ select.field__control { padding-right: var(--space-8); }
 .owner-hub__title { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); color: var(--text-link); font-size: var(--text-h3); font-weight: var(--weight-semibold); }
 .owner-hub__title svg { width: var(--icon-md); height: var(--icon-md); flex: none; }
 .owner-hub__text { color: var(--text-secondary); font-size: var(--text-meta); }
+
+/* RN09: histórico de alterações (somente leitura) */
+.owner-history { margin-top: var(--space-8); display: grid; gap: var(--space-3); }
+.owner-history__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+.owner-history__item { border-inline-start: 3px solid var(--border-default); padding-inline-start: var(--space-3); }
+.owner-history__head { margin: 0; overflow-wrap: anywhere; }
+.owner-history__changes { margin: var(--space-1) 0 0; padding-inline-start: var(--space-4); font-size: var(--text-meta); overflow-wrap: anywhere; }
