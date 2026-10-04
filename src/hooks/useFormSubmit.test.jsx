@@ -60,4 +60,28 @@ describe("useFormSubmit", () => {
       message: "ok",
     });
   });
+
+  it("ignora um segundo envio enquanto o primeiro ainda está em andamento", async () => {
+    let concluir;
+    const onSubmit = vi.fn(() => new Promise((resolve) => { concluir = resolve; }));
+
+    const { result } = renderHook(() =>
+      useFormSubmit({
+        values: { email: "cliente@mova.com" },
+        validate: () => ({}),
+        setFormErrors: vi.fn(),
+        setFeedback: vi.fn(),
+        onSubmit,
+      })
+    );
+
+    await act(async () => {
+      const primeiro = result.current.handleSubmit({ preventDefault: vi.fn() });
+      const segundo = result.current.handleSubmit({ preventDefault: vi.fn() });
+      concluir();
+      await Promise.all([primeiro, segundo]);
+    });
+
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
 });

@@ -1,5 +1,5 @@
 import { t } from "../i18n";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 export function useFormSubmit({
   values,
@@ -13,10 +13,14 @@ export function useFormSubmit({
   onSuccess,
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // O estado só desabilita o botão após o re-render; o ref barra um segundo
+  // envio no mesmo instante (duplo clique/Enter), ex.: cadastro duplicado.
+  const emAndamento = useRef(false);
 
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
+      if (emAndamento.current) return;
 
       const nextErrors = validate(values);
       setFormErrors(nextErrors);
@@ -29,6 +33,7 @@ export function useFormSubmit({
       }
 
       try {
+        emAndamento.current = true;
         setIsSubmitting(true);
 
         const submitResult = onSubmit ? await onSubmit(values) : undefined;
@@ -52,6 +57,7 @@ export function useFormSubmit({
           setFeedback(fallbackFeedback);
         }
       } finally {
+        emAndamento.current = false;
         setIsSubmitting(false);
       }
     },

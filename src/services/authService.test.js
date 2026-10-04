@@ -116,23 +116,15 @@ describe("authService profile flow via /conta/auth/me", () => {
     });
   });
 
-  it("cadastra locador vinculando conta e empresa separadamente", async () => {
-    apiRequestMock
-      .mockResolvedValueOnce({
-        result: {
-          id: "conta-locador-1",
-          token: "token-cadastro-locador",
-          nome: "Maria Silva",
-          email: "maria@empresa.com",
-        },
-      })
-      .mockResolvedValueOnce({
-        result: {
-          id: "locador-1",
-          empresa: "Empresa Silva LTDA",
-          cnpj: "12345678000199",
-        },
-      });
+  // Task 10 (M-05): o cadastro oficial é UMA operação atômica no backend.
+  it("cadastra locador em uma única operação atômica (conta + empresa)", async () => {
+    apiRequestMock.mockResolvedValueOnce({
+      result: {
+        conta: { id: "conta-locador-1", nome: "Maria Silva", email: "maria@empresa.com" },
+        token: "token-cadastro-locador",
+        locador: { id: "conta-locador-1", empresa: "Empresa Silva LTDA", cnpj: "12345678000199" },
+      },
+    });
 
     const result = await registerLocador({
       name: "Maria Silva",
@@ -143,7 +135,8 @@ describe("authService profile flow via /conta/auth/me", () => {
       password: "Senha12345",
     });
 
-    expect(apiRequestMock).toHaveBeenNthCalledWith(1, "/conta/auth/register", {
+    expect(apiRequestMock).toHaveBeenCalledTimes(1);
+    expect(apiRequestMock).toHaveBeenCalledWith("/conta/auth/register", {
       method: "POST",
       body: JSON.stringify({
         nome: "Maria Silva",
@@ -153,29 +146,16 @@ describe("authService profile flow via /conta/auth/me", () => {
         cep: "",
         cargo: "LOCADOR",
         senha: "Senha12345",
-      }),
-    });
-    expect(apiRequestMock).toHaveBeenNthCalledWith(2, "/locador", {
-      method: "POST",
-      authToken: "token-cadastro-locador",
-      body: JSON.stringify({
-        id: "conta-locador-1",
-        empresa: "Empresa Silva LTDA",
-        cnpj: "12345678000199",
+        locador: { empresa: "Empresa Silva LTDA", cnpj: "12345678000199" },
       }),
     });
     expect(result.message).toBe("Cadastro de locador realizado com sucesso.");
   });
 
-  it("cadastra locatario com token da conta e sem ID controlado pelo cliente", async () => {
-    apiRequestMock
-      .mockResolvedValueOnce({
-        result: {
-          conta: { id: "conta-locatario-1" },
-          token: "token-cadastro-locatario",
-        },
-      })
-      .mockResolvedValueOnce({ result: { id: "conta-locatario-1" } });
+  it("cadastra locatario em uma única operação atômica e sem ID controlado pelo cliente", async () => {
+    apiRequestMock.mockResolvedValueOnce({
+      result: { conta: { id: "conta-locatario-1" }, token: "token-cadastro-locatario", locatario: { id: "conta-locatario-1" } },
+    });
 
     await registerLocatario({
       name: "Ana Silva",
@@ -190,7 +170,8 @@ describe("authService profile flow via /conta/auth/me", () => {
       dataNascimento: "1990-05-15",
     });
 
-    expect(apiRequestMock).toHaveBeenNthCalledWith(1, "/conta/auth/register", {
+    expect(apiRequestMock).toHaveBeenCalledTimes(1);
+    expect(apiRequestMock).toHaveBeenCalledWith("/conta/auth/register", {
       method: "POST",
       body: JSON.stringify({
         nome: "Ana Silva",
@@ -200,35 +181,24 @@ describe("authService profile flow via /conta/auth/me", () => {
         cep: "01001000",
         cargo: "LOCATARIO",
         senha: "Senha12345",
+        locatario: { cpf: "12345678909", cnh: "12345678909", rg: "123456789", dataNascimento: "1990-05-15" },
       }),
     });
 
-    expect(apiRequestMock).toHaveBeenNthCalledWith(2, "/locatario/", {
-      method: "POST",
-      authToken: "token-cadastro-locatario",
-      body: JSON.stringify({
-        cpf: "12345678909",
-        cnh: "12345678909",
-        rg: "123456789",
-        dataNascimento: "1990-05-15",
-      }),
-    });
-
-    const [, request] = apiRequestMock.mock.calls[1];
-    const body = JSON.parse(request.body);
-    expect(body).not.toHaveProperty("id");
-    expect(body).not.toHaveProperty("idConta");
-    expect(body).not.toHaveProperty("cargo");
-    expect(body).not.toHaveProperty("propriedade");
+    const [, request] = apiRequestMock.mock.calls[0];
+    const perfil = JSON.parse(request.body).locatario;
+    expect(perfil).not.toHaveProperty("id");
+    expect(perfil).not.toHaveProperty("idConta");
+    expect(perfil).not.toHaveProperty("cargo");
   });
 
-  it("não conclui perfil quando cadastro não retorna token", async () => {
-    apiRequestMock.mockResolvedValueOnce({ result: { conta: { id: "conta-1" } } });
+  it("erro do backend no cadastro chega à tela sem nenhuma chamada complementar", async () => {
+    apiRequestMock.mockRejectedValueOnce(new Error("Locatário com este CPF ou CNH já existe"));
 
     await expect(registerLocatario({
       name: "Ana", email: "ana@example.com", password: "Senha12345",
       cpf: "12345678909", cnh: "12345678909", rg: "123456789", dataNascimento: "1990-05-15",
-    })).rejects.toThrow("Não foi possível autenticar o cadastro do locatário.");
+    })).rejects.toThrow("Locatário com este CPF ou CNH já existe");
 
     expect(apiRequestMock).toHaveBeenCalledTimes(1);
     expect(saveAuthSessionMock).not.toHaveBeenCalled();

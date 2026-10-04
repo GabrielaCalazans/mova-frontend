@@ -518,42 +518,34 @@ export async function registerUser(values) {
   }
 }
 
+// Task 10 (M-05): cadastro em UMA operação. O backend cria Conta + perfil na
+// mesma transação; se o perfil falhar, nenhuma Conta fica para trás.
 export async function registerLocatario(values) {
   if (!isApiConfigured()) {
     throw new Error(t("errors.apiNotConfigured"));
   }
 
   try {
-    const contaResult = await apiRequest("/conta/auth/register", {
+    const result = await apiRequest("/conta/auth/register", {
       method: "POST",
       body: JSON.stringify({
         ...buildRegistrationPayload(values, "LOCATARIO"),
         senha: values.password,
-      }),
-    });
-
-    const token = extractToken(contaResult);
-    if (!token) {
-      throw new Error(t("errors.renterAuthFailed"));
-    }
-
-    const locatarioResult = await apiRequest("/locatario/", {
-      method: "POST",
-      authToken: token,
-      body: JSON.stringify({
-        cpf: values.cpf.replace(/\D/g, ""),
-        cnh: values.cnh.replace(/\D/g, ""),
-        rg: values.rg.replace(/[.\-\s]/g, "").toUpperCase(),
-        dataNascimento: values.dataNascimento,
-        ...(values.deficienciaId ? { deficiencia_id: values.deficienciaId } : {}),
+        locatario: {
+          cpf: values.cpf.replace(/\D/g, ""),
+          cnh: values.cnh.replace(/\D/g, ""),
+          rg: values.rg.replace(/[.\-\s]/g, "").toUpperCase(),
+          dataNascimento: values.dataNascimento,
+          ...(values.deficienciaId ? { deficiencia_id: values.deficienciaId } : {}),
+        },
       }),
     });
 
     return {
       mode: "api",
       message: t("common.feedback.renterRegistered"),
-      conta: contaResult,
-      locatario: locatarioResult,
+      conta: result,
+      locatario: result?.result?.locatario,
     };
   } catch (error) {
     throw normalizeError(
@@ -569,41 +561,23 @@ export async function registerLocador(values) {
   }
 
   try {
-    const contaResult = await apiRequest("/conta/auth/register", {
+    const result = await apiRequest("/conta/auth/register", {
       method: "POST",
       body: JSON.stringify({
         ...buildRegistrationPayload(values, "LOCADOR"),
         senha: values.password,
-      }),
-    });
-
-    const conta = normalizeApiUser(contaResult, values.email);
-    const contaId = conta.id || contaResult?.id || contaResult?.result?.id;
-    const token = contaResult?.result?.token;
-
-    if (!contaId) {
-      throw new Error(t("errors.ownerAccountMissing"));
-    }
-
-    if (!token) {
-      throw new Error(t("errors.ownerAuthFailed"));
-    }
-
-    const result = await apiRequest("/locador", {
-      method: "POST",
-      authToken: token,
-      body: JSON.stringify({
-        id: contaId,
-        empresa: values.empresa,
-        cnpj: values.cnpj.replace(/\D/g, ""),
+        locador: {
+          empresa: values.empresa,
+          cnpj: values.cnpj.replace(/\D/g, ""),
+        },
       }),
     });
 
     return {
       mode: "api",
       message: t("common.feedback.ownerRegistered"),
-      conta: contaResult,
-      ...result,
+      conta: result,
+      locador: result?.result?.locador,
     };
   } catch (error) {
     throw normalizeError(
