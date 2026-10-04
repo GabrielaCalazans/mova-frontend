@@ -19,7 +19,7 @@ describe("RelatoriosVeiculos", () => {
     expect(await screen.findByText(/ABC-1234: R\$/)).toBeInTheDocument();
     expect(screen.getByText(/2 reservas, 16h/)).toBeInTheDocument();
     expect(screen.getByText(/25% de ocupação/)).toBeInTheDocument();
-    expect(screen.getByText(/CONFIRMADA/)).toBeInTheDocument();
+    expect(screen.getByText(/Confirmada/)).toBeInTheDocument();
     expect(screen.getByText(/2 avaliações/)).toBeInTheDocument();
     expect(screen.getByText(/quilometragem indisponíveis/i)).toBeInTheDocument();
     expect(screen.queryByText("HB20")).not.toBeInTheDocument();

@@ -93,14 +93,41 @@ function router(url, method) {
   if (p === "/conta/auth/me") return { result: { conta: { ...RENTER, telefone: "11999990000", cpf: "52998224725", dataNascimento: "1990-05-10", locatario: { id: "renter-1", cnh: "12345678900" } } } };
   if (p === "/deficiencia/all") return page1([{ id: "d1", nome: "Deficiência física" }, { id: "d2", nome: "Deficiência auditiva" }]);
   if (p.startsWith("/interesse")) return page1([]);
-  if (p === "/avaliacao" || p.startsWith("/avaliacao")) return page1([
+  if (p === "/avaliacao" || (p.startsWith("/avaliacao") && p !== "/avaliacao/relatorio")) return page1([
     { id: "a1", nota: 5, comentario: "Rampa traseira funcionou muito bem e a garagem tinha vaga acessível sinalizada.", criadoEm: "2026-08-04T10:00:00.000Z", veiculo: VEICULOS[0] },
     { id: "a2", nota: 4, comentario: "Carro limpo. A retirada pelo código foi rápida.", criadoEm: "2026-08-10T10:00:00.000Z", veiculo: VEICULOS[1] },
   ]);
   if (p === "/dashboard/frota") return { result: { veiculos: { total: 5, disponivel: 3, reservado: 1, manutencao: 1, inativo: 0 }, alertasAtivos: 2, alertasPorTipo: { INATIVIDADE: 2, BAIXA_AVALIACAO: 1 }, ultimasLocalizacoes: [] } };
-  if (p === "/dashboard/reservas") return { result: { total: RESERVAS.length, reservas: RESERVAS } };
-  if (p === "/dashboard/financeiro") return { result: { faturamentoBruto: 12345.67, faturamentoLiquido: 11020.1, reservasPagas: 18 } };
-  if (p === "/dashboard/utilizacao") return { result: { taxaOcupacao: 0.58, veiculosAlocados: 4 } };
+  // Formato de mova-backend/src/repositories/contracts/locador-dashboard.contract.ts
+  if (p === "/dashboard/reservas") return { result: {
+    total: RESERVAS.length, aguardandoPagamento: 1, confirmadas: 1, emAndamento: 0, concluidas: 1, canceladas: 1,
+    reservas: RESERVAS.map((r) => ({ id: r.id, idVeiculo: r.veiculo.id, idGaragemRetirada: r.garagemRetirada.id, garagemRetirada: { id: r.garagemRetirada.id, nome: r.garagemRetirada.nome }, dataHoraInicio: r.dataHoraInicio, dataHoraFim: r.dataHoraFim, status: r.status, statusPagamento: r.statusPagamento, valorTotal: r.valorTotal, veiculo: { placa: `BRA2E1${r.id.slice(-1)}`, marca: r.veiculo.modeloVeiculo.marca, modelo: r.veiculo.modeloVeiculo.modelo } })),
+    pagination: { total: RESERVAS.length, page: 1, limit: 10, totalPages: 1 },
+  } };
+  if (p === "/dashboard/financeiro") return { result: {
+    faturamentoBruto: 12345.67,
+    porPeriodo: [{ periodo: "2026-07", total: 3120.5 }, { periodo: "2026-08", total: 4380 }, { periodo: "2026-09", total: 4845.17 }],
+    porVeiculo: [
+      { idVeiculo: "v-argo", placa: "BRA2E19", total: 4980.4 },
+      { idVeiculo: "v-onix", placa: "RIO4F21", total: 3120 },
+      { idVeiculo: "v-civic", placa: "SPO7A88", total: 2890.27 },
+      { idVeiculo: "v-hb20", placa: "MGA1C05", total: 1355 },
+    ],
+  } };
+  if (p === "/dashboard/utilizacao") return { result: {
+    totalVeiculos: 5, veiculosAlocados: 4, veiculosReservados: 2, taxaOcupacao: 0.5, tempoMedioReservadoHoras: 41.5,
+    maisUtilizados: [
+      { idVeiculo: "v-argo", placa: "BRA2E19", reservas: 9, horasReservadas: 412 },
+      { idVeiculo: "v-onix", placa: "RIO4F21", reservas: 7, horasReservadas: 288 },
+      { idVeiculo: "v-civic", placa: "SPO7A88", reservas: 4, horasReservadas: 196 },
+    ],
+    menosUtilizados: [{ idVeiculo: "v-long", placa: "PCD3B77", reservas: 1, horasReservadas: 24 }],
+  } };
+  if (p === "/avaliacao/relatorio") return { result: {
+    resumo: { total: 14, media: 4.4 },
+    distribuicao: [{ nota: 5, total: 8 }, { nota: 4, total: 4 }, { nota: 3, total: 2 }],
+    mediaPorVeiculo: [{ idVeiculo: "v-argo", placa: "BRA2E19", media: 4.8, total: 6 }],
+  } };
   if (p.startsWith("/dashboard/avaliacoes")) return { result: { media: 4.5, total: 2, avaliacoes: [] } };
   return page1([]);
 }
@@ -142,6 +169,7 @@ const TELAS = [
   ["garagens", "/cadastro-garagens", OWNER],
   ["owner-reservas", "/reservas", OWNER],
   ["relatorios", "/relatorios", OWNER],
+  ["relatorio-veiculos", "/relatorios/veiculos", OWNER, ["#rel-financeiro", "#rel-utilizacao"]],
   ["notfound", "/rota-inexistente", null],
 ];
 

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Download } from "lucide-react";
 import BottomNav from "../components/BottomNav";
 import { getAvaliacaoDashboard, getFinanceiro, getReservas, getUtilizacao } from "../services/dashboardService";
+import { rotulo, STATUS_RESERVA_LABELS } from "../services/apiEnums";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import "../styles/owner.css";
 import "../styles/relatorios.css";
@@ -32,19 +33,22 @@ const DISPLAY_TIME_ZONE = import.meta.env.VITE_TIMEZONE_EXIBICAO || "America/Sao
 const data = (valor) => valor ? new Intl.DateTimeFormat("pt-BR", { timeZone: DISPLAY_TIME_ZONE }).format(new Date(valor)) : "—";
 
 const compacto = (valor) => new Intl.NumberFormat("pt-BR", { notation: "compact" }).format(Number(valor || 0));
+const horas = (valor) => `${Number(valor || 0).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} h`;
 
 // Gráfico de barras com uma única cor de ação: a cor vem do CSS (relatorios.css),
 // então segue o tema. A lista abaixo do gráfico é a alternativa textual.
+// Barras horizontais: a placa fica no eixo vertical e nunca se sobrepõe à
+// vizinha, nem em 320 px; a altura cresce com o número de veículos.
 function GraficoBarras({ dados, campo, formatar }) {
   return (
-    <div className="report-chart" aria-hidden="true">
+    <div className="report-chart" aria-hidden="true" style={{ height: dados.length * 44 + 40 }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={dados} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} accessibilityLayer={false}>
-          <CartesianGrid vertical={false} />
-          <XAxis dataKey="placa" tickLine={false} interval={0} />
-          <YAxis tickFormatter={compacto} width={48} tickLine={false} axisLine={false} />
+        <BarChart data={dados} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 0 }} accessibilityLayer={false}>
+          <CartesianGrid horizontal={false} />
+          <XAxis type="number" tickFormatter={compacto} tickLine={false} axisLine={false} />
+          <YAxis type="category" dataKey="placa" width={76} tickLine={false} interval={0} />
           <Tooltip formatter={(valor) => formatar(valor)} contentStyle={{ background: "var(--surface-elevated)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }} labelStyle={{ color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-secondary)" }} />
-          <Bar dataKey={campo} radius={[2, 2, 0, 0]} maxBarSize={48} isAnimationActive={false} />
+          <Bar dataKey={campo} radius={[0, 2, 2, 0]} maxBarSize={28} isAnimationActive={false} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -150,7 +154,7 @@ export default function RelatoriosVeiculos() {
             </div>
             <p className="report-block__figure"><strong>{relatorios.reservas?.total ?? reservas.length}</strong> reservas no período consultado.</p>
             {reservas.length ? (
-              <ul className="report-list">{reservas.map((reserva) => <li key={reserva.id}>{reserva.veiculo?.placa || reserva.idVeiculo}: {reserva.status} · {data(reserva.dataHoraInicio)} a {data(reserva.dataHoraFim)} · {moeda(reserva.valorTotal)}</li>)}</ul>
+              <ul className="report-list">{reservas.map((reserva) => <li key={reserva.id}>{reserva.veiculo?.placa || reserva.idVeiculo}: {rotulo(STATUS_RESERVA_LABELS, reserva.status)} · {data(reserva.dataHoraInicio)} a {data(reserva.dataHoraFim)} · {moeda(reserva.valorTotal)}</li>)}</ul>
             ) : <p className="report-empty">Nenhuma reserva encontrada.</p>}
           </section>
           <section className="report-block" aria-labelledby="rel-financeiro">
@@ -174,7 +178,7 @@ export default function RelatoriosVeiculos() {
               <h2 id="rel-utilizacao">Utilização</h2>
               <p className="report-block__source">Uso dos veículos · dados reais de reservas.</p>
             </div>
-            <p className="report-block__figure"><strong>{percentual(relatorios.utilizacao?.taxaOcupacao)} de ocupação</strong>{relatorios.utilizacao?.tempoMedioReservadoHoras ?? 0}h em média por reserva</p>
+            <p className="report-block__figure"><strong>{percentual(relatorios.utilizacao?.taxaOcupacao)} de ocupação</strong>{horas(relatorios.utilizacao?.tempoMedioReservadoHoras)} em média por reserva</p>
             {maisUtilizados.length ? (
               <>
                 <GraficoBarras dados={maisUtilizados} campo="horasReservadas" formatar={(valor) => `${valor}h`} />
