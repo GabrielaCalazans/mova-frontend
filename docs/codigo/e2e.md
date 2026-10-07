@@ -1,8 +1,8 @@
-# Notas de implementação — Testes E2E (e2e/)
+# Notas de implementação — Testes E2E (tests/e2e/)
 
 Texto que ficava em comentários de várias linhas no código. Cada seção indica o arquivo e o trecho que o comentário acompanhava.
 
-## `e2e/happy-path.spec.js`
+## `tests/e2e/happy-path.spec.js`
 
 **`const enabled = globalThis.process?.env?.MOVA_HAPPY_PATH_E2E === "1";`**
 
@@ -10,7 +10,7 @@ Happy path oficial do locatário para a banca (Task 9), pela interface real.
 Opt-in: roda contra o ambiente LOCAL de demonstração (frontend + API em
 mova_dev, populado por `npm run db:seed:demo -- --confirmar` no backend).
 
-MOVA_HAPPY_PATH_E2E=1 npx playwright test e2e/happy-path.spec.js
+MOVA_HAPPY_PATH_E2E=1 npx playwright test tests/e2e/happy-path.spec.js
 
 Cria uma reserva nova e consome o desbloqueio da reserva semeada da Ana:
 rode o seed de demonstração de novo antes da apresentação.
@@ -20,7 +20,7 @@ rode o seed de demonstração de novo antes da apresentação.
 11. QR e desbloqueio: a reserva recém-criada só abre na data dela, então a
 demonstração usa a reserva semeada da Ana, cuja janela já está aberta.
 
-## `e2e/public-home.spec.js`
+## `tests/e2e/public-home.spec.js`
 
 **`test.beforeEach(async ({ page }, testInfo) => {`**
 
@@ -52,7 +52,7 @@ inicia o pagamento; por isso os handlers abaixo distinguem o método.
 O veículo da fixture é adaptado: sem deficiência declarada o backend
 recusaria a reserva (RN01) e o checkout pede a declaração.
 
-## `e2e/real-api.spec.js`
+## `tests/e2e/real-api.spec.js`
 
 **`moveReservationWindowIntoTestPeriod(reservationId);`**
 
@@ -60,7 +60,7 @@ A API de produção exige início futuro na criação e não permite editar
 uma reserva paga. O override abaixo é exclusivamente de teste e aborta
 fora do banco mova_test; o desbloqueio continua passando pelo HTTP real.
 
-## `e2e/task10-edge-path.spec.js`
+## `tests/e2e/task10-edge-path.spec.js`
 
 **`const env = globalThis.process?.env ?? {};`**
 

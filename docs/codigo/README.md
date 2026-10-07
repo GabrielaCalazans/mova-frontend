@@ -2,8 +2,8 @@
 
 Comentários de várias linhas foram retirados do código e reunidos aqui, por área.
 
-- [Configuração do repositório](configuracao.md) — 5 notas
-- [Testes E2E (e2e/)](e2e.md) — 9 notas
+- [Configuração do repositório](configuracao.md) — 4 notas
+- [Testes E2E (tests/e2e/)](e2e.md) — 9 notas
 - [Scripts (scripts/)](scripts.md) — 2 notas
 - [src (raiz)](src.md) — 5 notas
 - [src/components](src-components.md) — 27 notas

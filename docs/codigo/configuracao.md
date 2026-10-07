@@ -29,11 +29,3 @@ Precisa do prefixo VITE_ para funcionar.
 
 Vem do environment "test". Sem o secret, cai no host .invalid: a suíte
 E2E mockada intercepta toda chamada /api/\*\* de qualquer forma.
-
-## `.vscode/launch.json`
-
-**`"version": "0.2.0",`**
-
-Use IntelliSense to learn about possible attributes.
-Hover to view descriptions of existing attributes.
-For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387

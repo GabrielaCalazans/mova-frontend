@@ -28,7 +28,7 @@ src/
   services/        # apiClient + um service por domínio da API
   styles/          # tokens e folhas do design system
   utils/           # jornada (sessionStorage), validações, formatação
-e2e/               # Playwright (mock, real-api, real-media, edge path, happy path)
+tests/e2e/         # Playwright (mock, real-api, real-media, edge path, happy path)
 scripts/           # task9-a11y.mjs (varredura axe/reflow/foco/zoom)
 docs/codigo/       # notas de implementação por área (antes eram comentários no código)
 ```
@@ -84,11 +84,11 @@ Redirecionamentos legados: `/locador` → `/painel`; `/tipos-carros`, `/carros-s
 ```bash
 npm run lint
 npm run test:run                              # unitários (jsdom; nenhuma rede real: host .invalid)
-npx playwright test e2e/public-home.spec.js   # E2E com API mockada (Chromium)
-MOVA_REAL_API_E2E=1 npx playwright test e2e/real-api.spec.js      # contra API local em mova_test
-MOVA_REAL_MEDIA_E2E=1 npx playwright test e2e/real-media.spec.js  # upload real (MinIO)
-MOVA_REAL_API_E2E=1 MOVA_REAL_API_DB_OVERRIDE=1 npx playwright test e2e/task10-edge-path.spec.js
-MOVA_HAPPY_PATH_E2E=1 npx playwright test e2e/happy-path.spec.js  # demo local (mova_dev)
+npx playwright test tests/e2e/public-home.spec.js   # E2E com API mockada (Chromium)
+MOVA_REAL_API_E2E=1 npx playwright test tests/e2e/real-api.spec.js      # contra API local em mova_test
+MOVA_REAL_MEDIA_E2E=1 npx playwright test tests/e2e/real-media.spec.js  # upload real (MinIO)
+MOVA_REAL_API_E2E=1 MOVA_REAL_API_DB_OVERRIDE=1 npx playwright test tests/e2e/task10-edge-path.spec.js
+MOVA_HAPPY_PATH_E2E=1 npx playwright test tests/e2e/happy-path.spec.js  # demo local (mova_dev)
 node scripts/task9-a11y.mjs                   # axe + reflow + foco + zoom (MOVA_LOCALE=pt-BR|en|es)
 ```
 

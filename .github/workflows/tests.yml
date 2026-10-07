@@ -51,7 +51,7 @@ jobs:
 
       # Só a suíte mockada: real-api/real-media exigem backend, banco e MinIO locais.
       - name: Mocked E2E
-        run: npx playwright test e2e/public-home.spec.js
+        run: npx playwright test tests/e2e/public-home.spec.js
 
       - name: Upload Playwright report
         if: always()
