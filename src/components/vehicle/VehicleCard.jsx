@@ -13,13 +13,6 @@ function field(vehicle, name) {
   return vehicle?.[name] ?? vehicle?.modeloVeiculo?.[name];
 }
 
-/**
- * Cartão de veículo (catálogo, lista da jornada e favoritos).
- * Ordem de leitura do brief: foto → nome/ano → dados principais →
- * acessibilidade → garagem → preço → ações. A acessibilidade aparece sempre,
- * inclusive no "não": escondê-la tiraria a informação de quem depende dela.
- * O título é o único link do cartão; as ações ficam em botões próprios.
- */
 export default function VehicleCard({
   vehicle,
   headingLevel = 3,

@@ -1,11 +1,3 @@
-/* =============================================================================
-   MOVA — camada de compatibilidade das telas legadas (Task 8).
-   Telas que ainda usam `carro-page`, `carro-header`, `carro-content`,
-   `carro-button` etc. passam a se comportar como conteúdo do AppShell:
-   sem fundo próprio, sem altura de viewport, título 32 px, cartões neutros.
-   Estilos de .auth-page vivem em auth.css.
-   ========================================================================== */
-
 main.carro-page { display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; color: var(--text-primary); }
 
 .carro-page .carro-header { padding: 0; background: none; border: 0; border-radius: 0; text-align: left; }

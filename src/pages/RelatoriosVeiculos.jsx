@@ -8,8 +8,6 @@ import { formatCurrency, formatDate, formatNumber, t } from "../i18n";
 import "../styles/owner.css";
 import "../styles/relatorios.css";
 
-// Texto iniciado por = + - @ ou tab/CR seria interpretado como fórmula pela
-// planilha (CSV injection); prefixa com apóstrofo. Números não são afetados.
 const csvValue = (value) => {
   const texto = String(value ?? "");
   const seguro = typeof value === "string" && /^[=+\-@\t\r]/.test(texto) ? `'${texto}` : texto;
@@ -43,10 +41,6 @@ const data = (valor) => formatDate(valor, { timeZone: DISPLAY_TIME_ZONE }) || "�
 const compacto = (valor) => formatNumber(valor, { notation: "compact" });
 const horas = (valor) => `${formatNumber(valor, { maximumFractionDigits: 1 })} h`;
 
-// Gráfico de barras com uma única cor de ação: a cor vem do CSS (relatorios.css),
-// então segue o tema. A lista abaixo do gráfico é a alternativa textual.
-// Barras horizontais: a placa fica no eixo vertical e nunca se sobrepõe à
-// vizinha, nem em 320 px; a altura cresce com o número de veículos.
 function GraficoBarras({ dados, campo, formatar }) {
   return (
     <div className="report-chart" aria-hidden="true" style={{ height: dados.length * 44 + 40 }}>

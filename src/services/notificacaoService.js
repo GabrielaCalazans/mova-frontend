@@ -5,10 +5,6 @@ function token() {
   return getAuthSession()?.token;
 }
 
-/**
- * Preferências de notificação (canal × tipo). Endpoint: GET /notificacao/preferencias.
- * Só retorna as preferências gravadas; ausência = habilitado (opt-in padrão do backend).
- */
 export async function listarPreferencias() {
   const data = await apiRequest("/notificacao/preferencias", { authToken: token() });
   return data.result ?? [];

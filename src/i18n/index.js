@@ -1,15 +1,5 @@
 import { useSyncExternalStore } from "react";
 
-// Internacionalização do MOVA (RNF08): pt-BR (padrão), en e es.
-//
-// Dicionários em ./locales/<idioma>/<namespace>.json; a chave usada no código é
-// "<namespace>.<caminho>" (ex.: t("common.nav.home")). Falta no idioma ativo →
-// pt-BR → a própria chave. `t` é uma função de módulo (não um hook): o App
-// remonta a árvore de rotas quando o idioma muda, então qualquer render já
-// enxerga o idioma novo — inclusive helpers fora de componentes.
-// ponytail: remontar perde estado local da tela na troca de idioma (ação rara,
-// feita em Configurações/cabeçalho); hooks por componente só se isso incomodar.
-
 export const LOCALES = {
   "pt-BR": { intl: "pt-BR", html: "pt-BR", label: "Português (Brasil)" },
   en: { intl: "en-US", html: "en", label: "English" },
@@ -23,8 +13,6 @@ function register(path, mod) {
   const [, locale, namespace] = path.match(/\.\/locales\/([^/]+)\/([^/]+)\.json$/);
   (messages[locale] ??= {})[namespace] = mod.default ?? mod;
 }
-// pt-BR (padrão e fallback) vai no bundle; en/es viram chunks carregados sob
-// demanda, para quem usa português não baixar os outros dois dicionários.
 for (const [path, mod] of Object.entries(import.meta.glob("./locales/pt-BR/*.json", { eager: true }))) register(path, mod);
 const lazyLocales = import.meta.glob(["./locales/en/*.json", "./locales/es/*.json"]);
 const loaded = new Set([DEFAULT_LOCALE]);
@@ -95,8 +83,6 @@ function lookup(locale, key) {
 const interpolate = (text, params) =>
   text.replace(/\{(\w+)\}/g, (match, name) => (params[name] ?? match).toString());
 
-// t("ns.key", { count, ...vars }). Com `count`, procura "<chave>_one"/"_other"
-// conforme as regras de plural do idioma antes da chave simples.
 export function t(key, params = {}) {
   let text;
   if (params.count !== undefined) {

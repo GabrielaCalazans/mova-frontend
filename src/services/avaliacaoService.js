@@ -7,11 +7,6 @@ function authHeaders() {
   return { authToken: session?.token };
 }
 
-/**
- * Cria uma avaliação para uma reserva concluída. Endpoint: POST /avaliacao
- * Campos esperados (createAvaliacaoSchema): idReserva, nota (1 a 5,
- * aceita casas decimais), comentario? (até 255 caracteres).
- */
 export async function createAvaliacao(payload) {
   const data = await apiRequest("/avaliacao", {
     method: "POST",

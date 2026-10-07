@@ -2,11 +2,6 @@ import { t } from "../../i18n";
 
 const STEPS = ["veiculo", "retirada", "devolucao", "servicos", "resumo", "condutores", "pagamento"];
 
-/**
- * Onde estou na reserva. Mobile mostra "Etapa N de 7" + barra segmentada;
- * desktop mostra a lista inteira. A etapa atual é aria-current="step" e
- * as concluídas trazem "concluída" em texto, não só cor.
- */
 export default function JourneySteps({ current }) {
   const index = Math.max(0, STEPS.indexOf(current));
   const label = t(`common.journey.steps.${STEPS[index]}`);

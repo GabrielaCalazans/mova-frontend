@@ -1,9 +1,3 @@
-/* =============================================================================
-   MOVA — pós-compra (Task 8): lista de reservas, desbloqueio, devolução,
-   cancelamento, avaliação, pendências e telas avulsas. Complementa
-   journey.css e base.css; nenhuma cor fora dos tokens.
-   ========================================================================== */
-
 /* ---------------------------------------------------------------- histórico */
 .historico { display: flex; flex-direction: column; gap: var(--space-8); min-width: 0; }
 .historico__pendencias { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); padding-top: var(--space-5); border-top: 1px solid var(--border-default); }
@@ -68,8 +62,6 @@
 .post-amount { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); }
 .post-amount strong { font-size: var(--text-price); font-weight: var(--weight-bold); font-variant-numeric: tabular-nums; }
 
-/* ---------------------------------------------------------------- desbloqueio */
-/* Código de desbloqueio: grande, tabular, espaçado e selecionável inteiro. */
 .unlock-code {
   display: inline-block; width: fit-content; max-width: 100%;
   padding: var(--space-3) var(--space-4);

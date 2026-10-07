@@ -10,11 +10,6 @@ const OPTIONS = [
   { value: "dark", icon: faMoon },
 ];
 
-/**
- * Três posições em radiogroup (setas trocam a opção). Cada opção tem ícone e
- * nome acessível; a ativa é marcada por aria-checked, não só por cor.
- * `labeled` mostra o nome ao lado do ícone (menu de conta e Configurações).
- */
 export default function ThemeToggle({ labeled = false }) {
   const { preference, setPreference } = useTheme();
   const refs = useRef({});

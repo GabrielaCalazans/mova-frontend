@@ -16,11 +16,6 @@ const ITEMS = [
 
 const FOCUSABLE = 'a[href], button:not([disabled]):not([tabindex="-1"]), select:not([disabled])';
 
-/**
- * Menu da conta do locatário. Folha inferior no mobile, painel ancorado no
- * desktop. Diálogo modal: foco entra no primeiro item, Tab circula dentro,
- * Escape fecha e o foco volta ao acionador (responsabilidade de onClose).
- */
 export default function AccountMenu({ open, onClose }) {
   const navigate = useNavigate();
   const panelRef = useRef(null);

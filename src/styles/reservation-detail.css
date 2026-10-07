@@ -1,8 +1,3 @@
-/* =============================================================================
-   MOVA — detalhe da reserva (Task 8). Estrutura vem de journey.css
-   (itinerário, resumo financeiro) e postcompra.css; aqui só o encaixe.
-   ========================================================================== */
-
 .detail-head { flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
 .detail-head h1 { overflow-wrap: anywhere; min-width: 0; }
 

@@ -1,12 +1,5 @@
 import { useCallback, useRef } from "react";
 
-// O conceito do CursorCard (React + Tailwind + shadcn + motion/react) adaptado
-// à stack real: React + CSS. Um único listener no contêiner calcula, para cada
-// cartão `.cursor-card` dentro dele, a posição do ponteiro em coordenadas
-// locais (--mx/--my). O CSS desenha um brilho discreto na borda e na
-// superfície dos cartões PRÓXIMOS ao ponteiro — inclusive no vão entre eles.
-// Só roda com ponteiro fino que faz hover; com prefers-reduced-motion o CSS
-// remove o efeito. É realce progressivo: nada depende dele.
 const CAN_GLOW = "(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
 
 function canGlow() {

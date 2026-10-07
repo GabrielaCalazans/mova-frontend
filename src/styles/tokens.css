@@ -1,9 +1,3 @@
-/* MOVA — identidade oficial (Task 7.4, portada para o mova-frontend na Task 8).
-   Primitivas oficiais: azul primário #003366, azul secundário #D0E7FF.
-   #0E2B49 é variação de apoio para superfícies escuras e texto de alta leitura.
-   Componentes consomem tokens semânticos; HEX não aparece fora desta camada.
-   Fonte única desta camada: mova-prototype/src/styles/tokens.css + theme-dark.css. */
-
 :root {
   --brand-primary: #003366;
   --brand-secondary: #d0e7ff;
@@ -128,8 +122,6 @@
   --appbar-h-lg: 64px;
   --media-ratio: 16 / 10;
 
-  /* CursorCard: brilho que segue o ponteiro (desktop, hover fino).
-     primaryHue = #D0E7FF, secondaryHue = #003366, em alfa baixo. */
   --cursor-glow-primary: rgba(208, 231, 255, 0.55);
   --cursor-glow-secondary: rgba(0, 51, 102, 0.22);
   --cursor-glow-size: 280px;

@@ -1,9 +1,3 @@
-/* =============================================================================
-   MOVA — veículo: mídia, cartão, grade, filtros e detalhe (Task 8).
-   O carro é o objeto principal: mídia grande, inteira (contain), sobre uma
-   superfície rebaixada que funciona como "estúdio" nos dois temas.
-   ========================================================================== */
-
 /* ---------------------------------------------------------------- mídia */
 .vmedia {
   position: relative; margin: 0;
@@ -77,10 +71,6 @@
   .vcard__actions { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
 }
 
-/* ---------------------------------------------------------------- CursorCard
-   Brilho que segue o ponteiro (ver CursorGlowArea). Borda: anel de 1px
-   mascarado; superfície: halo muito suave atrás do conteúdo. Claro: borda
-   #003366 sobre halo #D0E7FF. Escuro: borda #D0E7FF sobre halo #003366. */
 .cursor-card { position: relative; isolation: isolate; --mx: -999px; --my: -999px; }
 .cursor-card::before,
 .cursor-card::after {
@@ -241,8 +231,6 @@
 .decision__unavailable { margin-bottom: var(--space-3); }
 .decision__notify { margin-top: var(--space-3); }
 
-/* Mobile: barra fixa com preço e "Reservar" ao alcance do polegar, acima da
-   tab bar e da safe area. A página ganha folga para nada ficar escondido. */
 .vdetail__bar { display: none; }
 @media (max-width: 1023.98px) {
   .vdetail-page { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }

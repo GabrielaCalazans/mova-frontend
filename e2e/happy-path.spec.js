@@ -1,14 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { mkdirSync } from "node:fs";
 
-// Happy path oficial do locatário para a banca (Task 9), pela interface real.
-// Opt-in: roda contra o ambiente LOCAL de demonstração (frontend + API em
-// mova_dev, populado por `npm run db:seed:demo -- --confirmar` no backend).
-//
-//   MOVA_HAPPY_PATH_E2E=1 npx playwright test e2e/happy-path.spec.js
-//
-// Cria uma reserva nova e consome o desbloqueio da reserva semeada da Ana:
-// rode o seed de demonstração de novo antes da apresentação.
 const enabled = globalThis.process?.env?.MOVA_HAPPY_PATH_E2E === "1";
 const appUrl = globalThis.process?.env?.MOVA_HAPPY_PATH_URL || "http://localhost:5173";
 const apiBaseUrl = globalThis.process?.env?.MOVA_API_BASE_URL || "http://localhost:3000/api";
@@ -121,8 +113,6 @@ test.describe("happy path oficial do locatário (ambiente local de demonstraçã
     await expect(page.getByText("Pagamento aprovado")).toBeVisible({ timeout: 20_000 });
     await captura("reserva-confirmada");
 
-    // 11. QR e desbloqueio: a reserva recém-criada só abre na data dela, então a
-    // demonstração usa a reserva semeada da Ana, cuja janela já está aberta.
     const login = await page.request.post(`${apiBaseUrl}/conta/auth/login`, { data: { email, senha } });
     const token = (await login.json()).result?.token;
     const headers = { Authorization: `Bearer ${token}` };

@@ -13,8 +13,6 @@ export function useFormSubmit({
   onSuccess,
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // O estado só desabilita o botão após o re-render; o ref barra um segundo
-  // envio no mesmo instante (duplo clique/Enter), ex.: cadastro duplicado.
   const emAndamento = useRef(false);
 
   const handleSubmit = useCallback(

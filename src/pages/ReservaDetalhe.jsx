@@ -151,8 +151,6 @@ export default function ReservaDetalhe() {
     }
   }
 
-  // RF15: o QR é gerado pelo app a partir do token assinado do backend e aponta
-  // para o próprio fluxo de desbloqueio (/desbloqueio?qr=...).
   async function mostrarQr() {
     setQr({ carregando: true });
     try {

@@ -126,15 +126,11 @@ export default function CheckoutReserva() {
       setConfirmError(t("journey.checkout.selectVehicle"));
       return;
     }
-    // Espelha RN05 antes do POST: mesma mensagem que o backend devolveria,
-    // sem gastar um round-trip. O servidor revalida de qualquer forma.
     const erroPeriodo = validarPeriodoReserva(pickupDateTime, dropoffDateTime);
     if (erroPeriodo) {
       setConfirmError(erroPeriodo);
       return;
     }
-    // A retirada é derivada do veículo (pode não existir, se ele não estiver
-    // alocado em nenhuma garagem). A devolução é escolha do usuário.
     if (!devolucao?.garageId) {
       setConfirmError(t("journey.checkout.selectReturnGarage"));
       return;
@@ -150,8 +146,6 @@ export default function CheckoutReserva() {
       const sessionUser = getAuthSession()?.user;
       const servicosIds = servicos?.ids ?? [];
 
-      // Payload completo do contrato POST /api/reserva. status e statusPagamento
-      // NÃO entram: são do domínio. Ver auditoria/CONTRATO-FRONTEND-BACKEND.md.
       const reserva = await createReserva({
         idVeiculo: veiculoSalvo.id,
         idLocatario,
@@ -160,8 +154,6 @@ export default function CheckoutReserva() {
         // Garagens reais escolhidas na jornada (UUIDs vindos de GET /api/garagem).
         ...(retirada?.garageId ? { idGaragemRetirada: retirada.garageId } : {}),
         ...(devolucao?.garageId ? { idGaragemDevolucao: devolucao.garageId } : {}),
-        // RN01: só é necessário quando o veículo é adaptado/PCD e o locatário
-        // ainda não tem deficiência cadastrada no perfil.
         ...(sessionUser?.deficienciaId || deficienciaDeclarada
           ? { deficienciaId: sessionUser?.deficienciaId || deficienciaDeclarada }
           : {}),
@@ -173,8 +165,6 @@ export default function CheckoutReserva() {
         saveAuthSession({ ...getAuthSession(), user: { ...sessionUser, deficienciaId: deficienciaDeclarada } });
       }
 
-      // valorTotal vem calculado pelo backend (fonte de verdade); o que o
-      // checkout mostrou era só estimativa.
       updateJourneyStep("reserva", {
         id: reserva.id,
         valorTotal: reserva.valorTotal,
@@ -206,9 +196,6 @@ export default function CheckoutReserva() {
 
         const sessionUser = getAuthSession()?.user;
         if (!sessionUser?.id) throw new Error(t("journey.checkout.invalidSession"));
-        // Task 11: sem data de retirada/devolução (acesso direto ao checkout ou
-        // jornada incompleta) o usuário via o TypeError de `toISOString`. As
-        // demais regras do período (RN05, passado) continuam no botão Confirmar.
         if (!pickupDateTime) throw new Error(t("validation.period.pickupRequired"));
         if (!dropoffDateTime) throw new Error(t("validation.period.returnRequired"));
         const [vehicleDetails, pricingDetails] = await Promise.all([
@@ -300,8 +287,6 @@ export default function CheckoutReserva() {
       ...(pricing?.servicos?.find((item) => item.idServico === servico.id) ?? {}),
       valor: pricing?.servicos?.find((item) => item.idServico === servico.id)?.valor ?? servico.valor,
     }));
-    // Campos descritivos vêm de modeloVeiculo, já normalizados por
-    // normalizeVeiculo(); fallback para o veículo salvo na jornada.
     const vehicleCategory = formatCategoria(resolveVehicleField(vehicle, veiculoSalvo, "categoria"));
     const vehicleTransmission = formatCambio(resolveVehicleField(vehicle, veiculoSalvo, "cambio"));
     const vehicleCapacity = resolveVehicleField(vehicle, veiculoSalvo, "capacidade");

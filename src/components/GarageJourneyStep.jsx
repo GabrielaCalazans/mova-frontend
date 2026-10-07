@@ -39,10 +39,6 @@ import { parseJourneyDateTime, validarPeriodoReserva } from "../utils/reservatio
 import { getGaragemById, listGaragens } from "../services/garagemService";
 import { formatDate, t } from "../i18n";
 
-// As garagens vêm da API (GET /api/garagem). O locatário enxerga apenas as
-// ATIVAS — o escopo é aplicado no backend, não aqui.
-// Antes esta lista era fixa, com ids 1..4, incompatíveis com os UUIDs reais;
-// por isso a reserva nunca conseguia enviar idGaragemRetirada/idGaragemDevolucao.
 function descreverCapacidade(garagem) {
   if (typeof garagem.capacidade !== "number") return "";
   const alocados = garagem.veiculosAlocados ?? 0;
@@ -124,9 +120,6 @@ export default function GarageJourneyStep({
 
   const storedStep = useMemo(() => getJourneyStep(stepKey), [stepKey]);
 
-  // O veículo escolhido define as duas garagens possíveis:
-  //  - retirada  -> exatamente veiculo.garagemId (ReservaService.resolverGaragemRetirada)
-  //  - devolução -> qualquer garagem ATIVA do locador do veículo (assertGaragemDevolucao)
   const veiculoSelecionado = useMemo(() => getJourneyStep("veiculo"), []);
   const garagemDoVeiculo = veiculoSelecionado?.garagemId || "";
   const veiculoId = veiculoSelecionado?.id || "";
@@ -210,9 +203,6 @@ export default function GarageJourneyStep({
     ? !carregandoGaragens && !erroGaragens && garagens.length > 0
     : Boolean(selectedGarage);
 
-  // Valida o instante escolhido já nesta etapa, com as MESMAS mensagens do
-  // backend (RN05). O servidor continua sendo a autoridade — isto só evita que
-  // o usuário só descubra o problema depois de percorrer o checkout.
   const erroPeriodo = useMemo(() => {
     if (!data || !hora) return "";
 
@@ -357,10 +347,6 @@ export default function GarageJourneyStep({
     }
   };
 
-  // A jornada é veículo-primeiro: o local de retirada SAI do veículo e a
-  // devolução é restrita ao locador dele. Sem veículo escolhido, esta etapa não
-  // tem o que mostrar — volta para a escolha do carro em vez de exibir um
-  // estado vazio enganoso.
   if (!veiculoSelecionado?.id) {
     return <Navigate to="/carros" replace />;
   }

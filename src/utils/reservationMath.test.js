@@ -34,8 +34,6 @@ describe("reservationMath", () => {
     expect(formatMoneyBRL(549.9).replace(/\u00a0/g, " ")).toBe("R$ 549,90");
   });
 });
-// TASK 03 — casos obrigatórios de data/hora. Espelham RN05 do backend; as
-// mensagens são idênticas de propósito. Ver auditoria/DATAS-HORARIOS.md.
 describe("validarPeriodoReserva", () => {
   const HORA = 60 * 60 * 1000;
   const DIA = 24 * HORA;
@@ -112,8 +110,6 @@ describe("validarPeriodoReserva", () => {
 
 describe("representação de data/hora (timezone)", () => {
   it("o instante escolhido sobrevive ao ISO e volta na mesma hora local", () => {
-    // O usuário escolhe 10/06/2026 10:00 no fuso DELE. O que trafega é o
-    // instante em UTC; ao voltar, a hora de parede local tem que ser a mesma.
     const escolhido = parseJourneyDateTime({ date: "10/06/2026", time: "10:00" });
     expect(escolhido.getHours()).toBe(10);
     expect(escolhido.getMinutes()).toBe(0);

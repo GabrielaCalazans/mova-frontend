@@ -3,11 +3,6 @@ import { faCarSide } from "@fortawesome/free-solid-svg-icons";
 import { resolveVehicleImages } from "../../utils/vehicleDisplay";
 import { t } from "../../i18n";
 
-/**
- * Mídia do veículo em proporção fixa e `object-fit: contain`: o carro inteiro
- * aparece, sem cortar para-choque nem rodas. Sem foto, um marcador neutro
- * diz isso em texto — nunca um ícone de categoria posando de foto.
- */
 export default function VehicleMedia({ vehicle, index = 0, eager = false, className = "" }) {
   const images = resolveVehicleImages(vehicle);
   const image = images[index] ?? images[0];

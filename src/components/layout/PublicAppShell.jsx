@@ -19,10 +19,6 @@ function PublicContent({ children }) {
   );
 }
 
-/**
- * Conteúdo público (Home e detalhe). Dentro das rotas o AppShell já existe;
- * renderizada isolada (testes de página), cria o próprio shell.
- */
 export default function PublicAppShell({ children }) {
   const shell = useShell();
   const content = <PublicContent>{children}</PublicContent>;

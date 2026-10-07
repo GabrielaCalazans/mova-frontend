@@ -7,8 +7,6 @@ import { t } from "../i18n";
 import "../styles/owner.css";
 import "../styles/relatorios.css";
 
-// Texto iniciado por = + - @ ou tab/CR seria interpretado como fórmula pela
-// planilha (CSV injection); prefixa com apóstrofo. Números não são afetados.
 const csvValue = (value) => {
   const texto = String(value ?? "");
   const seguro = typeof value === "string" && /^[=+\-@\t\r]/.test(texto) ? `'${texto}` : texto;

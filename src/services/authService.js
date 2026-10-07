@@ -133,22 +133,6 @@ function buildRegistrationPayload(values, cargo) {
   };
 }
 
-/**
- * @typedef {Object} LocatarioUpdatePayload
- * @property {string} cnh
- * @property {string} cpf
- */
-
-/**
- * @typedef {Object} LocadorUpdatePayload
- * @property {string} empresa
- * @property {string} cnpj
- */
-
-/**
- * @param {Object} values
- * @returns {LocatarioUpdatePayload}
- */
 function buildLocatarioUpdatePayload(values) {
   return {
     cnh: onlyDigits(values.cnh),
@@ -156,10 +140,6 @@ function buildLocatarioUpdatePayload(values) {
   };
 }
 
-/**
- * @param {Object} values
- * @returns {LocadorUpdatePayload}
- */
 function buildLocadorUpdatePayload(values) {
   return {
     id: values.id || values.accountId || values.profileId || "",
@@ -518,8 +498,6 @@ export async function registerUser(values) {
   }
 }
 
-// Task 10 (M-05): cadastro em UMA operação. O backend cria Conta + perfil na
-// mesma transação; se o perfil falhar, nenhuma Conta fica para trás.
 export async function registerLocatario(values) {
   if (!isApiConfigured()) {
     throw new Error(t("errors.apiNotConfigured"));
@@ -642,8 +620,6 @@ export async function updateUserProfile(values) {
       authToken: token,
       body: JSON.stringify({
         ...buildProfileUpdatePayload(values),
-        // O backend não altera e-mail pelo perfil; não enviar evita sugerir
-        // que a troca aconteceu (JSON.stringify omite undefined).
         email: undefined,
       }),
     });

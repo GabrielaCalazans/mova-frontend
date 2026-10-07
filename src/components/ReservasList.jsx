@@ -21,9 +21,6 @@ import "../styles/vehicle.css";
 import "../styles/journey.css";
 import "../styles/postcompra.css";
 
-// Tom e rótulo do status da reserva: sempre texto, nunca só cor.
-// PENDENTE/FINALIZADA são grafias antigas que ainda aparecem em dados legados.
-// Rótulos resolvidos no render (não no import) para acompanhar o idioma.
 const STATUS_VISUAL = {
   [STATUS_RESERVA.AGUARDANDO_PAGAMENTO]: ["warning", () => t("reservation.list.paymentPending")],
   PENDENTE: ["warning", () => t("reservation.list.paymentPending")],
@@ -34,8 +31,6 @@ const STATUS_VISUAL = {
   [STATUS_RESERVA.CANCELADA]: ["danger", STATUS_RESERVA.CANCELADA],
 };
 
-// Task 10 (BUG-05): expiração automática é CANCELADA + expiradaEm no backend,
-// mas para a pessoa é "Expirada", não um cancelamento que ela fez.
 export function StatusBadge({ status, expiradaEm, ...props }) {
   const [tom, rotuloOuCodigo] = status === STATUS_RESERVA.CANCELADA && expiradaEm
     ? ["neutral", () => t("reservation.list.expired")]
@@ -46,8 +41,6 @@ export function StatusBadge({ status, expiradaEm, ...props }) {
   return <span className={`badge badge--${tom}`} {...props}>{texto}</span>;
 }
 
-// A resposta da reserva agora traz o veículo aninhado (veiculo.modeloVeiculo),
-// no mesmo formato de GET /api/veiculo/:id.
 function resolveVeiculoNome(reserva) {
   const modeloVeiculo = reserva.veiculo?.modeloVeiculo ?? {};
   const marca = modeloVeiculo.marca ?? "";
@@ -69,9 +62,6 @@ function nomeGaragem(garagem, fallback) {
   return garagem?.nome || fallback || t("reservation.detail.garageMissing");
 }
 
-// Reserva paga e ainda nao desbloqueada leva para o desbloqueio; as demais,
-// para a avaliacao. O id vai no state — a tela de destino confirma o estado
-// real com o backend.
 function acaoDaReserva(reserva) {
   if (reserva.status === STATUS_RESERVA.AGUARDANDO_PAGAMENTO) {
     return { rota: "/pagamento", rotulo: t("payment.pay") };
@@ -88,8 +78,6 @@ function acaoDaReserva(reserva) {
   return null;
 }
 
-// Conveniência visual. O backend continua validando posse, estado e período
-// ao atender GET /reserva/:id/localizacao.
 function podeExibirRastreamento(reserva, agora = new Date()) {
   if (
     reserva.status !== STATUS_RESERVA.CONFIRMADA &&
@@ -120,11 +108,6 @@ async function copiarLink(link) {
   if (!copiado) throw new Error(t("reservation.share.copyError"));
 }
 
-/**
- * Lista de reservas do locatario, da mais recente para a mais antiga. Usada
- * tanto pelo "Historico" (todas as reservas) quanto por "Corridas Realizadas"
- * (somente as com status REALIZADA), via a prop somenteConcluidas.
- */
 export default function ReservasList({ title, documentTitle, somenteConcluidas = false, emptyMessage }) {
   const navigate = useNavigate();
   const idLocatario = getAuthSession()?.user?.id;

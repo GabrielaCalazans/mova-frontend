@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ThemeContext } from './theme-context';
 
-// Mesma chave das versões anteriores: "true" = escuro, "false" = claro.
-// Ausente = segue o sistema (prefers-color-scheme). O script de index.html
-// lê esta chave antes da primeira pintura para não piscar.
 const STORAGE_KEY = 'mova:tema-escuro:v2';
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 
@@ -38,8 +35,6 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     const root = document.documentElement;
-    // Congela transições durante a troca: sem isso cor e fundo animam em
-    // tempos diferentes e o texto some por um instante.
     root.setAttribute('data-theme-switching', '');
     const frame = window.requestAnimationFrame(() =>
       window.requestAnimationFrame(() => root.removeAttribute('data-theme-switching')),

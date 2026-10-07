@@ -30,6 +30,7 @@ src/
   utils/           # jornada (sessionStorage), validações, formatação
 e2e/               # Playwright (mock, real-api, real-media, edge path, happy path)
 scripts/           # task9-a11y.mjs (varredura axe/reflow/foco/zoom)
+docs/codigo/       # notas de implementação por área (antes eram comentários no código)
 ```
 
 ## Requisitos

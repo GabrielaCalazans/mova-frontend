@@ -183,8 +183,6 @@ export default function CadastroCarroForm() {
       ano: Number(values.ano),
       cambio: values.cambio,
       capacidade: Number(values.capacidade),
-      // Fonte de verdade do preco da reserva: o backend multiplica esta diaria
-      // pelo numero de diarias. Ver auditoria/PAGAMENTO.md.
       valorDiaria: Number(values.valorDiaria),
       eletrico: Boolean(values.eletrico),
       adaptado: Boolean(values.adaptado),
@@ -242,8 +240,6 @@ export default function CadastroCarroForm() {
           // Só as que falharam continuam selecionadas para nova tentativa.
           setImagensSelecionadas((atual) => atual.slice(enviadas));
           if (isNovo && veiculoSalvo?.id) {
-            // O veículo já existe: ficar em /novo levaria a um 409 de placa
-            // duplicada no reenvio. Segue para a edição do veículo criado.
             navigate(`/cadastro-carros/${veiculoSalvo.id}`, {
               replace: true,
               state: { aviso: t("owner.carForm.partialUpload") },
@@ -255,8 +251,6 @@ export default function CadastroCarroForm() {
       }
       navigate("/cadastro-carros");
     } catch (e) {
-      // Task 10 (BUG-14): reserva paga futura impede manutenção/inativação.
-      // O backend não mudou nada; a tela volta ao status salvo.
       if (e.code === "VEICULO_COM_RESERVA_FUTURA_CONFIRMADA") {
         handleChange("status", statusSalvo.current);
       }

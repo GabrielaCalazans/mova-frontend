@@ -20,8 +20,6 @@ vi.mock("./services/veiculoService", () => ({
   listVeiculos: vi.fn().mockResolvedValue([]),
 }));
 
-// As garagens deixaram de ser uma lista fixa no componente e passaram a vir de
-// GET /api/garagem. Os ids são UUIDs, como no backend.
 const LOCADOR_ID = "9a8b7c6d-5555-4e3f-2a1b-000000000099";
 
 const GARAGENS_MOCK = [
@@ -220,9 +218,6 @@ describe("Fluxo de autenticacao", () => {
     expect(await screen.findByRole("heading", { name: /escolha o tipo de carro/i })).toBeInTheDocument();
   });
 
-  // A retirada NÃO é escolha do usuário: o backend exige que
-  // idGaragemRetirada seja exatamente a garagem onde o veículo está alocado
-  // (ReservaService.resolverGaragemRetirada). A tela apenas mostra qual é.
   it("retirada usa a garagem do veículo, sem oferecer escolha", async () => {
     saveAuthSession({ token: "token-fake", user: authenticatedUser });
     window.sessionStorage.setItem(
@@ -260,8 +255,6 @@ describe("Fluxo de autenticacao", () => {
     expect(screen.getByRole("button", { name: /ir para devolução/i })).toBeDisabled();
   });
 
-  // A devolução é escolha do usuário, mas restrita: o backend exige que a
-  // garagem pertença ao locador dono do veículo (assertGaragemDevolucao).
   it("devolução lista apenas garagens do locador dono do veículo", async () => {
     saveAuthSession({ token: "token-fake", user: authenticatedUser });
     window.sessionStorage.setItem(
@@ -310,8 +303,6 @@ describe("Fluxo de autenticacao", () => {
     ).toBeInTheDocument();
   });
 
-  // A jornada é veículo-primeiro: o local de retirada sai do veículo, então
-  // entrar direto na etapa de garagem não faz sentido.
   it("sem veículo escolhido, a etapa de garagem volta para a escolha do carro", async () => {
     saveAuthSession({ token: "token-fake", user: authenticatedUser });
     window.sessionStorage.clear();

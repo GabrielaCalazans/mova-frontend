@@ -2,10 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError, apiRequest, apiRequestPaginado } from "./apiClient";
 import { consumeAuthFeedback, getAuthSession, saveAuthSession } from "./authSession";
 
-// O apiClient não tinha nenhuma cobertura: buildUrl, o parser de erro e o
-// header Authorization nunca eram exercitados. Estes testes cobrem o contrato
-// de erro e o consumo de paginação.
-
 function respostaJson(body, status = 200, responseHeaders = {}) {
   return {
     ok: status >= 200 && status < 300,

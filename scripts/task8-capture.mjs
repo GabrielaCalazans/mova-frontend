@@ -1,8 +1,3 @@
-// Task 8 — evidências visuais (light/dark × mobile/desktop).
-// Uso: node scripts/task8-capture.mjs <antes|depois> [filtro-de-tela]
-// Requer o front no ar (MOVA_BASE, padrão http://localhost:5180).
-// A API é respondida por fixtures no formato do contrato real (page.route),
-// igual à suíte e2e/public-home.spec.js: nenhuma tela do produto é alterada.
 import { chromium } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 

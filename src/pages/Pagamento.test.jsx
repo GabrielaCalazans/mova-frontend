@@ -6,10 +6,6 @@ import Pagamento from "./Pagamento";
 import { getReservaById, iniciarPagamento } from "../services/reservaService";
 import { getJourneyStep, updateJourneyStep } from "../utils/journeyStorage";
 
-// TASK 04 — a tela de pagamento nunca decide o resultado. Ela mostra o valor
-// que o backend calculou, envia o metodo e observa o statusPagamento.
-// Ver auditoria/PAGAMENTO.md.
-
 vi.mock("../services/reservaService", () => ({
   getReservaById: vi.fn(),
   getPagamentoReserva: vi.fn(),
@@ -204,8 +200,6 @@ describe("Pagamento", () => {
     expect(screen.queryByText(/Pagamento aprovado/i)).not.toBeInTheDocument();
   });
 
-  // 6. Erro da API
-  // Task 10.1 (Bug A): veículo indisponível → 409; nada de sucesso, botão segue disponível.
   it("veículo indisponível: mostra o motivo, não confirma e permite tentar de novo", async () => {
     iniciarPagamento.mockRejectedValue(Object.assign(
       new Error("O veículo desta reserva está indisponível no momento. O pagamento não foi confirmado e nenhum valor foi cobrado."),

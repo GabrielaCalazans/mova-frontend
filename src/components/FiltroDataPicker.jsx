@@ -40,10 +40,6 @@ function formatarData(data) {
   return formatDate(data, { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
-/**
- * Card "Selecione a Data" + popup de calendario, reutilizado em todos os
- * filtros de relatorio (Veiculos, Avaliacoes, etc.).
- */
 export default function FiltroDataPicker({ dataSelecionada, onChange }) {
   const [calOpen, setCalOpen] = useState(false);
   const [calRef, setCalRef] = useState(new Date());

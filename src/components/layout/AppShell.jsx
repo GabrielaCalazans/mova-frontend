@@ -15,11 +15,6 @@ import AccountMenu from "./AccountMenu";
 import { ShellContext } from "./shell-context";
 import "../../styles/shell.css";
 
-/**
- * Shell único do visitante e do locatário: cabeçalho com a marca oficial,
- * navegação no topo (≥1024 px) ou tab bar (mobile) e menu da conta.
- * As páginas desenham o próprio <main>; o shell só fornece o alvo de foco.
- */
 export default function AppShell({ children }) {
   const location = useLocation();
   const session = useAuthSession();

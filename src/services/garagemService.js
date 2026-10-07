@@ -7,11 +7,6 @@ function authHeaders() {
   return { authToken: session?.token };
 }
 
-/**
- * Lista garagens (somente locador dono / admin). Endpoint: GET /garagem
- * Suporta filtros: idLocador, nome, acessibilidade, capacidadeMin,
- * capacidadeMax, comVagasDisponiveis.
- */
 export async function listGaragens(filters = {}) {
   const params = new URLSearchParams();
   if (filters.idLocador) params.set("idLocador", filters.idLocador);
@@ -35,11 +30,6 @@ export async function getGaragemById(id) {
   return data.result ?? data;
 }
 
-/**
- * Cria uma garagem. Endpoint: POST /garagem
- * Campos esperados (createGaragemSchema): idLocador, nome, endereco,
- * capacidade (int > 0), acessibilidade? (bool).
- */
 export async function createGaragem(payload) {
   const data = await apiRequest("/garagem", {
     method: "POST",

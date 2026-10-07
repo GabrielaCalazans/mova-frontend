@@ -16,12 +16,6 @@ import "../styles/journey.css";
 import "../styles/payment.css";
 import "../styles/postcompra.css";
 
-// TASK 05 — esta tela NUNCA declara o veiculo desbloqueado por conta propria.
-// "Veiculo Desbloqueado" so aparece depois que POST /reserva/:id/desbloqueio
-// respondeu 200 (ou quando o GET da reserva ja traz codigoUsadoEm). O
-// sessionStorage e so um atalho para achar o id; o estado vem do backend.
-// Ver auditoria/DESBLOQUEIO.md.
-
 const TIMEOUT_GEO_MS = 8000;
 
 function idReservaDoQr(token) {
@@ -40,8 +34,6 @@ function idReservaDoQr(token) {
   }
 }
 
-// A posicao deve ser obtida no momento do pedido. Falhas do navegador
-// interrompem o envio; o backend continua responsavel por validar o raio.
 function obterCoordenadas() {
   return new Promise((resolve, reject) => {
     if (typeof navigator === "undefined" || !navigator.geolocation?.getCurrentPosition) {
@@ -86,10 +78,6 @@ function obterCoordenadas() {
   });
 }
 
-// Reserva que ainda pode ser desbloqueada: paga e confirmada (ou ja em
-// andamento). Quem ainda nao foi desbloqueada vem primeiro — e o que o usuario
-// veio fazer; entre iguais, a mais proxima do inicio. Usada so na recuperacao,
-// quando o estado local da jornada se perdeu.
 function escolherReservaDesbloqueavel(reservas) {
   return (
     [...reservas]
@@ -116,8 +104,6 @@ function formatarDataHora(valor) {
 export default function TelaDeDesbloqueio() {
   const navigate = useNavigate();
   const location = useLocation();
-  // Deep link do QR: /desbloqueio?qr=<token assinado>. O token carrega
-  // idReserva + codigo e e revalidado inteiro pelo backend.
   const qrToken = new URLSearchParams(location?.search || "").get("qr") || "";
 
   const [reserva, setReserva] = useState(null);
@@ -131,9 +117,6 @@ export default function TelaDeDesbloqueio() {
     document.title = t("reservation.unlock.documentTitle");
   }, []);
 
-  // Carrega a reserva pelo backend. O id vem do historico (location.state), da
-  // jornada em sessao ou — se os dois faltarem — da listagem do proprio
-  // locatario. O codigo exibido e sempre o que o backend devolveu.
   useEffect(() => {
     let ativo = true;
 
@@ -207,8 +190,6 @@ export default function TelaDeDesbloqueio() {
         ? await desbloquearReservaPorQr(reserva.id, qrToken, coord)
         : await desbloquearReserva(reserva.id, codigo.trim(), coord);
 
-      // So aqui o veiculo esta desbloqueado: e a reserva que o backend
-      // devolveu, com codigoUsadoEm preenchido e status EM_ANDAMENTO.
       setReserva(atualizada);
     } catch (error) {
       setErroDesbloqueio(

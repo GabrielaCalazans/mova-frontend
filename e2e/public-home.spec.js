@@ -1,17 +1,9 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-// Suíte de contrato: NUNCA fala com a API real (Task 8.1). Esta rota é
-// registrada antes das rotas de cada teste — o Playwright dá prioridade à
-// rota registrada por último —, então só captura o que o teste não mockou.
-// Responde 501 com código explícito e anota a URL no relatório.
 test.beforeEach(async ({ page }, testInfo) => {
   await page.route("**/api/**", async (route) => {
     const request = route.request();
-    // Chamada ambiente do AppShell (reserva ativa do locatário): sem reservas,
-    // no formato paginado real de GET /reserva/locatario/:id.
-    // Idem para listas paginadas consultadas em segundo plano pelo detalhe
-    // do veículo (serviços, favoritos, avisos) e pelo catálogo.
     if (request.method() === "GET" && /\/api\/(reserva\/locatario\/[^/?]+|servico|favorito|interesse|veiculo)(\?|$)/.test(request.url())) {
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ result: [], pagination: { total: 0, page: 1, limit: 100, totalPages: 0 } }) });
       return;
@@ -557,8 +549,6 @@ test("menu de conta mantém foco por teclado e devolve foco ao acionador", async
   });
 
   await page.goto("/");
-  // Task 8: o acionador mostra e anuncia "Conta" (antes aria-label "Menu"
-  // escondia o texto visível — WCAG 2.5.3); o menu mistura links e botões.
   const trigger = page.getByRole("button", { name: "Conta" });
   await trigger.click();
 
@@ -794,9 +784,6 @@ test("sessão revogada limpa credencial e expõe erro contextual", async ({ page
   await expect(page.getByRole("alert").first()).toContainText("Sessão revogada");
 });
 
-// GET /reserva/:id/pagamento — mesmo formato de PagamentoEstornoService.consultar
-// (mova-backend/src/services/pagamento-estorno.ts). O mesmo path com POST
-// inicia o pagamento; por isso os handlers abaixo distinguem o método.
 function pagamentoConsulta(reserva, extra = {}) {
   const pago = reserva.statusPagamento === "SUCESSO";
   return {
@@ -823,8 +810,6 @@ function seedRenterJourney(page, reservationId, dates = {}) {
   return page.addInitScript(({ id, pickup, dropoff }) => {
     window.localStorage.setItem("mova_auth_session", JSON.stringify({
       token: "renter-token",
-      // O veículo da fixture é adaptado: sem deficiência declarada o backend
-      // recusaria a reserva (RN01) e o checkout pede a declaração.
       user: { id: "renter-1", cargo: "LOCATARIO", deficienciaId: "deficiencia-1" },
     }));
     window.sessionStorage.setItem("mova_journey_flow", JSON.stringify({

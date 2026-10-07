@@ -12,8 +12,6 @@ export function useAuthSession() {
     });
     window.addEventListener(AUTH_SESSION_CHANGED_EVENT, refresh);
     window.addEventListener("storage", refresh);
-    // A sessão pode ter mudado entre a primeira renderização e esta inscrição
-    // (ex.: subárvore suspensa carregando um chunk): sincroniza ao assinar.
     refresh();
     return () => {
       window.removeEventListener(AUTH_SESSION_CHANGED_EVENT, refresh);

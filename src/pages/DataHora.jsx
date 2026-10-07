@@ -55,9 +55,6 @@ export default function EscolhaDataHora() {
         document.title = "MOVA - Data e Horário";
     }, []);
 
-    // ════════════════════════════════════════════════════
-    //  CALENDÁRIO
-    // ════════════════════════════════════════════════════
     const MONTHS = [
         'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
         'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
@@ -101,9 +98,6 @@ export default function EscolhaDataHora() {
         setCalOpen(false);
     };
 
-    // ════════════════════════════════════════════════════
-    //  RELÓGIO
-    // ════════════════════════════════════════════════════
     const RADIUS = 78;
     const CX = 100, CY = 100;
 
@@ -171,9 +165,6 @@ export default function EscolhaDataHora() {
         setClockOpen(false);
     };
 
-    // ════════════════════════════════════════════════════
-    //  SUBMIT
-    // ════════════════════════════════════════════════════
     const handleSubmit = (e) => {
         e.preventDefault();
         if (data && hora) navigate('/pagamento');
@@ -182,9 +173,6 @@ export default function EscolhaDataHora() {
     const days = buildDays();
     const nums = buildNumbers();
 
-    // ════════════════════════════════════════════════════
-    //  RENDER
-    // ════════════════════════════════════════════════════
     return (
         <AuthenticatedLayout>
 

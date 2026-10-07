@@ -1,9 +1,5 @@
 import { t } from "../../i18n";
 
-// Assets oficiais de mova-identidade-visual, publicados em /public/brand.
-// Cada variante tem versão clara e escura; o CSS (.brand-img--light/--dark)
-// mostra a correta para o tema efetivo. Um único nome acessível fica no
-// invólucro, para o leitor de tela não anunciar a marca duas vezes.
 const VARIANTS = {
   header: { file: "logo-header.png", width: 585, height: 180 },
   loading: { file: "logo-loading.png", width: 640, height: 480 },

@@ -25,8 +25,6 @@ export function vehicleTitle(vehicle) {
   return [resolveVehicleField(vehicle, "marca"), resolveVehicleField(vehicle, "modelo")].filter(Boolean).join(" ") || t("common.vehicle.fallbackName");
 }
 
-// RN01 (backend, services/reserva.ts): adaptado OU categoria PCD exige
-// deficiência declarada. A UI usa o mesmo predicado.
 export function isVeiculoPcd(vehicle) {
   return resolveVehicleField(vehicle, "adaptado") === true || resolveVehicleField(vehicle, "categoria") === "PCD";
 }
@@ -66,12 +64,6 @@ export function resolveTipoIcon(tipoFiltro) {
   return economicoImg;
 }
 
-/**
- * Imagem do veículo sem inventar: 1) foto real da API (com alt do locador);
- * 2) foto ilustrativa empacotada do mesmo modelo, rotulada como tal;
- * 3) nenhuma — a UI mostra um marcador "sem foto" em vez de um ícone de
- * categoria fingindo ser o carro.
- */
 export function resolveVehicleImages(vehicle) {
   const marca = resolveVehicleField(vehicle, "marca") || "";
   const modelo = resolveVehicleField(vehicle, "modelo") || "";

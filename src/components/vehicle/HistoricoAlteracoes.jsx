@@ -3,8 +3,6 @@ import { formatCurrency, formatDate, t } from "../../i18n";
 import { rotulo, STATUS_VEICULO_LABELS } from "../../services/apiEnums";
 import { listHistoricoVeiculo } from "../../services/auditoriaService";
 
-// RN09: trilha de auditoria do veículo, só leitura. Mostra quem (cargo), quando,
-// a operação e os campos que mudaram (antes → depois).
 function valor(campo, bruto, garagens) {
   if (bruto === null || bruto === undefined || bruto === "") return t("owner.history.empty");
   if (campo === "status") return rotulo(STATUS_VEICULO_LABELS, bruto);

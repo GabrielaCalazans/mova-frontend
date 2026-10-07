@@ -1,8 +1,3 @@
-/* =============================================================================
-   MOVA — pagamento (Task 8). Reaproveita journey.css (resumo, layout) e
-   base.css (campos, alertas). Aqui só o que é próprio do pagamento.
-   ========================================================================== */
-
 /* No mobile o resumo (o que e quanto) vem antes do formulário. */
 .pay-layout .journey-layout__aside { order: -1; }
 @media (min-width: 1024px) { .pay-layout .journey-layout__aside { order: 0; } }

@@ -12,11 +12,6 @@ import {
 import { getJourneyStep, updateJourneyStep } from "../utils/journeyStorage";
 import { getAuthSession } from "../services/authSession";
 
-// TASK 05 — a tela nunca decide o desbloqueio. Ela mostra o codigo que o
-// backend gerou, envia o que o usuario digitou e so anuncia "Veiculo
-// Desbloqueado" com a reserva que o POST devolveu.
-// Ver auditoria/DESBLOQUEIO.md.
-
 vi.mock("../services/reservaService", () => ({
   getReservaById: vi.fn(),
   listReservasDoLocatario: vi.fn(),
@@ -165,8 +160,6 @@ describe("DesbloqueioDeCarro", () => {
     );
   });
 
-  // 4. Recusas do backend (expirado, antes do horario, ja usado, geofence):
-  // a tela repassa a mensagem e nunca inventa sucesso.
   it.each([
     ["expirado", "Código de desbloqueio expirado."],
     [

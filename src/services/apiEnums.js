@@ -1,12 +1,5 @@
-// Espelho dos enums do backend (prisma/schema.prisma). Fonte única de verdade
-// no frontend: nenhum componente deve escrever um literal de enum solto.
-//
-// Regra: o CÓDIGO é o que trafega na API; o RÓTULO é só para exibição.
-// Ver auditoria/CONTRATO-FRONTEND-BACKEND.md.
 import { t } from "../i18n";
 
-// Mapas de rótulo com getters: cada leitura traduz no idioma ativo (RNF08),
-// mantendo o formato { CODIGO: "Rótulo" } que as telas já usam.
 function labels(group, codes) {
   return Object.defineProperties(
     {},
@@ -25,11 +18,6 @@ export const STATUS_RESERVA = {
 
 export const STATUS_RESERVA_LABELS = labels("statusReserva", Object.values(STATUS_RESERVA));
 
-/**
- * Task 10 (D10-02/D10-03): espelho do prazo de pagamento do backend
- * (mova-backend/src/shared/prazo-pagamento.ts). Só para exibição: quem expira
- * a reserva e a tentativa é sempre o backend.
- */
 export const PRAZO_PAGAMENTO_MINUTOS = 15;
 
 /** enum StatusPagamento — schema.prisma. Somente leitura: o cliente nunca envia. */
@@ -42,11 +30,6 @@ export const STATUS_PAGAMENTO = {
 
 export const STATUS_PAGAMENTO_LABELS = labels("statusPagamento", Object.values(STATUS_PAGAMENTO));
 
-/**
- * enum MetodoPagamento — schema.prisma.
- * O backend NÃO possui boleto; não ofereça essa opção sem antes adicionar o
- * valor ao enum do banco (migration).
- */
 export const METODO_PAGAMENTO = {
   CARTAO_CREDITO: "CARTAO_CREDITO",
   CARTAO_DEBITO: "CARTAO_DEBITO",
@@ -91,10 +74,6 @@ export const TIPO_COBRANCA_LABELS = labels("tipoCobranca", ["CANCELAMENTO", "ATR
 /** enum StatusNotificacao — schema.prisma */
 export const STATUS_NOTIFICACAO_LABELS = labels("statusNotificacao", ["PENDENTE", "ENVIADA", "FALHA"]);
 
-/**
- * Rótulo de exibição. Código desconhecido (enum novo no backend) vira texto
- * legível em vez de aparecer cru: "NOVO_STATUS" → "Novo status".
- */
 export function rotulo(mapa, codigo) {
   if (!codigo) return "";
   if (mapa[codigo]) return mapa[codigo];

@@ -36,16 +36,6 @@ const TOM_PAGAMENTO = {
   [STATUS_PAGAMENTO.FALHA]: "danger",
 };
 
-// Pagamento em SANDBOX.
-//
-// O frontend nunca declara o resultado: envia o método (e, para cartão, os
-// dados de teste) e o backend decide, registra a cobrança e entrega o desfecho
-// ao gateway simulado, que responde por webhook assinado. Aqui só se observa o
-// statusPagamento até ele sair de PROCESSANDO.
-//
-// Nenhuma credencial ou segredo de assinatura vive no frontend.
-// Ver auditoria/PAGAMENTO.md.
-
 const QR_PATTERN = [
   1, 1, 1, 1, 1, 1, 1,
   1, 0, 0, 0, 0, 0, 1,
@@ -68,8 +58,6 @@ const METODOS_COM_CARTAO = [
   METODO_PAGAMENTO.CARTAO_DEBITO,
 ];
 
-// Enquanto o gateway não decide, a reserva fica PROCESSANDO. Observa-se até
-// resolver; se não resolver, o usuário acompanha pelo histórico.
 const INTERVALO_POLLING_MS = 2000;
 const TENTATIVAS_POLLING = 15;
 
@@ -81,8 +69,6 @@ function formatValidade(value) {
   return value.replace(/\D/g, "").slice(0, 4).replace(/^(\d{2})(\d)/, "$1/$2");
 }
 
-// Espelha o schema do backend (pagamento.schema.ts) para não exibir as
-// mensagens em inglês do Zod; o cartão vale até o fim do mês de validade.
 function validarCartao({ numero, nome, validade, cvv }, hoje = new Date()) {
   if (numero.replace(/\D/g, "").length < 13) return t("payment.card.errors.number");
   if (nome.trim().length < 3) return t("payment.card.errors.holder");
@@ -132,8 +118,6 @@ export default function Pagamento() {
   }, []);
 
   useEffect(() => {
-    // Sem reserva na jornada nao ha o que carregar; o estado e derivado no
-    // render (SEM_RESERVA), nao por setState dentro do efeito.
     if (!reservaId) return;
 
     getReservaById(reservaId)
@@ -163,14 +147,9 @@ export default function Pagamento() {
       .finally(() => {
         if (montado.current) setCarregando(false);
       });
-    // Acompanhamento deve iniciar uma vez por reserva; incluir a função recriada
-    // em cada render reiniciaria o polling e poderia duplicar timers.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reservaId]);
 
-  // Observa a reserva até o gateway decidir. Só o backend muda esse status.
-  // Laço agendado (nao recursivo) para nao depender de uma funcao antes de ela
-  // existir — e para poder ser cancelado na desmontagem.
   const acompanhar = (tentativasRestantes) => {
     if (tentativasRestantes <= 0) {
       setProcessando(false);
@@ -247,8 +226,6 @@ export default function Pagamento() {
 
     setProcessando(true);
 
-    // Só o MEIO e os dados de teste. Nada de valor, status ou resultado: o
-    // backend calcula o valor pela reserva e decide o desfecho.
     iniciarPagamento(reservaId, {
       metodoPagamento: metodo,
       ...(usaCartao
@@ -607,8 +584,6 @@ export default function Pagamento() {
   );
 }
 
-// Diálogo modal do QR ilustrativo: foco no botão de fechar, Esc fecha e o
-// Tab fica preso no único controle (é o único elemento focável).
 function PixDialog({ onClose }) {
   const closeRef = useRef(null);
   useEffect(() => { closeRef.current?.focus(); }, []);

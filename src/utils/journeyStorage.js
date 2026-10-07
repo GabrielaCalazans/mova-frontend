@@ -34,8 +34,6 @@ const EMPTY_RESERVA = {
   codigoDesbloqueio: "",
 };
 
-// IDs dos serviços opcionais escolhidos. A tela de seleção ainda não existe;
-// a estrutura fica pronta para o POST /reserva já enviar servicosIds.
 const EMPTY_SERVICOS = {
   ids: [],
 };

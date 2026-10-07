@@ -7,9 +7,6 @@ import {
   rotulo,
 } from "./apiEnums";
 
-// Estes testes travam o contrato de enums contra o backend
-// (prisma/schema.prisma). Se alguém reintroduzir um literal divergente,
-// a suíte quebra aqui em vez de quebrar em produção.
 describe("apiEnums — paridade com o backend", () => {
   it("StatusReserva usa REALIZADA (e não CONCLUIDA)", () => {
     expect(STATUS_RESERVA.REALIZADA).toBe("REALIZADA");

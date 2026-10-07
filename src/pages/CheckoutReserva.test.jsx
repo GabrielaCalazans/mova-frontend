@@ -168,8 +168,6 @@ describe("CheckoutReserva — RNF08 (idiomas)", () => {
   });
 });
 
-// Task 11 (T11-P2): sem data de retirada o checkout mostrava o TypeError de
-// `toISOString`; agora mostra a mesma validação do botão Confirmar.
 describe("CheckoutReserva — jornada sem período (Task 11)", () => {
   const retiradaOriginal = journey.retirada;
   beforeEach(() => {

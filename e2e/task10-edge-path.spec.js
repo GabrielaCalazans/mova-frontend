@@ -1,10 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { execFileSync } from "node:child_process";
 
-// Task 10 — "edge path": as regras de negócio da Task 10 no navegador, contra a
-// API local real em mova_test. Opt-in como o real-api.spec.js:
-// MOVA_REAL_API_E2E=1 e MOVA_REAL_API_DB_OVERRIDE=1 (o relógio da reserva é
-// adiantado no banco de TESTE, nunca esperando 15 minutos de verdade).
 const env = globalThis.process?.env ?? {};
 const enabled = env.MOVA_REAL_API_E2E === "1" && env.MOVA_REAL_API_DB_OVERRIDE === "1";
 const apiBaseUrl = env.MOVA_API_BASE_URL || "http://localhost:3000/api";

@@ -3,15 +3,6 @@ import { createPortal } from "react-dom";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-/**
- * Diálogo modal acessível.
- * - Renderizado em portal no <body>; enquanto aberto, #root fica `inert`
- *   (fundo sem foco, clique ou leitura por tecnologia assistiva).
- * - Foco entra no elemento com `data-autofocus` (ou no primeiro focável).
- * - Tab e Shift+Tab circulam só dentro do painel; Escape fecha.
- * - Ao fechar, o foco volta ao acionador; se ele saiu do DOM (ex.: item
- *   excluído), vai para o conteúdo principal.
- */
 export default function ModalDialog({ role = "dialog", labelledBy, describedBy, onClose, closeDisabled = false, className = "", panelClassName = "", children }) {
   const panelRef = useRef(null);
   const onCloseRef = useRef(onClose);

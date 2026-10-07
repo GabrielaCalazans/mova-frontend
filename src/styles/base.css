@@ -1,11 +1,3 @@
-/* =============================================================================
-   MOVA — base, tipografia, utilitários e primitivas (Task 8).
-   Portado de mova-prototype/src/styles/global.css e ajustado ao produto real.
-   Regras: superfícies neutras carregam as grandes áreas; o azul fica com a
-   hierarquia e a ação; raio pequeno; sombra só em sobreposição real (menu,
-   folha, diálogo). Componentes consomem tokens semânticos de tokens.css.
-   ========================================================================== */
-
 *,
 *::before,
 *::after { box-sizing: border-box; }
@@ -208,8 +200,6 @@ input, textarea { caret-color: var(--action-primary); }
 .fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 .fieldset > legend { font-size: var(--text-label); font-weight: var(--weight-semibold); padding: 0 0 var(--space-2); }
 
-/* ---------------------------------------------------------------- distintivo */
-/* Só o que muda a decisão: acessibilidade, energia e status. Sempre com texto. */
 .badge {
   display: inline-flex; align-items: center; gap: var(--space-1);
   padding: 2px var(--space-2); border-radius: var(--radius-xs); border: 1px solid transparent;
@@ -235,9 +225,6 @@ input, textarea { caret-color: var(--action-primary); }
 .alert--warning { background: var(--feedback-warning-bg); color: var(--feedback-warning-fg); }
 .alert--danger { background: var(--feedback-danger-bg); color: var(--feedback-danger-fg); }
 .alert--info { background: var(--feedback-info-bg); color: var(--feedback-info-fg); }
-/* RNF13: além da cor, cada variante tem um símbolo fixo (✓ sucesso, ✕ erro,
-   ! alerta, i informação). Só quando a mensagem não traz ícone próprio; o
-   texto alternativo vazio ("/ \"\"") evita que leitores de tela o anunciem. */
 .alert:not(:has(> svg))::before,
 .auth-feedback::before {
   flex: none; display: inline-grid; place-items: center;
@@ -322,9 +309,6 @@ details.disclosure > div { padding: 0 var(--space-4) var(--space-4); color: var(
 .themetoggle--labeled { display: flex; width: 100%; max-width: 26rem; }
 .themetoggle--labeled .themetoggle__opt { flex: 1 1 0; min-width: 0; padding-inline: var(--space-2); }
 
-/* ---------------------------------------------------------------- marca */
-/* Os PNGs oficiais têm versão clara e escura; a troca segue o tema efetivo
-   (data-theme explícito ou prefers-color-scheme) sem depender de JS. */
 .brand-img { display: block; height: auto; max-width: 100%; }
 .brand-img--dark { display: none; }
 :root[data-theme="dark"] .brand-img--light { display: none; }

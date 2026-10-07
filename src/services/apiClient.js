@@ -1,10 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.API_BASE_URL;
 
-/**
- * Erro de API com o status HTTP preservado. Antes o cliente lançava um Error
- * genérico e quem chamava só conseguia distinguir 401 de 500 por regex na
- * mensagem. Ver auditoria/CONTRATO-FRONTEND-BACKEND.md.
- */
 import { clearAuthSession, saveAuthFeedback } from "./authSession";
 import { getLocale, t } from "../i18n";
 
@@ -46,10 +41,6 @@ function parseApiErrorMessage(payload) {
   }
 
   if (typeof payload === "object") {
-    // Erros de validacao (Zod) vem como { message: "Invalid Data Format",
-    // errors: [{ path: [...], message: "..." }, ...] }. O "message" sozinho
-    // e generico; o detalhe util (qual campo, qual regra falhou) esta em
-    // "errors". Priorizamos montar uma mensagem legivel a partir dele.
     if (Array.isArray(payload.errors) && payload.errors.length > 0) {
       const detalhes = payload.errors
         .map((issue) => {
@@ -184,8 +175,6 @@ export async function apiRequest(path, options = {}) {
 
   if (!response.ok) {
     const parsedMessage = parseApiErrorMessage(payload);
-    // Task 11: erro interno do servidor nunca vira texto técnico na tela
-    // ("Internal Server Error"); o requestId continua no console para suporte.
     const message = response.status >= 500
       ? t("errors.generic")
       : parsedMessage || t("errors.apiHttp", { status: response.status });
@@ -215,19 +204,6 @@ export async function apiRequest(path, options = {}) {
   return payload;
 }
 
-/**
- * Consome uma listagem paginada do backend seguindo o pagination.totalPages.
- *
- * Todas as listagens da API respondem
- *   { result: [...], pagination: { total, page, limit, totalPages } }
- * com limit padrao 10. Antes o frontend lia so "result" e silenciosamente
- * mostrava no maximo 10 itens. Aqui a metadata e de fato interpretada.
- *
- * @param {string} path caminho, podendo ja conter query string
- * @param {object} options repassado ao apiRequest (authToken, etc.)
- * @param {{limit?: number, maxPaginas?: number}} opcoes limit maximo da API e 100
- * @returns {Promise<Array>} todos os itens, de todas as paginas
- */
 export async function apiRequestPaginado(
   path,
   options = {},

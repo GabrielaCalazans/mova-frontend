@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { apiRequest } from "../services/apiClient";
 
-// Proteção de regressão (Task 8.1): a suíte unitária nunca fala com a API
-// real, esteja o backend local ligado ou não.
 describe("isolamento de rede dos testes unitários", () => {
   it("usa uma base de API que não resolve e não é o backend local", () => {
     expect(import.meta.env.VITE_API_BASE_URL).toBe("http://mova-api.test.invalid/api");

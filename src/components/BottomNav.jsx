@@ -10,10 +10,6 @@ import AccountMenu from "./layout/AccountMenu";
 import { isNavItemActive, renterNavItems } from "./layout/navItems";
 import { t } from "../i18n";
 
-/**
- * Tab bar do locatário. Dentro do AppShell só a instância do próprio shell
- * (shellOwned) renderiza; chamadas legadas nas páginas viram no-op.
- */
 export default function BottomNav({ activeReservation: providedReservation, shellOwned = false, onOpenMenu, menuOpen } = {}) {
   const location = useLocation();
   const session = useAuthSession();

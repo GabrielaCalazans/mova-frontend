@@ -6,9 +6,6 @@ import { getReservaById } from "../services/reservaService";
 import { getJourneyStep } from "../utils/journeyStorage";
 import { setLocale } from "../i18n";
 
-// RNF08 — o ciclo da reserva acompanha o idioma: textos, datas no formato do
-// locale e moeda sempre em BRL.
-
 vi.mock("../services/reservaService", () => ({
   criarCompartilhamentoReserva: vi.fn(),
   getPagamentoReserva: vi.fn(),

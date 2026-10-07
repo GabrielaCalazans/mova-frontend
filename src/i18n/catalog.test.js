@@ -2,8 +2,6 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// RNF08: garante que os três idiomas têm exatamente as mesmas chaves e que toda
-// chave literal usada em t("...") existe no dicionário padrão (pt-BR).
 const LOCALES_DIR = join(globalThis.process.cwd(), "src", "i18n", "locales");
 const SRC = join(globalThis.process.cwd(), "src");
 

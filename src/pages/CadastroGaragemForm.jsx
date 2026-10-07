@@ -95,8 +95,6 @@ export default function CadastroGaragemForm() {
       }
       navigate("/cadastro-garagens");
     } catch (e) {
-      // Task 10.1 (Bug B): garagem ainda necessária a reservas confirmadas.
-      // O backend não mudou nada; a tela volta ao status salvo.
       if (e.code === "GARAGEM_COM_RESERVA_FUTURA_CONFIRMADA") {
         setValues((atual) => ({ ...atual, status: statusSalvo.current }));
         setErro(t("owner.garageForm.futureBookingBlocksStatus"));

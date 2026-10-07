@@ -10,9 +10,6 @@ import executivoImg from "../assets/car-types/automaticos.png";
 import adaptadoImg from "../assets/car-types/adaptados.png";
 import eletricoImg from "../assets/car-types/autonomos.png";
 
-// Todas as categorias visíveis de uma vez: o carrossel de uma opção por vez
-// escondia escolhas e exigia setas para descobrir o catálogo.
-// Nome e dica saem de catalog.types.<id> no render (idioma pode mudar).
 const TIPOS = [
   { id: "economico", img: economicoImg },
   // A ilustração é decorativa; a categoria real vem do filtro enviado à API.

@@ -1,8 +1,3 @@
-// Icones customizados fornecidos para o menu inferior (icone-01 a icone-05).
-// O fill original (#003366 / black) foi trocado por currentColor, para que a
-// cor acompanhe o CSS do botao (estado ativo, tema claro/escuro etc.), do
-// mesmo jeito que os icones do lucide-react já usados no resto do app.
-
 export function Icone01({ size = 24, ...props }) {
   return (
     <svg width={size} height={size} viewBox="0 0 35 35" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>

@@ -807,9 +807,6 @@ test.describe("integração browser com API local real", () => {
     );
     const reservationId = reservation.id;
     try {
-      // A API de produção exige início futuro na criação e não permite editar
-      // uma reserva paga. O override abaixo é exclusivamente de teste e aborta
-      // fora do banco mova_test; o desbloqueio continua passando pelo HTTP real.
       moveReservationWindowIntoTestPeriod(reservationId);
 
       const paymentResponse = await page.request.post(`${apiBaseUrl}/reserva/${reservationId}/pagamento`, {

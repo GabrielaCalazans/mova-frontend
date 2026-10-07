@@ -1,10 +1,5 @@
 import styled, { css, keyframes } from 'styled-components';
 
-/* MOVA — componentes styled legados (Task 8).
-   Mesmos nomes e elementos de antes; visual só por tokens semânticos de
-   tokens.css (claro/escuro trocam sozinhos). Sem gradiente, raio <= 8 px,
-   sombra só em sobreposição real (diálogo/popup). */
-
 const BaseInputStyles = css`
   width: 100%;
   min-height: var(--control-h);

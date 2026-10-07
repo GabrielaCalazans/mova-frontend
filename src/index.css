@@ -2,12 +2,6 @@
 @import "./styles/tokens.css";
 @import "./styles/base.css";
 
-/* Camada de compatibilidade (Task 8).
-   As telas antigas e os styled-components (authStyle.js) consomem nomes
-   legados (--color-*, --mova-*). Em vez de duplicar paletas por tema, cada
-   nome legado aponta para um token semântico — que já troca entre claro e
-   escuro em tokens.css. Assim não existe mais um segundo sistema de cores:
-   #003366 e #D0E7FF chegam a todas as telas pela mesma fonte. */
 :root {
   --font-family-base: var(--font-sans);
 

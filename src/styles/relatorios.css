@@ -1,9 +1,3 @@
-/* =============================================================================
-   MOVA — relatórios do locador e seletor de data (Task 8). Só tokens.
-   Gráficos (recharts) recebem cor por CSS: as propriedades vencem os atributos
-   de apresentação do SVG, então claro/escuro trocam sem JS.
-   ========================================================================== */
-
 /* Select legado ainda usado no cadastro de conta (Cadastro.jsx). */
 .filtro-select {
   width: 100%; min-height: var(--control-h);

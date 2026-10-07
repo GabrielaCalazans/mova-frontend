@@ -2,17 +2,6 @@ import { t } from "../i18n";
 import { apiRequest, apiRequestPaginado } from "./apiClient";
 import { getAuthSession } from "./authSession";
 
-/**
- * Normaliza um veículo do novo modelo da API, onde os dados descritivos
- * ficam em modeloVeiculo (objeto aninhado), mantendo compatibilidade com
- * o restante do front-end que acessa marca, modelo, ano, etc. no nível raiz.
- *
- * Novo formato: { id, idLocador, idModeloVeiculo, modeloVeiculo: { marca, modelo, ano, cambio,
- *   capacidade, eletrico, adaptado, ... }, garagemId, placa, status, criadoEm }
- *
- * @param {Object} veiculo - Objeto bruto retornado pela API
- * @returns {Object} Objeto normalizado com todos os campos no nível raiz
- */
 export function normalizeVeiculo(veiculo) {
   if (!veiculo) return veiculo;
 
@@ -39,8 +28,6 @@ export function normalizeVeiculo(veiculo) {
     eletrico: mv.eletrico ?? veiculo.eletrico,
     adaptado: mv.adaptado ?? veiculo.adaptado,
     categoria: mv.categoria ?? veiculo.categoria,
-    // Preco da diaria: vive no modelo e e a base do calculo do valor da
-    // reserva no backend. Ver auditoria/PAGAMENTO.md.
     valorDiaria: mv.valorDiaria ?? veiculo.valorDiaria,
 
     // Mantém o objeto aninhado para acesso direto quando necessário
@@ -100,11 +87,6 @@ export async function deleteImagemVeiculo(id, imagemId) {
   });
 }
 
-/**
- * Lista veículos autenticados (com token do locatário/admin).
- * Endpoint: GET /veiculo/
- * Os mesmos filtros de searchVeiculos se aplicam, além de idLocador e garagemId.
- */
 export async function listVeiculos(filters = {}) {
   const params = new URLSearchParams();
   if (filters.marca)      params.set("marca", filters.marca);
@@ -124,11 +106,6 @@ export async function listVeiculos(filters = {}) {
   return itens.map(normalizeVeiculo);
 }
 
-/**
- * Lista frota privada do locador autenticado, incluindo todos os status.
- * O backend deriva o proprietário do JWT; não enviar idLocador do cliente.
- * Endpoint: GET /veiculo/meus
- */
 export async function listFrota() {
   const session = getAuthSession();
   const itens = await apiRequestPaginado("/veiculo/meus", {
@@ -137,12 +114,6 @@ export async function listFrota() {
   return itens.map(normalizeVeiculo);
 }
 
-/**
- * Cria um veículo novo (uso do locador). Endpoint: POST /veiculo
- * Campos esperados (createVeiculoSchema no backend): idLocador, placa, marca,
- * modelo, ano, cambio, capacidade, valorDiaria, status?, eletrico, adaptado,
- * categoria?.
- */
 export async function createVeiculo(payload) {
   const session = getAuthSession();
   const authToken = session?.token;
@@ -156,12 +127,6 @@ export async function createVeiculo(payload) {
   return normalizeVeiculo(data.result ?? data);
 }
 
-/**
- * Atualiza veículo e, opcionalmente, seu bloco de catálogo de forma
- * coordenada. Endpoint: PUT /veiculo/:id
- * Contrato: { placa?, status?, garagemId?, modelo?: { marca?, modelo?, ano?,
- * cambio?, capacidade?, valorDiaria?, eletrico?, adaptado?, categoria? } }.
- */
 export async function updateVeiculo(id, payload) {
   if (!id) {
     throw new Error(t("errors.missingVehicleId"));
@@ -179,9 +144,6 @@ export async function updateVeiculo(id, payload) {
   return normalizeVeiculo(data.result ?? data);
 }
 
-/**
- * Remove um veículo. Endpoint: DELETE /veiculo/:id
- */
 export async function deleteVeiculo(id) {
   if (!id) {
     throw new Error(t("errors.missingVehicleId"));
@@ -196,10 +158,6 @@ export async function deleteVeiculo(id) {
   });
 }
 
-/**
- * Busca os detalhes completos de um veículo pelo id.
- * Endpoint: GET /veiculo/:id
- */
 export async function getVeiculoById(id) {
   if (!id) {
     throw new Error(t("errors.missingVehicleId"));

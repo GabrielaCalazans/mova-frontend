@@ -18,8 +18,6 @@ describe("i18n", () => {
   });
 
   it("cai para pt-BR quando falta a chave no idioma ativo, e para a própria chave quando falta em todos", async () => {
-    // Instância nova do módulo: o en/common.json mockado (sem "hint") é o que
-    // loadLocale carrega, como acontece com o chunk sob demanda no app.
     vi.resetModules();
     const i18n = await import("./index.js");
     await i18n.loadLocale("en");

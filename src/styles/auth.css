@@ -1,12 +1,3 @@
-/* =============================================================================
-   MOVA — telas de formulário (Task 8).
-   Fora do shell (login, cadastro, recuperação): coluna única centralizada,
-   marca oficial no topo, h1 de 32 px, rótulo sempre visível acima do campo.
-   Dentro do shell (.auth-page--in-shell: Conta, Configurações, Suporte e
-   formulários da jornada): só conteúdo, alinhado à esquerda, seções entre
-   réguas de 1 px. Só tokens semânticos; os dois temas vêm de tokens.css.
-   ========================================================================== */
-
 /* ---------------------------------------------------------------- moldura */
 .auth-page {
   display: flex;

@@ -1,13 +1,6 @@
 import { useId } from "react";
 import { LOCALES, changeLocale, t, useLocale } from "../../i18n";
 
-/**
- * Seletor de idioma nativo (teclado, leitor de tela e mobile de graça).
- * Cada opção aparece no próprio idioma; `lang` na opção ajuda a pronúncia.
- * `labeled` mostra o rótulo visível (Configurações e menu de conta); sem ele,
- * o controle é compacto (cabeçalho): sigla visível, nome completo como nome
- * acessível da opção.
- */
 export default function LanguageSelect({ labeled = false, className = "" }) {
   const id = useId();
   const locale = useLocale();

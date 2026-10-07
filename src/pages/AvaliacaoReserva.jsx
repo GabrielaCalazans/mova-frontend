@@ -37,10 +37,6 @@ function formatarDataHora(valor) {
 export default function AvaliacaoReserva() {
   const location = useLocation();
 
-  // A tela e alcancada de duas formas: (1) logo apos o desbloqueio, no
-  // fluxo linear de reserva (dados ainda na journeyStorage da sessao), ou
-  // (2) clicando numa reserva concluida no Historico (recebe o id via
-  // location.state). Nos dois casos, o id real da reserva manda.
   const veiculoJourney = getJourneyStep("veiculo");
   const reservaId = location.state?.reservaId || getJourneyStep("reserva")?.id;
   const semReservaId = !reservaId;

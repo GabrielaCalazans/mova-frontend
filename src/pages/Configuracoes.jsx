@@ -9,9 +9,6 @@ import { getUserCargo } from '../services/authIdentity';
 import { definirPreferencia, listarPreferencias } from '../services/notificacaoService';
 import { Section, SectionTitle, Row, Label, Toggle } from '../styles/authStyle';
 
-// Só o que o backend realmente entrega: e-mail (CanalNotificacao.EMAIL).
-// Push/SMS existem no enum, mas nenhum serviço os envia — não são oferecidos.
-// Rótulo e dica vêm de common.settings.prefs.<tipo> (traduzidos no render).
 const PREFERENCIAS = {
   LOCATARIO: ['RESERVA', 'VEICULO_DISPONIVEL'],
   LOCADOR: ['ALERTA_VEICULO'],

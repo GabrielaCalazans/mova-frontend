@@ -15,10 +15,6 @@ export function findActiveReservation(reservas = []) {
     })[0] ?? null;
 }
 
-/**
- * Reserva ativa vem sempre da API. A sessão só fornece a identidade para o
- * endpoint escopado; não é fonte de verdade para status ou datas.
- */
 export function useActiveReservation({ enabled = true, refreshKey = "" } = {}) {
   const session = getAuthSession();
   const token = session?.token || "";
@@ -47,8 +43,6 @@ export function useActiveReservation({ enabled = true, refreshKey = "" } = {}) {
   }, [locatarioId, requestKey, shouldLoad]);
 
   if (state.key === requestKey) return state;
-  // Recarregando para a mesma identidade (troca de rota): mantém a última
-  // reserva conhecida para a aba "Alugar" não piscar. Outra identidade: zera.
   const sameIdentity = shouldLoad && state.key.startsWith(`${token}:${locatarioId}:`);
   return { key: requestKey, loading: shouldLoad, reservation: sameIdentity ? state.reservation : null, error: null };
 }

@@ -1,10 +1,3 @@
-/* =============================================================================
-   MOVA — área do locador (Task 8). Modo "operar": leitura rápida, réguas de
-   1 px, números tabulares, sem cartão dentro de cartão. Cabeçalho e navegação
-   do locador vivem em shell.css; aqui só o conteúdo das páginas.
-   Só tokens semânticos (tokens.css); claro e escuro trocam sozinhos.
-   ========================================================================== */
-
 .owner-page { display: flex; flex-direction: column; gap: var(--space-8); min-width: 0; }
 .owner-page > .page-head { margin-bottom: 0; }
 .owner-page h2 { font-size: var(--text-h3); }
@@ -16,8 +9,6 @@
 }
 .owner-section__text { color: var(--text-secondary); font-size: var(--text-meta); max-width: 60ch; }
 
-/* ---------------------------------------------------------------- resumo do painel */
-/* Faixa única com divisórias: rótulo pequeno, valor grande, link de destino. */
 .owner-summary {
   display: grid; grid-template-columns: 1fr; margin: 0;
   border-block: 1px solid var(--border-default);
