@@ -8,7 +8,7 @@ import {
 } from "./authSession";
 
 const AUTH_DEBUG_ENABLED =
-  String(import.meta.env.AUTH_DEBUG).toLowerCase() === "true";
+  String(import.meta.env.VITE_AUTH_DEBUG).toLowerCase() === "true";
 
 const SENSITIVE_DEBUG_KEY = /authorization|token|senha|password|secret|cookie|cpf|cnh|cnpj|cvv|cartao|card/i;
 
