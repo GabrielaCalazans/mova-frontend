@@ -81,3 +81,22 @@ describe("CancelamentoReserva — rótulo do estorno (Task 11)", () => {
     expect(screen.queryByText(/SOLICITADO/)).toBeNull();
   });
 });
+
+// Task 11.2 (WCAG 2.4.3): a confirmação substitui o botão que a abriu; o foco não pode cair no body.
+describe("CancelamentoReserva — foco na confirmação (Task 11.2)", () => {
+  beforeEach(() => { vi.clearAllMocks(); getReservaById.mockResolvedValue(confirmada); });
+
+  it("leva o foco para a confirmação e o devolve ao botão ao voltar, só com teclado", async () => {
+    const user = userEvent.setup();
+    render(<CancelamentoReserva />);
+    await screen.findByText(/Veículo: Fiat Argo/);
+    screen.getByRole("button", { name: "Solicitar cancelamento" }).focus();
+    await user.keyboard("{Enter}");
+    const dialogo = await screen.findByRole("dialog", { name: "Confirmar cancelamento" });
+    expect(screen.getByRole("button", { name: "Voltar" })).toHaveFocus();
+    expect(dialogo).toContainElement(document.activeElement);
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("button", { name: "Solicitar cancelamento" })).toHaveFocus();
+    expect(cancelarReserva).not.toHaveBeenCalled();
+  });
+});

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck, faCircleExclamation, faCircleInfo } from "@fortawesome/free-solid-svg-icons";
@@ -25,6 +25,16 @@ export default function CancelamentoReserva() {
   const [confirmando, setConfirmando] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
+  const pedirRef = useRef(null);
+  const voltarRef = useRef(null);
+  const confirmou = useRef(false);
+
+  // A confirmação substitui o botão que a abriu: leva o foco para "Voltar" e, ao sair, devolve-o
+  // ao botão (ou ao conteúdo, se a reserva já foi cancelada), para não cair no body (WCAG 2.4.3).
+  useEffect(() => {
+    if (confirmando) { confirmou.current = true; voltarRef.current?.focus(); }
+    else if (confirmou.current) (pedirRef.current ?? document.getElementById("conteudo-principal"))?.focus();
+  }, [confirmando]);
 
   useEffect(() => {
     document.title = t("reservation.cancel.documentTitle");
@@ -101,14 +111,14 @@ export default function CancelamentoReserva() {
           {!cancelada && !cancelavel && <p className="journey-muted">{t("reservation.cancel.notCancellable")}</p>}
           {!cancelada && cancelavel && !confirmando && (
             <div className="journey-actions">
-              <button type="button" className="btn btn--danger btn--lg" onClick={() => setConfirmando(true)}>{t("reservation.cancel.request")}</button>
+              <button type="button" ref={pedirRef} className="btn btn--danger btn--lg" onClick={() => setConfirmando(true)}>{t("reservation.cancel.request")}</button>
             </div>
           )}
           {!cancelada && cancelavel && confirmando && (
             <div role="dialog" aria-label={t("reservation.cancel.confirm")} className="post-confirm">
               <p>{t("reservation.cancel.confirmQuestion")}</p>
               <div className="journey-actions">
-                <button type="button" className="btn btn--secondary" onClick={() => setConfirmando(false)} disabled={enviando}>{t("reservation.common.back")}</button>
+                <button type="button" ref={voltarRef} className="btn btn--secondary" onClick={() => setConfirmando(false)} disabled={enviando}>{t("reservation.common.back")}</button>
                 <button type="button" className="btn btn--danger" onClick={cancelar} disabled={enviando} aria-busy={enviando || undefined}>{enviando ? t("reservation.cancel.cancelling") : t("reservation.cancel.confirm")}</button>
               </div>
             </div>
