@@ -65,4 +65,21 @@ describe("LanguageSelect — foco após trocar o idioma", () => {
     await user.selectOptions(screen.getByLabelText("Idioma"), "en");
     await waitFor(() => expect(screen.getByLabelText("Language")).toHaveFocus());
   });
+
+  // Task 11.3 (NVDA + Firefox): o dicionário do idioma carrega de forma assíncrona; se demorar mais que o
+  // prazo, o foco ficava no conteúdo principal. O prazo deve contar a partir do fim do carregamento.
+  it("devolve o foco mesmo quando o idioma leva mais de 2 s para carregar", async () => {
+    const user = userEvent.setup();
+    render(<RemontaPorIdioma />);
+    const agora = Date.now.bind(Date);
+    // No document (depois do onChange do React): simula 2,5 s de carregamento a partir da troca.
+    document.addEventListener("change", () => vi.spyOn(Date, "now").mockImplementation(() => agora() + 2500), { once: true });
+    try {
+      await user.selectOptions(screen.getByLabelText("Idioma"), "es");
+      await waitFor(() => expect(screen.getByRole("combobox")).toHaveFocus());
+      expect(screen.getByRole("combobox")).toHaveValue("es");
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
 });

@@ -24,8 +24,11 @@ export default function LanguageSelect({ labeled = false, className = "" }) {
   }, []);
 
   function trocar(event) {
-    focoPendente = { indice: [...document.querySelectorAll(".langselect__control")].indexOf(event.target), ate: Date.now() + 2000 };
-    changeLocale(event.target.value);
+    // O dicionário do idioma carrega de forma assíncrona (rede lenta, leitor de tela): o prazo de 2 s
+    // começa quando o carregamento termina, não no clique (Task 11.3).
+    const pendente = { indice: [...document.querySelectorAll(".langselect__control")].indexOf(event.target), ate: Infinity };
+    focoPendente = pendente;
+    changeLocale(event.target.value).finally(() => { pendente.ate = Date.now() + 2000; });
   }
 
   return (
