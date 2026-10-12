@@ -34,6 +34,9 @@ const PASSOS = [
   ["N11", "Idioma es: títulos", "/", "es", false, null, "h,h"],
   ["N12", "Diálogo do menu da conta: Enter, Tab, Shift+Tab, Esc e retorno de foco", "/historico", "pt-BR", true, "menu", "enter,tab,tab,shift+tab,escape"],
   ["N13", "Cadastro: Enter em Continuar vazio, erros por campo", "/cadastro", "pt-BR", false, "submit", "enter,tab,tab"],
+  // Confirmação pós-correção (Task 11.2): texto dos links de cartão e foco após trocar o idioma.
+  ["N14", "Links com K a partir do topo (texto dos links de cartão)", "/", "pt-BR", false, null, "k,k,k,k,k,k"],
+  ["N15", "Seletor de idioma: seta para baixo troca o idioma e o foco permanece no seletor", "/configuracoes", "pt-BR", true, "idioma", "down,up"],
   // Por último: na tentativa 2 o NVDA ficou ~80 s sem processar nada depois de abrir a lista.
   ["N06", "Lista de Elementos (NVDA+F7): links, títulos e landmarks", "/", "pt-BR", false, null, "nvda+f7,pausa,alt+h,pausa,alt+d,pausa,escape"],
 ];
@@ -103,6 +106,7 @@ for (const [id, objetivo, tela, locale, autenticado, preparo, lista] of EXECUTAR
   if (preparo === "chip") await page.locator("button[aria-pressed]").first().focus();
   if (preparo === "menu") await page.locator("button[aria-haspopup=dialog]:visible").first().focus();
   if (preparo === "submit") await page.locator("form button[type=submit]").first().focus();
+  if (preparo === "idioma") await page.locator("header select").first().focus();
   if (preparo) await page.waitForTimeout(1500);
   passo.teclas = teclas(lista, false);
   await page.waitForTimeout(1500);
