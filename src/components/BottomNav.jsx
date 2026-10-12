@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
@@ -15,15 +15,11 @@ export default function BottomNav({ activeReservation: providedReservation, shel
   const session = useAuthSession();
   const shell = useShell();
   const [localMenu, setLocalMenu] = useState(false);
-  const menuButtonRef = useRef(null);
   const skip = Boolean(shell) && !shellOwned;
   const localActivity = useActiveReservation({ enabled: !skip && providedReservation === undefined });
   const activeReservation = providedReservation === undefined ? localActivity.reservation : providedReservation;
 
-  const closeLocalMenu = useCallback(() => {
-    setLocalMenu(false);
-    menuButtonRef.current?.focus();
-  }, []);
+  const closeLocalMenu = useCallback(() => setLocalMenu(false), []);
 
   if (skip || !session?.token || getUserCargo(session.user) === "LOCADOR") return null;
 
@@ -42,13 +38,12 @@ export default function BottomNav({ activeReservation: providedReservation, shel
           );
         })}
         <button
-          ref={menuButtonRef}
           type="button"
           className="tabbar__item"
           aria-haspopup="dialog"
           aria-expanded={Boolean(open)}
           aria-current={location.pathname === "/conta" ? "page" : undefined}
-          onClick={(event) => (onOpenMenu ? onOpenMenu(event.currentTarget) : setLocalMenu(true))}
+          onClick={() => (onOpenMenu ? onOpenMenu() : setLocalMenu(true))}
         >
           <FontAwesomeIcon icon={faUser} aria-hidden="true" />
           <span>{t("common.shell.account")}</span>

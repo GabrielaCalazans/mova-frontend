@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGaugeHigh, faRightToBracket, faUser } from "@fortawesome/free-solid-svg-icons";
@@ -23,16 +23,8 @@ export default function AppShell({ children }) {
   const isOwner = Boolean(session?.token) && cargo === "LOCADOR";
   const activity = useActiveReservation({ enabled: isRenter, refreshKey: location.pathname });
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuTrigger = useRef(null);
-
-  const openMenu = useCallback((trigger) => {
-    menuTrigger.current = trigger;
-    setMenuOpen(true);
-  }, []);
-  const closeMenu = useCallback(() => {
-    setMenuOpen(false);
-    menuTrigger.current?.focus();
-  }, []);
+  const openMenu = useCallback(() => setMenuOpen(true), []);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   const shell = useMemo(() => ({ activity }), [activity]);
   const navItems = isRenter ? renterNavItems(activity.reservation) : [];
@@ -77,7 +69,7 @@ export default function AppShell({ children }) {
                 className="btn btn--quiet appbar__account"
                 aria-haspopup="dialog"
                 aria-expanded={menuOpen}
-                onClick={(event) => openMenu(event.currentTarget)}
+                onClick={openMenu}
               >
                 <FontAwesomeIcon icon={faUser} aria-hidden="true" />
                 {t("common.shell.account")}

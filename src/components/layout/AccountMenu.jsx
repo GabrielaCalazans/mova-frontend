@@ -22,6 +22,7 @@ export default function AccountMenu({ open, onClose }) {
 
   useEffect(() => {
     if (!open) return undefined;
+    const trigger = document.activeElement;
     panelRef.current?.querySelector(FOCUSABLE)?.focus();
 
     function onKeyDown(event) {
@@ -36,7 +37,12 @@ export default function AccountMenu({ open, onClose }) {
     }
 
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      // Como no ModalDialog: o cleanup roda depois do commit, então o gatilho já recebe o foco
+      // com aria-expanded=false (antes o NVDA anunciava "expandido" ao voltar — Task 11.2).
+      if (trigger && document.contains(trigger)) trigger.focus();
+    };
   }, [open, onClose]);
 
   if (!open) return null;
