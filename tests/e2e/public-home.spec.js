@@ -532,6 +532,68 @@ test("Home autenticada mostra reserva ativa e aba Alugar somente com dado real",
   await expect(page.getByRole("link", { name: "Alugar" })).toBeVisible();
 });
 
+// Task 11.2: no piloto NVDA o link foi lido "Ver detalhesde Fiat Argo". O nome acessível estava
+// certo; o espaço se perdia no texto do .sr-only (bloco absoluto), que é o que o modo de navegação
+// do leitor de tela concatena. Compara a leitura linear (StaticText da árvore do Chromium) com o DOM.
+test("texto complementar .sr-only mantém o espaço na leitura linear", async ({ page }) => {
+  await mockCatalog(page);
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Fiat Argo" })).toBeVisible();
+  const textosDom = await page.evaluate(() => {
+    document.querySelectorAll(".sr-only").forEach((s, i) => { s.parentElement.dataset.leitura = String(i); });
+    return [...document.querySelectorAll("[data-leitura]")].map((el) => el.textContent.replace(/\s+/g, " ").trim());
+  });
+  const cdp = await page.context().newCDPSession(page);
+  const { nodes } = await cdp.send("Accessibility.getFullAXTree");
+  const porId = new Map(nodes.map((n) => [n.nodeId, n]));
+  const porBackend = new Map(nodes.map((n) => [n.backendDOMNodeId, n]));
+  const linear = (n) => (n.role?.value === "StaticText" ? (n.ignored ? [] : [n.name.value]) : (n.childIds ?? []).flatMap((c) => (porId.has(c) ? linear(porId.get(c)) : [])));
+  const { root } = await cdp.send("DOM.getDocument", { depth: 0 });
+  const { nodeIds } = await cdp.send("DOM.querySelectorAll", { nodeId: root.nodeId, selector: "[data-leitura]" });
+  const leituras = [];
+  for (const nodeId of nodeIds) {
+    const { node } = await cdp.send("DOM.describeNode", { nodeId });
+    leituras.push(linear(porBackend.get(node.backendNodeId)).join("").replace(/\s+/g, " ").trim());
+  }
+  expect(textosDom).toContain("Ver detalhes de Fiat Argo");
+  expect(leituras).toContain("Ver detalhes de Fiat Argo");
+  expect(leituras).toContain("Retirada: Garagem Centro");
+});
+
+// Task 11.2 (WCAG 2.4.11): em 375×900 o campo de horário da retirada recebia foco por Tab inteiro
+// sob a barra inferior fixa; o navegador não rolava porque o campo já estava "dentro" da viewport.
+test("foco por Tab não fica inteiro sob a barra inferior fixa", async ({ page }) => {
+  const garagem = { id: "garage-1", nome: "Garagem Centro", endereco: "Rua XV de Novembro, 1000 — Centro, Curitiba — PR", status: "ATIVA", capacidade: 20, veiculosAlocados: 12 };
+  const futuro = new Date(Date.now() + 40 * 864e5);
+  const data = [futuro.getDate(), futuro.getMonth() + 1, futuro.getFullYear()].map((p, i) => (i < 2 ? String(p).padStart(2, "0") : p)).join("/");
+  await page.addInitScript(({ data }) => {
+    window.localStorage.setItem("mova_auth_session", JSON.stringify({ token: "renter-token", user: { id: "renter-1", cargo: "LOCATARIO" } }));
+    window.sessionStorage.setItem("mova_journey_flow", JSON.stringify({
+      veiculo: { id: "vehicle-public-1", marca: "Hyundai", modelo: "HB20 Plus Adaptado", categoria: "PCD", adaptado: true, garagemId: "garage-1", garagemName: "Garagem Centro" },
+      retirada: { garageId: "garage-1", garageName: "Garagem Centro", date: data, time: "10:00" },
+    }));
+  }, { data });
+  await page.route("**/api/garagem**", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(/\/garagem\/garage-1/.test(route.request().url()) ? { result: garagem } : { result: [garagem], pagination: { total: 1, page: 1, limit: 100, totalPages: 1 } }) }));
+  await page.setViewportSize({ width: 375, height: 900 });
+  await page.goto("/escolha-garagem-retirada");
+  await expect(page.locator("#retirada-time")).toBeVisible();
+
+  const encobertos = [];
+  for (let i = 0; i < 12; i += 1) {
+    await page.keyboard.press("Tab");
+    const r = await page.evaluate(() => {
+      const el = document.activeElement;
+      if (!el || el === document.body) return null;
+      const b = el.getBoundingClientRect();
+      const pontos = [[0.5, 0.5], [0.1, 0.1], [0.9, 0.1], [0.1, 0.9], [0.9, 0.9]].map(([x, y]) => [b.left + b.width * x, b.top + b.height * y]).filter(([x, y]) => y >= 0 && y < innerHeight && x >= 0 && x < innerWidth);
+      const cobertos = pontos.filter(([x, y]) => { const hit = document.elementFromPoint(x, y); return hit && !el.contains(hit) && !hit.contains(el); });
+      return { id: el.id || el.textContent.trim().slice(0, 30), total: pontos.length > 0 && cobertos.length === pontos.length };
+    });
+    if (r?.total) encobertos.push(r.id);
+  }
+  expect(encobertos).toEqual([]);
+});
+
 test("menu de conta mantém foco por teclado e devolve foco ao acionador", async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem("mova_auth_session", JSON.stringify({
