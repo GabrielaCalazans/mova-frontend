@@ -48,7 +48,8 @@ export default function OwnerAppShell({ children }) {
           </div>
         </header>
         <nav className="owner-nav" aria-label={t("common.shell.ownerNav")}>
-          <div className="owner-nav__inner">
+          {/* tabIndex -1: o Firefox torna focável o contêiner rolável; os links já são as paradas de Tab (Task 11.3). */}
+          <div className="owner-nav__inner" tabIndex={-1}>
             {links.map(([label, to, icon]) => (
               <NavLink key={to} to={to} className={({ isActive }) => isActive ? "owner-nav__link owner-nav__link--active" : "owner-nav__link"}>
                 <FontAwesomeIcon icon={icon} aria-hidden="true" /> {t(`common.nav.${label}`)}

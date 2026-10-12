@@ -110,7 +110,8 @@ function CarrosScreen() {
       <div className="catalog-page__body">
         <fieldset className="fieldset category-strip carro-filters" aria-label={t("catalog.list.filtersLabel")}>
           <legend>{t("catalog.home.filterByCategory")}</legend>
-          <div className="category-strip__list">
+          {/* tabIndex -1: sem parada de Tab própria no Firefox; os botões já são focáveis (Task 11.3). */}
+          <div className="category-strip__list" tabIndex={-1}>
             {FILTROS_CATEGORIA.map(({ id, labelKey }) => (
               <button
                 key={id}

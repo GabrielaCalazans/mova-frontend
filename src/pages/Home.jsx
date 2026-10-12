@@ -19,7 +19,8 @@ function CategoryCarousel({ categoria, onChange }) {
   return (
     <section className="category-strip public-home__category-carousel" role="group" aria-labelledby="categorias-title" data-capture="carousel">
       <h2 id="categorias-title">{t("catalog.home.filterByCategory")}</h2>
-      <div className="category-strip__list">
+      {/* tabIndex -1: sem parada de Tab própria no Firefox; os botões já são focáveis (Task 11.3). */}
+      <div className="category-strip__list" tabIndex={-1}>
         <button type="button" className="chip" aria-pressed={!categoria} onClick={() => onChange("")}>{t("catalog.home.all")}</button>
         {CATEGORIAS.map((value) => (
           <button key={value} type="button" className="chip" aria-pressed={categoria === value} onClick={() => onChange(categoria === value ? "" : value)}>
