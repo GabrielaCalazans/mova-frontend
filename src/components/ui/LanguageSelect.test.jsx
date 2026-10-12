@@ -1,7 +1,7 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { setLocale } from "../../i18n";
+import { setLocale, useLocale } from "../../i18n";
 import LanguageSelect from "./LanguageSelect";
 
 afterEach(() => {
@@ -48,5 +48,21 @@ describe("LanguageSelect", () => {
     const fresh = await import("../../i18n");
     expect(fresh.getLocale()).toBe("es");
     fresh.setLocale("pt-BR");
+  });
+});
+
+// Task 11.2 (WCAG 3.2.2/2.4.3): trocar o idioma remonta a árvore (App.jsx usa key={locale});
+// o foco deve continuar no seletor, não cair no body nem no conteúdo principal.
+function RemontaPorIdioma() {
+  const locale = useLocale();
+  return <div key={locale}><LanguageSelect /></div>;
+}
+
+describe("LanguageSelect — foco após trocar o idioma", () => {
+  it("devolve o foco ao seletor remontado", async () => {
+    const user = userEvent.setup();
+    render(<RemontaPorIdioma />);
+    await user.selectOptions(screen.getByLabelText("Idioma"), "en");
+    await waitFor(() => expect(screen.getByLabelText("Language")).toHaveFocus());
   });
 });
