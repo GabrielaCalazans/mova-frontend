@@ -14,6 +14,8 @@ describe("Home — região de status do resultado", () => {
     render(<MemoryRouter><Home /></MemoryRouter>);
     const status = await screen.findByRole("status");
     await screen.findByText("Todas as categorias");
-    expect(status.textContent.replace(/\s+/g, " ").trim()).toBe("0 veículos disponíveis Todas as categorias");
+    // .resultbar é flex: texto só de espaços entre os itens não é renderizado nem chega à árvore de acessibilidade.
+    const lido = [...status.childNodes].filter((n) => n.nodeType !== Node.TEXT_NODE || n.textContent.trim()).map((n) => n.textContent).join("");
+    expect(lido).toMatch(/^0 veículos disponíveis[.,;]? +Todas as categorias$/);
   });
 });

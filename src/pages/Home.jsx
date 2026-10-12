@@ -134,7 +134,8 @@ function Home() {
             ) : (
               <>
                 <span><strong className="tabular">{veiculos.length}</strong> {t(veiculos.length === 1 ? "catalog.home.availableOne" : "catalog.home.availableOther")}</span>
-                {" "}{/* o CSS separa as partes só visualmente; o leitor de tela lê o texto */}
+                {/* .resultbar é flex: um espaço entre os itens não chega à árvore de acessibilidade (Task 11.3). */}
+                <span className="sr-only">. </span>
                 <span>{nomeCategoria ? t("catalog.home.categoryName", { name: nomeCategoria }) : t("catalog.home.allCategories")}</span>
               </>
             )}
