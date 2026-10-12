@@ -36,6 +36,15 @@ describe("OwnerReservations", () => {
     expect(screen.queryByText(/Garagem não informada/)).not.toBeInTheDocument();
   });
 
+  // Task 11.2: o contêiner rolável recebe foco por Tab; sem papel, o nome dele é proibido pela
+  // ARIA 1.2 (elemento genérico) e pode não ser anunciado.
+  it("expõe a área rolável focável da tabela como região nomeada", async () => {
+    render(<OwnerReservations />);
+    const regiao = await screen.findByRole("region", { name: "Tabela de reservas; use rolagem horizontal quando necessário" });
+    expect(regiao).toHaveAttribute("tabindex", "0");
+    expect(regiao).toContainElement(screen.getByRole("table"));
+  });
+
   it("rejeita intervalo invertido antes de consultar o backend", async () => {
     render(<OwnerReservations />);
     await screen.findByRole("row", { name: /Fiat Argo.*Confirmada/ });

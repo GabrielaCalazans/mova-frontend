@@ -155,7 +155,7 @@ export default function OwnerReservations() {
             </div>
           )}
           {!!report.reservas?.length && (
-            <div className="owner-table-wrap" tabIndex="0" aria-label={t("owner.reservations.tableLabel")}>
+            <div className="owner-table-wrap" role="region" tabIndex="0" aria-label={t("owner.reservations.tableLabel")}>
               <table className="owner-table">
                 <caption className="sr-only">{t("owner.reservations.tableCaption")}</caption>
                 <thead><tr><th scope="col">{t("owner.common.vehicle")}</th><th scope="col">{t("owner.reservations.colPeriod")}</th><th scope="col">{t("owner.common.status")}</th><th scope="col">{t("owner.reservations.colPickup")}</th></tr></thead>
