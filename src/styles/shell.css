@@ -109,7 +109,10 @@
 .tabbar__item:hover { color: var(--text-primary); }
 .tabbar__item[aria-current="page"] { color: var(--text-primary); border-top-color: var(--action-primary); }
 .tabbar__item[aria-current="page"] svg { color: var(--action-primary); }
-@media (min-width: 1024px) { .tabbar { display: none; } }
+/* A barra é fixa: reserva a área dela quando o navegador rola até o elemento focado, senão um
+   campo logo acima da borda inferior recebia foco inteiro encoberto (WCAG 2.4.11, Task 11.2). */
+html:has(.tabbar) { scroll-padding-bottom: calc(var(--tabbar-h) + var(--space-4) + env(safe-area-inset-bottom)); }
+@media (min-width: 1024px) { .tabbar { display: none; } html:has(.tabbar) { scroll-padding-bottom: 0; } }
 
 /* ---------------------------------------------------------------- menu da conta */
 .account-menu { position: fixed; inset: 0; z-index: var(--z-dialog); }
