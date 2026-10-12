@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatDate, t } from "../i18n";
+import ModalDialog from "./ui/ModalDialog";
 
 // Nomes das datas em journey.datePicker.holidays.<dd-mm> (traduzidos no render).
 const DATAS_COMEMORATIVAS = new Set(["01-01", "10-08", "07-09", "12-10", "02-11", "15-11", "25-12"]);
@@ -67,76 +68,75 @@ export default function FiltroDataPicker({ dataSelecionada, onChange }) {
         </button>
       </div>
 
+      {/* ModalDialog: foco inicial dentro, Tab preso, Esc fecha e devolve o foco ao gatilho (Task 11.2). */}
       {calOpen && (
-        <div className="datepick__overlay" onClick={() => setCalOpen(false)} onKeyDown={(event) => event.key === "Escape" && setCalOpen(false)}>
-          <div className="datepick__panel" role="dialog" aria-modal="true" aria-labelledby="filtro-cal-titulo" onClick={(event) => event.stopPropagation()}>
-            <p className="datepick__title" id="filtro-cal-titulo">{t("journey.datePicker.title")}</p>
-            <div className="datepick__month">
-              <button
-                type="button"
-                className="icon-btn icon-btn--outlined"
-                onClick={() => setCalRef((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
-                aria-label={t("journey.datePicker.prevMonth")}
-              >
-                <ChevronLeft className="icon" aria-hidden="true" />
-              </button>
-              <h3 aria-live="polite">
-                {formatDate(calRef, { month: "long" })} {calRef.getFullYear()}
-              </h3>
-              <button
-                type="button"
-                className="icon-btn icon-btn--outlined"
-                onClick={() => setCalRef((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
-                aria-label={t("journey.datePicker.nextMonth")}
-              >
-                <ChevronRight className="icon" aria-hidden="true" />
-              </button>
-            </div>
-
-            <div className="datepick__days" aria-hidden="true">
-              {t("journey.datePicker.weekdays").map((dia) => (
-                <span key={dia}>{dia}</span>
-              ))}
-            </div>
-
-            <div className="datepick__grid">
-              {cells.map((cell) => {
-                if (cell.empty) {
-                  return <button key={cell.key} type="button" className="datepick__day" disabled aria-hidden="true" tabIndex={-1} />;
-                }
-
-                const isSelected = Boolean(
-                  dataSelecionada &&
-                  dataSelecionada.getDate() === cell.day &&
-                  dataSelecionada.getMonth() === calRef.getMonth() &&
-                  dataSelecionada.getFullYear() === calRef.getFullYear()
-                );
-
-                return (
-                  <button
-                    key={cell.key}
-                    type="button"
-                    className={`datepick__day${cell.weekend ? " datepick__day--weekend" : ""}`}
-                    aria-pressed={isSelected}
-                    aria-label={`${formatDate(new Date(calRef.getFullYear(), calRef.getMonth(), cell.day), { day: "numeric", month: "long" })}${cell.holidayLabel ? `, ${cell.holidayLabel}` : ""}`}
-                    onClick={() => pickDay(cell.day)}
-                  >
-                    {cell.day}
-                  </button>
-                );
-              })}
-            </div>
-
-            {selectedHoliday && (
-              <p className="datepick__holiday">
-                {dataSelecionada.getDate()} - {selectedHoliday}
-              </p>
-            )}
-            <div className="datepick__close">
-              <button type="button" className="btn" onClick={() => setCalOpen(false)}>{t("journey.datePicker.done")}</button>
-            </div>
+        <ModalDialog className="datepick__overlay" panelClassName="datepick__panel" labelledBy="filtro-cal-titulo" onClose={() => setCalOpen(false)}>
+          <p className="datepick__title" id="filtro-cal-titulo">{t("journey.datePicker.title")}</p>
+          <div className="datepick__month">
+            <button
+              type="button"
+              className="icon-btn icon-btn--outlined"
+              onClick={() => setCalRef((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
+              aria-label={t("journey.datePicker.prevMonth")}
+            >
+              <ChevronLeft className="icon" aria-hidden="true" />
+            </button>
+            <h3 aria-live="polite">
+              {formatDate(calRef, { month: "long" })} {calRef.getFullYear()}
+            </h3>
+            <button
+              type="button"
+              className="icon-btn icon-btn--outlined"
+              onClick={() => setCalRef((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
+              aria-label={t("journey.datePicker.nextMonth")}
+            >
+              <ChevronRight className="icon" aria-hidden="true" />
+            </button>
           </div>
-        </div>
+
+          <div className="datepick__days" aria-hidden="true">
+            {t("journey.datePicker.weekdays").map((dia) => (
+              <span key={dia}>{dia}</span>
+            ))}
+          </div>
+
+          <div className="datepick__grid">
+            {cells.map((cell) => {
+              if (cell.empty) {
+                return <button key={cell.key} type="button" className="datepick__day" disabled aria-hidden="true" tabIndex={-1} />;
+              }
+
+              const isSelected = Boolean(
+                dataSelecionada &&
+                dataSelecionada.getDate() === cell.day &&
+                dataSelecionada.getMonth() === calRef.getMonth() &&
+                dataSelecionada.getFullYear() === calRef.getFullYear()
+              );
+
+              return (
+                <button
+                  key={cell.key}
+                  type="button"
+                  className={`datepick__day${cell.weekend ? " datepick__day--weekend" : ""}`}
+                  aria-pressed={isSelected}
+                  aria-label={`${formatDate(new Date(calRef.getFullYear(), calRef.getMonth(), cell.day), { day: "numeric", month: "long" })}${cell.holidayLabel ? `, ${cell.holidayLabel}` : ""}`}
+                  onClick={() => pickDay(cell.day)}
+                >
+                  {cell.day}
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedHoliday && (
+            <p className="datepick__holiday">
+              {dataSelecionada.getDate()} - {selectedHoliday}
+            </p>
+          )}
+          <div className="datepick__close">
+            <button type="button" className="btn" onClick={() => setCalOpen(false)}>{t("journey.datePicker.done")}</button>
+          </div>
+        </ModalDialog>
       )}
     </>
   );
