@@ -24,10 +24,13 @@ export async function loadLocale(locale) {
   loaded.add(locale);
 }
 
-// Troca de idioma pela interface: carrega o dicionário e então troca.
+// Troca de idioma pela interface: carrega o dicionário e então troca. Só o pedido mais recente vale: com o
+// seletor focado, cada seta dispara uma troca, e um dicionário lento não pode sobrescrever a escolha seguinte.
+let ultimoPedido = 0;
 export async function changeLocale(locale) {
+  const pedido = ++ultimoPedido;
   await loadLocale(locale);
-  setLocale(locale);
+  if (pedido === ultimoPedido) setLocale(locale);
 }
 
 function readStoredLocale() {
