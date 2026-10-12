@@ -20,6 +20,10 @@ export default function RastreamentoReserva() {
   const [erro, setErro] = useState("");
 
   useEffect(() => {
+    document.title = t("reservation.tracking.documentTitle");
+  }, []);
+
+  useEffect(() => {
     let ativo = true;
     let emAndamento = false;
     let interrompido = false;

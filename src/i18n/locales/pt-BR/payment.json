@@ -78,6 +78,7 @@
     "dialogNote": "QR Code ilustrativo; nenhuma transferência é feita."
   },
   "pending": {
+    "documentTitle": "MOVA - Pendências financeiras",
     "loadError": "Não foi possível carregar pendências.",
     "sent": "Pagamento enviado. Status: {status}.",
     "approved": "Pagamento aprovado. Pendência quitada.",

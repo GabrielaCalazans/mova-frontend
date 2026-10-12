@@ -42,6 +42,7 @@
     "submit": "Desbloquear vehículo"
   },
   "tracking": {
+    "documentTitle": "MOVA - Seguir vehículo",
     "notProvided": "No indicado",
     "updateError": "No se pudo actualizar la ubicación.",
     "title": "Seguir vehículo",

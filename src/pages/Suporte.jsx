@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import AuthenticatedLayout from '../layout/AuthenticatedLayout';
 import {
   ContactContainer,
@@ -8,6 +8,10 @@ import {
 import { t } from '../i18n';
 
 export default function Suporte() {
+  useEffect(() => {
+    document.title = t("common.support.documentTitle");
+  }, []);
+
   return (
     <AuthenticatedLayout title={t("common.support.title")}>
 

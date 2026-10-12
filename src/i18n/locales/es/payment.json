@@ -78,6 +78,7 @@
     "dialogNote": "Código QR ilustrativo; no se realiza ninguna transferencia."
   },
   "pending": {
+    "documentTitle": "MOVA - Pagos pendientes",
     "loadError": "No se pudieron cargar los pagos pendientes.",
     "sent": "Pago enviado. Estado: {status}.",
     "approved": "Pago aprobado. Cargo saldado.",

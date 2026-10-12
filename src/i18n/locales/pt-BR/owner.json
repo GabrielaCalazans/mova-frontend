@@ -90,6 +90,7 @@
     "pageOf": "Página {page} de {pages} ({total})"
   },
   "monitoring": {
+    "docTitle": "MOVA - Monitoramento",
     "title": "Monitoramento",
     "lede": "Status e última localização dos veículos da sua frota."
   },

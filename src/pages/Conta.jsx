@@ -61,6 +61,11 @@ function ProfileMenuRow({ label, open, onToggle, tone = "default", children }) {
 
 function Conta() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = t("account.documentTitle");
+  }, []);
+
   const authSession = getAuthSession();
   const [profileStatus, setProfileStatus] = useState(() => (authSession?.token ? "loading" : "error"));
   const [profileFeedback, setProfileFeedback] = useState(null);

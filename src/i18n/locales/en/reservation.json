@@ -42,6 +42,7 @@
     "submit": "Unlock vehicle"
   },
   "tracking": {
+    "documentTitle": "MOVA - Track vehicle",
     "notProvided": "Not provided",
     "updateError": "We couldn't update the location.",
     "title": "Track vehicle",

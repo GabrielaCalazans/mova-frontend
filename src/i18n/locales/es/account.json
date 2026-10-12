@@ -1,4 +1,5 @@
 {
+  "documentTitle": "MOVA - Mi cuenta",
   "title": "Mi cuenta",
   "sessionExpired": "Tu sesión ha caducado. Vuelve a entrar para acceder a la cuenta.",
   "loadError": "No se pudieron cargar los datos de la cuenta.",

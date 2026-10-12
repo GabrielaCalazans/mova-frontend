@@ -78,6 +78,7 @@
     "dialogNote": "Illustrative QR code; no transfer is made."
   },
   "pending": {
+    "documentTitle": "MOVA - Outstanding charges",
     "loadError": "We couldn't load outstanding charges.",
     "sent": "Payment sent. Status: {status}.",
     "approved": "Payment approved. Charge settled.",

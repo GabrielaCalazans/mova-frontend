@@ -1,4 +1,5 @@
 {
+  "documentTitle": "MOVA - My account",
   "title": "My Account",
   "sessionExpired": "Your session has expired. Sign in again to access your account.",
   "loadError": "We couldn't load your account details.",

@@ -90,6 +90,7 @@
     "pageOf": "Page {page} of {pages} ({total})"
   },
   "monitoring": {
+    "docTitle": "MOVA - Monitoring",
     "title": "Monitoring",
     "lede": "Status and last known location of your fleet's vehicles."
   },

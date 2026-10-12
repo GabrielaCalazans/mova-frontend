@@ -1,9 +1,14 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import "../styles/journey.css";
 import "../styles/postcompra.css";
 import { t } from "../i18n";
 
 function NotFound() {
+  useEffect(() => {
+    document.title = t("common.notFound.documentTitle");
+  }, []);
+
   return (
     <main className="journey-page">
       <section className="state-block" aria-labelledby="not-found-title">

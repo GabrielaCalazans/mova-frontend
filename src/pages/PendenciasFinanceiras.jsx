@@ -28,6 +28,7 @@ export default function PendenciasFinanceiras() {
   };
 
   useEffect(() => {
+    document.title = t("payment.pending.documentTitle");
     queueMicrotask(() => {
       void carregar();
     });

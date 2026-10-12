@@ -1,8 +1,13 @@
+import { useEffect } from "react";
 import FrotaMonitoramento from "../components/FrotaMonitoramento";
 import { t } from "../i18n";
 import "../styles/owner.css";
 
 export default function OwnerMonitoring() {
+  useEffect(() => {
+    document.title = t("owner.monitoring.docTitle");
+  }, []);
+
   return (
     <main className="owner-page" aria-labelledby="owner-monitoring-title">
       <header className="page-head">

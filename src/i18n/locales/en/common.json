@@ -160,6 +160,7 @@
     "viewAll": "View bookings"
   },
   "notFound": {
+    "documentTitle": "MOVA - Page not found",
     "code": "Error 404",
     "title": "Page not found",
     "text": "The address you tried to open does not exist.",
@@ -167,6 +168,7 @@
     "login": "Back to sign-in"
   },
   "support": {
+    "documentTitle": "MOVA - Support",
     "title": "Support",
     "channels": "Contact channels",
     "tollFree": "0800 999 999 (toll-free, Brazil)",

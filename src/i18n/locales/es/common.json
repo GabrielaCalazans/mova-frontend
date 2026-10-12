@@ -160,6 +160,7 @@
     "viewAll": "Ver reservas"
   },
   "notFound": {
+    "documentTitle": "MOVA - Página no encontrada",
     "code": "Error 404",
     "title": "Página no encontrada",
     "text": "La dirección a la que intentaste acceder no existe.",
@@ -167,6 +168,7 @@
     "login": "Volver al inicio de sesión"
   },
   "support": {
+    "documentTitle": "MOVA - Soporte",
     "title": "Soporte",
     "channels": "Canales de atención",
     "tollFree": "0800 999 999 (gratuito, Brasil)",

@@ -38,7 +38,7 @@
     "next": "Go to return"
   },
   "return": {
-    "documentTitle": "MOVA - Return",
+    "documentTitle": "MOVA - Return garage",
     "title": "Choose the return garage",
     "subtitle": "Select the garage, date and time to return the vehicle.",
     "next": "Choose services"
