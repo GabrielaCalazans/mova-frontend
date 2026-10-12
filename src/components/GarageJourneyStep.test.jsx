@@ -66,3 +66,14 @@ describe("GarageJourneyStep — RNF08 (idiomas)", () => {
     expect(screen.getByRole("button", { name: rotulo })).toBeInTheDocument();
   });
 });
+
+// Task 11.2 (WCAG 1.1.1): os ícones de calendário e relógio ao lado dos campos são decorativos;
+// sem aria-hidden o Chromium os expunha como imagens sem nome na árvore de acessibilidade.
+describe("GarageJourneyStep — ícones decorativos", () => {
+  it("não expõe svg sem nome a tecnologias assistivas", async () => {
+    const { container } = renderStep();
+    await screen.findByText("Garagem Centro");
+    const expostos = [...container.querySelectorAll("svg")].filter((svg) => !svg.closest("[aria-hidden=true]") && !svg.getAttribute("aria-label") && !svg.querySelector("title"));
+    expect(expostos).toHaveLength(0);
+  });
+});

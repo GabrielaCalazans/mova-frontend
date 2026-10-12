@@ -476,7 +476,7 @@ export default function GarageJourneyStep({
                   }
                 }}
               />
-              <IconBtn>
+              <IconBtn aria-hidden="true">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" strokeWidth="2"
                   strokeLinecap="round" strokeLinejoin="round">
@@ -564,7 +564,7 @@ export default function GarageJourneyStep({
                   }
                 }}
               />
-              <IconBtn>
+              <IconBtn aria-hidden="true">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" strokeWidth="2"
                   strokeLinecap="round" strokeLinejoin="round">
