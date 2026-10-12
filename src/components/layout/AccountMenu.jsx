@@ -39,8 +39,9 @@ export default function AccountMenu({ open, onClose }) {
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      // Como no ModalDialog: o cleanup roda depois do commit, então o gatilho já recebe o foco
-      // com aria-expanded=false (antes o NVDA anunciava "expandido" ao voltar — Task 11.2).
+      // Como no ModalDialog: o cleanup roda depois do commit, então o gatilho já recebe o foco com
+      // aria-expanded=false (antes recebia ainda "true"). Obs. Task 11.2: o NVDA 2026.2 + Chrome ainda
+      // anuncia "expandido" nesse retorno, embora DOM e árvore do Chromium já estejam em false.
       if (trigger && document.contains(trigger)) trigger.focus();
     };
   }, [open, onClose]);
