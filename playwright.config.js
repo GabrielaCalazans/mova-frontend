@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { organizarSuites } from "./src/test/allureSuites.js";
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -9,7 +10,7 @@ export default defineConfig({
     ? [
         ["list"],
         ["html", { open: "never", outputFolder: "playwright-report" }],
-        ["allure-playwright", { resultsDir: "allure-results" }],
+        ["allure-playwright", { resultsDir: "allure-results", listeners: [{ beforeTestResultWrite: organizarSuites }] }],
       ]
     : "list",
   use: {

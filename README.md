@@ -108,7 +108,7 @@ MOVA_HAPPY_PATH_E2E=1 npx playwright test tests/e2e/happy-path.spec.js  # demo l
 node scripts/task9-a11y.mjs                   # axe + reflow + foco + zoom (MOVA_LOCALE=pt-BR|en|es)
 ```
 
-Os E2E reais são opt-in e exigem o ambiente local. O CI (`.github/workflows/tests.yml`) roda lint, unitários, build e o E2E mockado, e publica o relatório Allure no GitHub Pages. Os números da última regressão estão na documentação de auditoria do TCC (`tcc/docs/auditoria/fase-11/`).
+Os E2E reais são opt-in e exigem o ambiente local. O CI (`.github/workflows/tests.yml`) roda lint, unitários, build e o E2E mockado, e publica o relatório Allure no GitHub Pages. Na aba Suites, os testes aparecem agrupados por ator, entidade ou segmento; o grupo de cada arquivo fica em `src/test/allureSuites.js` (um teste falha se um arquivo novo ficar sem grupo). Os números da última regressão estão na documentação de auditoria do TCC (`tcc/docs/auditoria/fase-11/`).
 
 ## Licença
 

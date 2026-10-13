@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import { organizarSuites } from './src/test/allureSuites.js'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -24,7 +25,7 @@ export default defineConfig(({ mode }) => {
       maxWorkers: 1,
       // Allure só no CI (mesmo allure-results do Playwright, publicado no Pages).
       setupFiles: [...(useAllure ? ['allure-vitest/setup'] : []), './src/test/setupTests.js'],
-      reporters: useAllure ? ['default', ['allure-vitest/reporter', { resultsDir: 'allure-results' }]] : ['default'],
+      reporters: useAllure ? ['default', ['allure-vitest/reporter', { resultsDir: 'allure-results', listeners: [{ beforeTestResultWrite: organizarSuites }] }]] : ['default'],
       // Nunca o backend local: host reservado que não resolve (ver setupTests).
       env: { VITE_API_BASE_URL: 'http://mova-api.test.invalid/api' },
       exclude: ['**/node_modules/**', '**/dist/**', '**/.worktrees/**', '**/coverage/**', '**/test-results/**', '**/e2e/**'],
