@@ -504,6 +504,7 @@ export default function Pagamento() {
                           type="text"
                           inputMode="numeric"
                           autoComplete="cc-exp"
+                          aria-required="true"
                           value={validade}
                           onChange={(e) => setValidade(formatValidade(e.target.value))}
                         />

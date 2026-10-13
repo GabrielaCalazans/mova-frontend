@@ -53,6 +53,15 @@ describe("Pagamento", () => {
     getReservaById.mockResolvedValue(reserva());
   });
 
+  // Task 11.3.1 (validação manual com o NVDA): a Validade era exigida na validação, mas não exposta como obrigatória.
+  it("expõe todos os campos do cartão como obrigatórios", async () => {
+    render(<Pagamento />);
+
+    for (const rotulo of [/Número do Cartão/i, /Nome do Titular/i, /Validade/i, /CVV/i]) {
+      expect(await screen.findByLabelText(rotulo)).toBeRequired();
+    }
+  });
+
   // 1. Carregamento
   it("carrega a reserva e exibe o valor calculado pelo backend", async () => {
     render(<Pagamento />);
