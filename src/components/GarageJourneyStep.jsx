@@ -413,6 +413,8 @@ export default function GarageJourneyStep({
                     className="garage-option"
                     onClick={() => setSelectedGarageId(String(garage.id))}
                     aria-pressed={String(garage.id) === selectedGarageId}
+                    // As partes abaixo são spans display:block e o Chrome as juntava no nome sem separação (Task 11.3.1).
+                    aria-label={[garage.nome, t("journey.garage.address", { address: garage.endereco }), descreverCapacidade(garage)].filter(Boolean).join(". ")}
                   >
                     <span className="garage-option__icon"><FontAwesomeIcon icon={faLocationDot} aria-hidden="true" /></span>
                     <span>
@@ -580,11 +582,11 @@ export default function GarageJourneyStep({
                   <PopupOverlay onClick={() => setClockOpen(false)} />
                   <Popup>
                     <ClockDisplay>
-                      <ClockPart as="button" type="button" active={clockMode === "hour"} onClick={() => setClockMode("hour")}>
+                      <ClockPart as="button" type="button" active={clockMode === "hour"} onClick={() => setClockMode("hour")} aria-label={t("journey.garage.hourMark", { n: String(clockH).padStart(2, "0") })}>
                         {String(clockH).padStart(2, "0")}
                       </ClockPart>
                       <span className="clock-face__sep">:</span>
-                      <ClockPart as="button" type="button" active={clockMode === "minute"} onClick={() => setClockMode("minute")}>
+                      <ClockPart as="button" type="button" active={clockMode === "minute"} onClick={() => setClockMode("minute")} aria-label={t("journey.garage.minuteMark", { n: String(clockM).padStart(2, "0") })}>
                         {String(clockM).padStart(2, "0")}
                       </ClockPart>
                       <span className="clock-face__sep" style={{ fontSize: "1.2rem", marginLeft: "8px" }}>

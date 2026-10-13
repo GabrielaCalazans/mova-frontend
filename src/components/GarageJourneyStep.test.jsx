@@ -4,6 +4,7 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { setLocale } from "../i18n";
 import GarageJourneyStep from "./GarageJourneyStep";
+import { listGaragens } from "../services/garagemService";
 
 vi.mock("../components/BottomNav", () => ({ default: () => null }));
 vi.mock("../utils/journeyStorage", () => ({
@@ -15,10 +16,10 @@ vi.mock("../services/garagemService", () => ({
   listGaragens: vi.fn().mockResolvedValue([]),
 }));
 
-function renderStep() {
+function renderStep(stepKey = "retirada") {
   return render(
     <MemoryRouter>
-      <GarageJourneyStep stepKey="retirada" title="Retirada" subtitle="" nextPath="/x" nextButtonLabel="Continuar" documentTitle="MOVA" />
+      <GarageJourneyStep stepKey={stepKey} title="Etapa" subtitle="" nextPath="/x" nextButtonLabel="Continuar" documentTitle="MOVA" />
     </MemoryRouter>,
   );
 }
@@ -75,5 +76,32 @@ describe("GarageJourneyStep — ícones decorativos", () => {
     await screen.findByText("Garagem Centro");
     const expostos = [...container.querySelectorAll("svg")].filter((svg) => !svg.closest("[aria-hidden=true]") && !svg.getAttribute("aria-label") && !svg.querySelector("title"));
     expect(expostos).toHaveLength(0);
+  });
+});
+
+// Task 11.3.1 (validação manual com o NVDA): os blocos do cartão são spans display:block, e o Chrome juntava
+// nome, endereço e vagas sem separação ("Garagem JuvevêEndereço: …Curitiba3 de 6 vagas livres").
+describe("GarageJourneyStep — nome acessível dos cartões de garagem", () => {
+  it("separa nome, endereço e vagas no nome do botão", async () => {
+    listGaragens.mockResolvedValueOnce([
+      { id: "g2", nome: "Garagem Juvevê", endereco: "Rua Mateus Leme, 2000 - Juvevê, Curitiba", capacidade: 6, veiculosAlocados: 3 },
+    ]);
+    renderStep("devolucao");
+
+    expect(await screen.findByRole("button", { name: "Garagem Juvevê. Endereço: Rua Mateus Leme, 2000 - Juvevê, Curitiba. 3 de 6 vagas livres" })).toBeInTheDocument();
+  });
+});
+
+// Task 11.3.1: os botões de hora e minuto do relógio eram anunciados só como "00".
+describe("GarageJourneyStep — nome dos botões de hora e minuto", () => {
+  it("indica qual parte do horário cada botão representa", async () => {
+    const user = userEvent.setup();
+    renderStep();
+
+    await screen.findByText("Garagem Centro");
+    await user.click(screen.getByLabelText("Horário da retirada"));
+
+    expect(screen.getByRole("button", { name: "Hora 00" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Minutos 00" })).toBeInTheDocument();
   });
 });
