@@ -154,12 +154,12 @@ export async function listReservasDoLocatario(idLocatario) {
   return apiRequestPaginado(`/reserva/locatario/${idLocatario}`, authHeaders());
 }
 
-export async function getReservasDoLocatarioPage(idLocatario, { page = 1, limit = 10 } = {}) {
+export async function getReservasDoLocatarioPage(idLocatario, { page = 1, limit = 10, status = [] } = {}) {
   if (!idLocatario) throw new Error(t("errors.missingRenterId"));
-  const data = await apiRequest(
-    `/reserva/locatario/${idLocatario}?page=${page}&limit=${limit}`,
-    authHeaders(),
-  );
+  // GET /reserva restringe o locatário às próprias reservas e aceita status separados por vírgula.
+  const params = new URLSearchParams({ idLocatario, page, limit });
+  if (status.length) params.set("status", status.join(","));
+  const data = await apiRequest(`/reserva?${params}`, authHeaders());
   return {
     reservas: data.result ?? [],
     pagination: data.pagination ?? { page, limit, total: 0, totalPages: 0 },

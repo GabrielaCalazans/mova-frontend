@@ -195,6 +195,12 @@
     "empty": "Você ainda não fez nenhuma reserva. Escolha um carro no catálogo para começar.",
     "pendingRegion": "Pendências financeiras",
     "pendingNotice": "Cobranças de atraso ou cancelamento aparecem em pendências financeiras.",
-    "viewPending": "Ver pendências financeiras"
+    "viewPending": "Ver pendências financeiras",
+    "filters": "Filtrar por situação",
+    "filterInProgress": "Em andamento",
+    "filterConfirmed": "Confirmadas",
+    "filterCompleted": "Concluídas",
+    "filterCanceled": "Canceladas",
+    "emptyFiltered": "Nenhuma reserva nas situações selecionadas."
   }
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import VehicleMedia from "./vehicle/VehicleMedia";
 import { getAuthSession } from "../services/authSession";
@@ -113,9 +113,11 @@ async function copiarLink(link) {
   if (!copiado) throw new Error(t("reservation.share.copyError"));
 }
 
-export default function ReservasList({ title, documentTitle, somenteConcluidas = false, emptyMessage }) {
+export default function ReservasList({ title, documentTitle, status = [], filtros = null, emptyMessage }) {
   const navigate = useNavigate();
   const idLocatario = getAuthSession()?.user?.id;
+  // String estável para o efeito: o array chega novo a cada render do pai.
+  const statusFiltro = status.join(",");
 
   const [reservas, setReservas] = useState([]);
   const [pagina, setPagina] = useState(1);
@@ -123,6 +125,15 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
   const [loading, setLoading] = useState(() => Boolean(idLocatario));
   const [erro, setErro] = useState(null);
   const [compartilhamentos, setCompartilhamentos] = useState({});
+  const [filtroCarregado, setFiltroCarregado] = useState(statusFiltro);
+
+  // Trocar o filtro volta para a primeira página e mostra o carregamento.
+  if (filtroCarregado !== statusFiltro) {
+    setFiltroCarregado(statusFiltro);
+    setPagina(1);
+    setErro(null);
+    if (idLocatario) setLoading(true);
+  }
 
   useEffect(() => {
     document.title = documentTitle;
@@ -131,7 +142,7 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
 
     let active = true;
 
-    getReservasDoLocatarioPage(idLocatario, { page: pagina })
+    getReservasDoLocatarioPage(idLocatario, { page: pagina, status: statusFiltro ? statusFiltro.split(",") : [] })
       .then((resultado) => {
         if (!active) return;
         const ordenadas = [...resultado.reservas].sort(
@@ -151,15 +162,7 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
     return () => {
       active = false;
     };
-  }, [idLocatario, documentTitle, pagina]);
-
-  const reservasExibidas = useMemo(
-    () =>
-      somenteConcluidas
-        ? reservas.filter((r) => r.status === STATUS_RESERVA.REALIZADA)
-        : reservas,
-    [reservas, somenteConcluidas]
-  );
+  }, [idLocatario, documentTitle, pagina, statusFiltro]);
 
   const erroExibido = !idLocatario ? t("reservation.common.invalidSession") : erro;
 
@@ -403,8 +406,9 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
 
   return (
     <main className="journey-page">
-      <header className="journey-head">
+      <header className={filtros ? "journey-head journey-head--filtros" : "journey-head"}>
         <h1>{title}</h1>
+        {filtros}
       </header>
 
       {loading && (
@@ -421,7 +425,7 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
         </div>
       )}
 
-      {!loading && !erroExibido && reservasExibidas.length === 0 && (
+      {!loading && !erroExibido && reservas.length === 0 && (
         <div className="state-block">
           <p className="state-block__title">{t("reservation.list.emptyTitle")}</p>
           <p className="state-block__text">{emptyMessage}</p>
@@ -431,8 +435,8 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
         </div>
       )}
 
-      {!loading && !erroExibido && reservasExibidas.length > 0 && (
-        <ul className="booking-list">{reservasExibidas.map(renderReserva)}</ul>
+      {!loading && !erroExibido && reservas.length > 0 && (
+        <ul className="booking-list">{reservas.map(renderReserva)}</ul>
       )}
 
       {!loading && !erroExibido && paginacao.totalPages > 1 && (

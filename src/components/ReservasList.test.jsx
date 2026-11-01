@@ -43,6 +43,21 @@ describe("ReservasList", () => {
     });
   });
 
+  it("busca pelo status no servidor e volta à primeira página ao trocar o filtro", async () => {
+    const { default: userEvent } = await import("@testing-library/user-event");
+    getReservasDoLocatarioPage.mockResolvedValue({
+      reservas: [],
+      pagination: { page: 1, limit: 10, total: 25, totalPages: 3 },
+    });
+    const { rerender } = render(<ReservasList title="Histórico" documentTitle="Histórico" status={["CONFIRMADA"]} />);
+    await userEvent.click(await screen.findByRole("button", { name: "Próxima" }));
+    expect(getReservasDoLocatarioPage).toHaveBeenLastCalledWith("locatario-1", { page: 2, status: ["CONFIRMADA"] });
+
+    rerender(<ReservasList title="Histórico" documentTitle="Histórico" status={["CANCELADA", "REALIZADA"]} />);
+    await screen.findByRole("button", { name: "Próxima" });
+    expect(getReservasDoLocatarioPage).toHaveBeenLastCalledWith("locatario-1", { page: 1, status: ["CANCELADA", "REALIZADA"] });
+  });
+
   it("exibe posteriormente o nome e o snapshot de preço do seguro", async () => {
     render(<ReservasList title="Histórico" documentTitle="Histórico" />);
     expect(await screen.findByText("Seguro adicional — R$ 49,90")).toBeInTheDocument();

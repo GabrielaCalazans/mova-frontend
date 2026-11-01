@@ -1,6 +1,8 @@
 .journey-page { display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; }
 .journey-head { display: flex; flex-direction: column; gap: var(--space-2); }
 .journey-head h1 { font-size: var(--text-h1); }
+.journey-head--filtros { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3) var(--space-4); }
+.booking-filters { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .journey-muted { color: var(--text-muted); font-size: var(--text-meta); }
 .journey-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
 .journey-actions > .btn { flex: 1 1 12rem; }

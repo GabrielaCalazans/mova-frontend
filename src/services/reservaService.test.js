@@ -36,7 +36,17 @@ describe("getReservasDoLocatarioPage", () => {
       pagination: { page: 2, limit: 10, total: 11, totalPages: 2 },
     });
     expect(apiRequest).toHaveBeenCalledWith(
-      "/reserva/locatario/locatario-1?page=2&limit=10",
+      "/reserva?idLocatario=locatario-1&page=2&limit=10",
+      { authToken: "token-teste" },
+    );
+  });
+
+  it("envia os status filtrados separados por vírgula", async () => {
+    apiRequest.mockResolvedValue({ result: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } });
+
+    await getReservasDoLocatarioPage("locatario-1", { status: ["EM_ANDAMENTO", "CONFIRMADA"] });
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/reserva?idLocatario=locatario-1&page=1&limit=10&status=EM_ANDAMENTO%2CCONFIRMADA",
       { authToken: "token-teste" },
     );
   });

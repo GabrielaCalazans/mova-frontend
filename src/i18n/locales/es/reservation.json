@@ -195,6 +195,12 @@
     "empty": "Aún no has hecho ninguna reserva. Elige un coche del catálogo para empezar.",
     "pendingRegion": "Pagos pendientes",
     "pendingNotice": "Los cargos por retraso o cancelación aparecen en pagos pendientes.",
-    "viewPending": "Ver pagos pendientes"
+    "viewPending": "Ver pagos pendientes",
+    "filters": "Filtrar por estado",
+    "filterInProgress": "En curso",
+    "filterConfirmed": "Confirmadas",
+    "filterCompleted": "Completadas",
+    "filterCanceled": "Canceladas",
+    "emptyFiltered": "No hay reservas con los estados seleccionados."
   }
 }

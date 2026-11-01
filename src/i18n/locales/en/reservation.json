@@ -195,6 +195,12 @@
     "empty": "You haven't made any reservations yet. Pick a car from the catalog to get started.",
     "pendingRegion": "Outstanding charges",
     "pendingNotice": "Late return or cancellation charges appear in outstanding charges.",
-    "viewPending": "View outstanding charges"
+    "viewPending": "View outstanding charges",
+    "filters": "Filter by status",
+    "filterInProgress": "In progress",
+    "filterConfirmed": "Confirmed",
+    "filterCompleted": "Completed",
+    "filterCanceled": "Canceled",
+    "emptyFiltered": "No reservations with the selected statuses."
   }
 }
