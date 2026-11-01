@@ -92,8 +92,13 @@ function podeExibirRastreamento(reserva, agora = new Date()) {
 
 async function copiarLink(link) {
   if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(link);
-    return;
+    try {
+      await navigator.clipboard.writeText(link);
+      return;
+    } catch {
+      // Sem foco ou sem ativação de usuário o navegador recusa (NotAllowedError, em inglês).
+      throw new Error(t("reservation.share.copyError"));
+    }
   }
 
   const area = document.createElement("textarea");
@@ -166,7 +171,7 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
     try {
       const resultado = await criarCompartilhamentoReserva(reserva.id);
       let mensagem = t("reservation.share.ready");
-      let nativoConcluido = false;
+      let erro = null;
       if (typeof navigator.share === "function") {
         try {
           await navigator.share({
@@ -174,19 +179,22 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
             text: t("reservation.share.nativeText"),
             url: resultado.url,
           });
-          nativoConcluido = true;
           mensagem = t("reservation.share.opened");
         } catch {
-          // Cancelamento/indisponibilidade do share nativo segue para cópia.
+          // Cancelado ou indisponível: o share consumiu a ativação do clique, então a cópia
+          // automática seria recusada. O link fica visível com o botão "Copiar link".
         }
-      }
-      if (!nativoConcluido) {
-        await copiarLink(resultado.url);
-        mensagem = t("reservation.share.copied");
+      } else {
+        try {
+          await copiarLink(resultado.url);
+          mensagem = t("reservation.share.copied");
+        } catch (error) {
+          erro = error.message;
+        }
       }
       setCompartilhamentos((atual) => ({
         ...atual,
-        [reserva.id]: { url: resultado.url, loading: false, mensagem, erro: null },
+        [reserva.id]: { url: resultado.url, loading: false, mensagem, erro },
       }));
     } catch (error) {
       setCompartilhamentos((atual) => ({
@@ -362,7 +370,7 @@ export default function ReservasList({ title, documentTitle, somenteConcluidas =
                       void copiarLink(compartilhamento.url)
                         .then(() => setCompartilhamentos((atual) => ({
                           ...atual,
-                          [reserva.id]: { ...atual[reserva.id], mensagem: t("reservation.share.copied") },
+                          [reserva.id]: { ...atual[reserva.id], mensagem: t("reservation.share.copied"), erro: null },
                         })))
                         .catch((error) => setCompartilhamentos((atual) => ({
                           ...atual,

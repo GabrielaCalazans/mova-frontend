@@ -44,7 +44,12 @@ function nomeGaragem(garagem, id) {
 }
 
 function copiarLink(link) {
-  if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(link);
+  if (navigator.clipboard?.writeText) {
+    // Sem foco ou sem ativação de usuário o navegador recusa (NotAllowedError, em inglês).
+    return navigator.clipboard.writeText(link).catch(() => {
+      throw new Error(t("reservation.share.copyError"));
+    });
+  }
 
   const area = document.createElement("textarea");
   area.value = link;
@@ -123,7 +128,7 @@ export default function ReservaDetalhe() {
     try {
       const resultado = await criarCompartilhamentoReserva(reserva.id);
       let mensagem = t("reservation.share.ready");
-      let compartilhado = false;
+      let erro = "";
       if (typeof navigator.share === "function") {
         try {
           await navigator.share({
@@ -131,17 +136,20 @@ export default function ReservaDetalhe() {
             text: t("reservation.share.nativeText"),
             url: resultado.url,
           });
-          compartilhado = true;
           mensagem = t("reservation.share.opened");
         } catch {
-          // Se a pessoa fechar o compartilhamento nativo, mantém cópia como alternativa.
+          // Cancelado ou indisponível: o share consumiu a ativação do clique, então a cópia
+          // automática seria recusada. O link fica visível com o botão "Copiar link".
+        }
+      } else {
+        try {
+          await copiarLink(resultado.url);
+          mensagem = t("reservation.share.copied");
+        } catch (error) {
+          erro = error.message;
         }
       }
-      if (!compartilhado) {
-        await copiarLink(resultado.url);
-        mensagem = t("reservation.share.copied");
-      }
-      setCompartilhamento({ url: resultado.url, mensagem, carregando: false, erro: "" });
+      setCompartilhamento({ url: resultado.url, mensagem, carregando: false, erro });
     } catch (error) {
       setCompartilhamento((atual) => ({
         ...atual,

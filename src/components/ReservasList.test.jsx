@@ -157,6 +157,55 @@ describe("ReservasList", () => {
     expect(screen.getByRole("button", { name: "Revogar compartilhamento" })).toBeInTheDocument();
   });
 
+  it("mantém o link sem copiar quando o compartilhamento nativo é cancelado", async () => {
+    // A ativação do clique já foi consumida pelo share; copiar aqui falha no navegador.
+    Object.defineProperty(navigator, "share", {
+      configurable: true,
+      value: vi.fn().mockRejectedValue(new DOMException("Share failed", "AbortError")),
+    });
+    criarCompartilhamentoReserva.mockResolvedValue({ url: "http://localhost:5173/viagem/compartilhada/token-c" });
+    const { default: userEvent } = await import("@testing-library/user-event");
+    const user = userEvent.setup();
+    // Depois do setup(): o user-event substitui navigator.clipboard pelo próprio stub.
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { configurable: true, writable: true, value: { writeText } });
+
+    render(<ReservasList title="Histórico" documentTitle="Histórico" />);
+    await user.click(await screen.findByRole("button", { name: "Compartilhar viagem" }));
+
+    expect(await screen.findByText("Link pronto para compartilhar.")).toBeInTheDocument();
+    expect(writeText).not.toHaveBeenCalled();
+    expect(screen.getByRole("link", { name: /link da viagem/i })).toHaveAttribute(
+      "href",
+      "http://localhost:5173/viagem/compartilhada/token-c",
+    );
+  });
+
+  it("mantém o link e traduz o erro quando a cópia é recusada", async () => {
+    criarCompartilhamentoReserva.mockResolvedValue({ url: "http://localhost:5173/viagem/compartilhada/token-d" });
+    const { default: userEvent } = await import("@testing-library/user-event");
+    const user = userEvent.setup();
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      writable: true,
+      value: {
+        writeText: vi.fn().mockRejectedValue(
+          new DOMException("Failed to execute 'writeText' on 'Clipboard': Document is not focused.", "NotAllowedError"),
+        ),
+      },
+    });
+
+    render(<ReservasList title="Histórico" documentTitle="Histórico" />);
+    await user.click(await screen.findByRole("button", { name: "Compartilhar viagem" }));
+
+    expect(await screen.findByText("Não foi possível copiar o link.")).toBeInTheDocument();
+    expect(screen.queryByText(/Document is not focused/)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /link da viagem/i })).toHaveAttribute(
+      "href",
+      "http://localhost:5173/viagem/compartilhada/token-d",
+    );
+  });
+
   it("mostra erro da API e revoga link existente", async () => {
     criarCompartilhamentoReserva.mockRejectedValueOnce(new Error("Falha ao compartilhar"));
     const { default: userEvent } = await import("@testing-library/user-event");

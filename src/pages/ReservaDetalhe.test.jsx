@@ -135,6 +135,39 @@ describe("ReservaDetalhe", () => {
     expect(screen.getByRole("button", { name: "Revogar compartilhamento" })).toBeInTheDocument();
   });
 
+  it("mantém o link sem copiar quando o compartilhamento nativo é cancelado", async () => {
+    Object.defineProperty(navigator, "share", {
+      configurable: true,
+      writable: true,
+      value: vi.fn().mockRejectedValue(new DOMException("Share failed", "AbortError")),
+    });
+    criarCompartilhamentoReserva.mockResolvedValue({ url: "https://mova.test/viagem/token-c" });
+    const user = userEvent.setup();
+    // Depois do setup(): o user-event substitui navigator.clipboard pelo próprio stub.
+    Object.defineProperty(navigator, "clipboard", { configurable: true, writable: true, value: { writeText: clipboardWriteMock } });
+    render(<ReservaDetalhe />);
+    await user.click(await screen.findByRole("button", { name: "Compartilhar viagem" }));
+
+    expect(await screen.findByText("Link pronto para compartilhar.")).toBeInTheDocument();
+    expect(clipboardWriteMock).not.toHaveBeenCalled();
+    expect(screen.getByRole("link", { name: "Abrir link compartilhável" })).toHaveAttribute("href", "https://mova.test/viagem/token-c");
+  });
+
+  it("mantém o link e traduz o erro quando a cópia é recusada", async () => {
+    clipboardWriteMock.mockRejectedValue(
+      new DOMException("Failed to execute 'writeText' on 'Clipboard': Document is not focused.", "NotAllowedError"),
+    );
+    criarCompartilhamentoReserva.mockResolvedValue({ url: "https://mova.test/viagem/token-d" });
+    const user = userEvent.setup();
+    Object.defineProperty(navigator, "clipboard", { configurable: true, writable: true, value: { writeText: clipboardWriteMock } });
+    render(<ReservaDetalhe />);
+    await user.click(await screen.findByRole("button", { name: "Compartilhar viagem" }));
+
+    expect(await screen.findByText("Não foi possível copiar o link.")).toBeInTheDocument();
+    expect(screen.queryByText(/Document is not focused/)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Abrir link compartilhável" })).toHaveAttribute("href", "https://mova.test/viagem/token-d");
+  });
+
   it("anuncia erro de carregamento sem dados simulados", async () => {
     getReservaById.mockRejectedValueOnce(new Error("Reserva não encontrada"));
     render(<ReservaDetalhe />);
